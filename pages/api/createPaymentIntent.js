@@ -5,7 +5,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Initialize CORS middleware
 const corsMiddleware = cors({
-  origin: ['http://localhost:3001'], // Add your frontend origin
+  origin: ['*'], // Add your frontend origin
   methods: ['POST', 'OPTIONS'],      // Allow POST and OPTIONS (for preflight)
   allowedHeaders: ['Content-Type'],  // Allow Content-Type header
   credentials: true,                 // Allow credentials
