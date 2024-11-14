@@ -1,11 +1,12 @@
 import Stripe from 'stripe';
+import cors from 'cors';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Initialize CORS middleware
 const corsMiddleware = cors({
     origin: ['http://localhost:3001', 'https://gift-easy-sender.vercel.app'], // Add your frontend origin
-    methods: ['POST', 'OPTIONS'],      // Allow POST and OPTIONS (for preflight)
+    methods: ['GET', 'POST', 'OPTIONS'],    // Allow POST and OPTIONS (for preflight)
     allowedHeaders: ['Content-Type'],  // Allow Content-Type header
     credentials: true,                 // Allow credentials
 });
