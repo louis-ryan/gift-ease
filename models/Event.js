@@ -10,7 +10,8 @@ const EventSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please add a name'],
-        maxlength: [100, 'Name cannot be more than 100 characters']
+        maxlength: [100, 'Name cannot be more than 100 characters'],
+        unique: true
     },
     date: {
         type: Date,

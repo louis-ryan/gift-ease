@@ -72,13 +72,14 @@ const Index = (props) => {
         <h4>{formatDate(props.currentEvent.date)}</h4>
         <p>{props.currentEvent.description}</p>
         <div className="cardspace">
-          {props.notes.map(note => {
-            return (
+          {props.notes.map(note => (
+            <div key={note._id} className='card'>
               <WishCard
                 note={note}
               />
-            )
-          })}
+            </div>
+          )
+          )}
           <div
             className='card'
             onClick={() => router.push("/new")}

@@ -17,53 +17,70 @@ export default async function handler(req, res) {
         return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    const buf = await buffer(req);
-    const sig = req.headers['stripe-signature'];
-
     let event;
-
     try {
+        const buf = await buffer(req);
+        const sig = req.headers['stripe-signature'];
+
         event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
+        
+        // Log every event we receive
+        console.log('Webhook event received:', {
+            type: event.type,
+            accountId: event.data.object.id,
+            timestamp: new Date().toISOString()
+        });
+
     } catch (err) {
         console.error(`Webhook Error: ${err.message}`);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+        return res.status(400).json({ error: err.message });
     }
 
-    await dbConnect();
+    try {
+        await dbConnect();
 
-    // Handle the event
-    switch (event.type) {
-        case 'account.updated': {
+        if (event.type === 'account.updated') {
             const account = event.data.object;
+            
+            console.log('Processing account.updated:', {
+                accountId: account.id,
+                details_submitted: account.details_submitted,
+                charges_enabled: account.charges_enabled,
+                payouts_enabled: account.payouts_enabled
+            });
 
-            await User.findOneAndUpdate(
+            // Find user before update
+            const existingUser = await User.findOne({ stripeAccountId: account.id });
+            console.log('Existing user state:', {
+                userId: existingUser?._id,
+                currentStatus: existingUser?.stripeAccountStatus
+            });
+
+            // Update user
+            const updatedUser = await User.findOneAndUpdate(
                 { stripeAccountId: account.id },
                 {
                     'stripeAccountStatus.detailsSubmitted': account.details_submitted,
                     'stripeAccountStatus.chargesEnabled': account.charges_enabled,
                     'stripeAccountStatus.payoutsEnabled': account.payouts_enabled,
-                }
+                    'stripeAccountStatus.lastUpdated': new Date()
+                },
+                { new: true }
             );
-            break;
-        }
-        case 'payment_intent.succeeded': {
-            const paymentIntent = event.data.object;
-            // Add logic to update gift status
-            break;
-        }
-        case 'payout.paid': {
-            // Add logic to track successful payouts
-            break;
-        }
-        case 'account.external_account.created': {
-            // Add logic to track when bank accounts are added
-            break;
-        }
-        case 'capability.updated': {
-            // Add logic to track capability updates
-            break;
-        }
-    }
 
-    res.json({ received: true });
+            console.log('User updated:', {
+                userId: updatedUser?._id,
+                newStatus: updatedUser?.stripeAccountStatus
+            });
+        }
+
+        res.json({ received: true });
+    } catch (err) {
+        console.error('Error processing webhook:', err);
+        // Still return 200 to acknowledge receipt
+        res.status(200).json({ 
+            received: true,
+            error: err.message 
+        });
+    }
 }

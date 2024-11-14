@@ -1,15 +1,11 @@
 import { useRouter } from 'next/router';
 
-const WishCard = ({note}) => {
+const WishCard = ({ note }) => {
 
     const router = useRouter()
 
     return (
-
-        <div
-            key={note._id}
-            className='card'
-        >
+        <>
             <h3>{note.title}</h3>
             <h3>$0 of ${note.price}</h3>
             <div className="cardactions">
@@ -21,7 +17,8 @@ const WishCard = ({note}) => {
                     {"Edit"}
                 </button>
             </div>
-        </div>
+        </>
+
     )
 }
 
