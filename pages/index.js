@@ -11,6 +11,8 @@ import AccountStatus from '../components/AccountStatus';
 
 const Index = (props) => {
 
+  const [thisWish, setThisWish] = useState({})
+
   const router = useRouter()
   const { user } = useUser();
 
@@ -18,6 +20,19 @@ const Index = (props) => {
     const date = new Date(dateString);
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return date.toLocaleDateString('en-US', options);
+  }
+
+  const deleteNote = async () => {
+    const noteId = router.query.id;
+    try {
+      const deleted = await fetch(`/api/notes/${noteId}`, {
+        method: "Delete"
+      });
+      console.log("deleted: ", deleted)
+      router.push("/");
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const handleDeletion = () => {
@@ -43,52 +58,60 @@ const Index = (props) => {
     )
   }, [user])
 
-  // useEffect(() => {
-  //   if (!props.currentEventStr) return
-  //   getCurrentEvent(
-  //     props.setCurrentEvent,
-  //     props.setModalOpen,
-  //     props.setNotes,
-  //     props.currentEventStr
-  //   )
-  // }, [props.currentEventStr, props.events])
-
   if (!props.currentEvent) return
-
   if (!user) return
-
   return (
     <div className="container">
       <div className="wrapper">
 
-        <div>
-          <ConnectOnboarding userId={props.accountId} email={user.email} />
-        </div>
-        <div>
-          <AccountStatus user={user} />
-        </div>
-
-        <h1>{props.currentEvent.name}</h1>
-        <h4>{formatDate(props.currentEvent.date)}</h4>
-        <p>{props.currentEvent.description}</p>
-        <div className="cardspace">
-          {props.notes.map(note => (
-            <div key={note._id} className='card'>
-              <WishCard
-                note={note}
-              />
+        {!thisWish._id &&
+          <>
+            <div>
+              <ConnectOnboarding userId={props.accountId} email={user.email} />
             </div>
-          )
-          )}
-          <div
-            className='card'
-            onClick={() => router.push("/new")}
-          >
-            <h3>{"+ Add a wish"}</h3>
+            <div>
+              <AccountStatus user={user} />
+            </div>
+            <h1>{props.currentEvent.name}</h1>
+            <h4>{formatDate(props.currentEvent.date)}</h4>
+            <p>{props.currentEvent.description}</p>
+            <div className="cardspace">
+              {props.notes.map(note => (
+                <div
+                  key={note._id}
+                  className='card'
+                  style={{ marginRight: "16px" }}
+                >
+                  <h3>{note.title}</h3>
+                  <h3>${note.paid} of ${note.price}</h3>
+                  <button onClick={() => { router.push(`/${note._id}`) }}>
+                    {"View"}
+                  </button>
+
+                </div>
+              ))}
+              <div
+                className='card'
+                onClick={() => router.push("/new")}
+                style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+              >
+                <h3>{"+ Add a wish"}</h3>
+              </div>
+            </div>
+            <div className='doublegapver' />
+            <div className='doublegapver' />
+            <div className='doublegapver' />
+            <button onClick={handleDeletion}>{"DELETE EVENT"}</button>
+          </>
+        }
+
+        {thisWish._id &&
+          <div>
+            <h1>{thisWish.title}</h1>
+            <p>{thisWish.description}</p>
+            <button onClick={deleteNote}>Delete</button>
           </div>
-        </div>
-        <div className='doublegapver' />
-        <button onClick={handleDeletion}>{"DELETE EVENT"}</button>
+        }
       </div>
     </div>
   )

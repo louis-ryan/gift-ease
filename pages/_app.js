@@ -20,6 +20,8 @@ function MyApp({ Component, pageProps }) {
     const [modalOpen, setModalOpen] = useState(false)
     const [notes, setNotes] = useState([])
 
+    console.log("notes: ", notes)
+
     return (
         <UserProvider>
             <Navbar
