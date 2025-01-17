@@ -1,31 +1,37 @@
-// In your checkOnboardingStatus.js API route
-try {
+import Stripe from 'stripe';
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+  try {
     const { accountId } = req.query;
-    const account = await stripe.accounts.retrieve(accountId, {
-        expand: ['requirements.currently_due', 'requirements.past_due', 'requirements.eventually_due']
-    });
+    const account = await stripe.accounts.retrieve(accountId);
+
+    // Add these specific checks
+    const payoutSchedule = account.settings?.payouts?.schedule;
+    const payoutRestrictions = account.payouts_disabled_reason;
 
     res.status(200).json({
-        isEnabled: account.charges_enabled,
-        isDetailsSubmitted: account.details_submitted,
-        payoutsEnabled: account.payouts_enabled,
-        requirements: {
-            currentlyDue: account.requirements?.currently_due || [],
-            pendingVerification: account.requirements?.pending_verification || [],
-            eventuallyDue: account.requirements?.eventually_due || [],
-            disabled_reason: account.requirements?.disabled_reason,
-            current_deadline: account.requirements?.current_deadline,
-            past_due: account.requirements?.past_due || [],
-            errors: account.requirements?.errors || []
-        },
-        capabilities: account.capabilities,
-        verification: {
-            status: account.verification?.status,
-            fields_needed: account.verification?.fields_needed || []
-        },
-        restricted_reason: account.requirements?.disabled_reason
+      isEnabled: account.charges_enabled,
+      isDetailsSubmitted: account.details_submitted,
+      payoutsEnabled: account.payouts_enabled,
+      payoutSchedule,
+      payoutRestrictions,
+      requirements: {
+        currentlyDue: account.requirements?.currently_due || [],
+        pendingVerification: account.requirements?.pending_verification || [],
+        eventuallyDue: account.requirements?.eventually_due || [],
+        disabled_reason: account.requirements?.disabled_reason,
+        past_due: account.requirements?.past_due || []
+      },
+      capabilities: account.capabilities
     });
-} catch (error) {
+  } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ message: 'Error checking onboarding status' });
+  }
 }
