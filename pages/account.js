@@ -25,17 +25,6 @@ const StripeRegistration = (props) => {
         email: '',
         phone: '',
         country: 'US',
-        address: {
-            line1: '',
-            city: '',
-            state: '',
-            postal_code: ''
-        },
-        dob: {
-            day: '',
-            month: '',
-            year: ''
-        },
         bankAccount: {
             account_holder_name: ''
         }

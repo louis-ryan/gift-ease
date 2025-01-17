@@ -12,7 +12,7 @@ export default async function handler(req, res) {
 
     try {
         await dbConnect();
-        const { userId, email, phone, address, dob, country, bankAccount } = req.body;
+        const { userId, email, phone, country, bankAccount } = req.body;
 
         const countryConfig = COUNTRY_BANK_FORMATS[country];
         if (!countryConfig) {
@@ -36,19 +36,6 @@ export default async function handler(req, res) {
                 url: 'https://wishlistsundae.com',
                 product_description: 'Receiving gifts and payments'
             },
-            individual: {
-                email,
-                phone,
-                address: {
-                    ...address,
-                    country
-                },
-                dob: {
-                    day: parseInt(dob.day),
-                    month: parseInt(dob.month),
-                    year: parseInt(dob.year)
-                }
-            },
             tos_acceptance: {
                 date: Math.floor(Date.now() / 1000),
                 ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress
@@ -68,9 +55,17 @@ export default async function handler(req, res) {
             }
         );
 
+        const accountLink = await stripe.accountLinks.create({
+            account: account.id,
+            refresh_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account`,
+            return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/account`,
+            type: 'account_onboarding'
+        });
+
         res.status(200).json({
             success: true,
-            accountId: account.id
+            accountId: account.id,
+            url: accountLink.url
         });
 
     } catch (error) {

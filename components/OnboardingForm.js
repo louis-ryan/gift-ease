@@ -1,7 +1,5 @@
 import { COUNTRY_BANK_FORMATS } from '../countryBankFormats';
 
-console.log("country bank formats: ", COUNTRY_BANK_FORMATS)
-
 const PhoneInput = ({ country, value, onChange }) => {
     const prefix = COUNTRY_BANK_FORMATS[country]?.phonePrefix || '';
 
@@ -76,7 +74,7 @@ export const renderPersonalInfo = (formData, handleInputChange, setStep) => (
                 })}
             />
         </div>
-        <button type="button" onClick={() => setStep(2)}>Next</button>
+        <button type="button" onClick={() => setStep(4)}>Next</button>
     </div>
 );
 
@@ -203,7 +201,7 @@ export const renderBankInfo = (formData, handleBankAccountChange, setStep, loadi
             ))}
 
             <div className="button-group">
-                <button type="button" onClick={() => setStep(3)}>Back</button>
+                <button type="button" onClick={() => setStep(1)}>Back</button>
                 <button
                     type="submit"
                     disabled={loading}
