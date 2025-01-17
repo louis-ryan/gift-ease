@@ -14,11 +14,19 @@ export default async (req, res) => {
         const account = await Account.findOne({ user: userSub });
 
         if (!account) {
-            const newAccount = await Account.create(
-                {user: userSub, email: userEmail, currentEventStr: ""}
-            );
+            const newAccount = await Account.create({
+                user: userSub,
+                email: userEmail,
+                currentEventStr: "",
+                stripeAccountStatus: {
+                    detailsSubmitted: false,
+                    chargesEnabled: false,
+                    payoutsEnabled: false
+                }
+            });
 
             res.status(201).json({ success: true, data: newAccount, message: "No account was found, one has been created." })
+            return
         }
 
         res.status(200).json({ success: true, data: account, message: "Your account has been found." });

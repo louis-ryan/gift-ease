@@ -5,15 +5,18 @@ const organizePaymentsByGift = (payments, wishes, setNotes) => {
     updatedWishes = [...wishes]
 
     payments.forEach(payment => {
-        console.log("payment: ", payment)
         wishes.forEach((wish, idx) => {
-            if (payment.giftId === wish._id) {
-                updatedWishes[idx] = { ...wish, paid: wish.paid = wish.paid + payment.amount }
+            if (payment.giftId !== wish._id) return
+
+            updatedWishes[idx] = {
+                ...wish,
+                paid: wish.paid = wish.paid + payment.amount,
+                senders: updatedWishes[idx].senders ? [...updatedWishes[idx].senders] : []
             }
+            updatedWishes[idx].senders.push(payment.amount)
+
         })
     });
-
-    console.log("updated wishes: ", updatedWishes)
 
     setNotes(updatedWishes)
 }

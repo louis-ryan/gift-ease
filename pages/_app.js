@@ -17,10 +17,14 @@ function MyApp({ Component, pageProps }) {
     const [currentEvent, setCurrentEvent] = useState({})
     const [currentEventStr, setCurrentEventStr] = useState("")
     const [accountId, setAccountId] = useState("")
+    const [stripeUserId, setStripeUserId] = useState("")
     const [modalOpen, setModalOpen] = useState(false)
     const [notes, setNotes] = useState([])
-
-    console.log("notes: ", notes)
+    const [onboardingData, setOnboardingData] = useState({
+        isDetailsSubmitted: false,
+        isEnabled: false,
+        payoutsEnabled: false
+    })
 
     return (
         <UserProvider>
@@ -33,10 +37,14 @@ function MyApp({ Component, pageProps }) {
                 setCurrentEventStr={setCurrentEventStr}
                 accountId={accountId}
                 setAccountId={setAccountId}
+                stripeUserId={stripeUserId}
+                setStripeUserId={setStripeUserId}
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}
                 notes={notes}
                 setNotes={setNotes}
+                onboardingData={onboardingData}
+                setOnboardingData={setOnboardingData}
             />
             <Component
                 events={events}
@@ -47,10 +55,14 @@ function MyApp({ Component, pageProps }) {
                 setCurrentEventStr={setCurrentEventStr}
                 accountId={accountId}
                 setAccountId={setAccountId}
+                stripeUserId={stripeUserId}
+                setStripeUserId={setStripeUserId}
                 modalOpen={modalOpen}
                 setModalOpen={setModalOpen}
                 notes={notes}
                 setNotes={setNotes}
+                onboardingData={onboardingData}
+                setOnboardingData={setOnboardingData}
                 {...pageProps}
             />
         </UserProvider>

@@ -1,13 +1,13 @@
 import getCurrentEvent from "./getCurrentEvent"
 
-const getOrCreateNewAccount = async (sub, email, setCurrentEvent, setAccountId, setModalOpen, setNotes) => {
+const getOrCreateNewAccount = async (sub, email, setCurrentEvent, setAccountId, setStripeUserId, setModalOpen, setNotes) => {
     try {
-        console.log("sub: ", sub)
         const res = await fetch(`api/getAccountForThisUser/${sub + '||' + email}`)
         const resJSON = await res.json()
         if (resJSON.success === true) {
-            console.log("current event: ", resJSON.data)
-            setAccountId(resJSON.data._id)
+            console.log("res: ", resJSON)
+            setStripeUserId(resJSON.data._id)
+            setAccountId(resJSON.data.stripeAccountId)
             if (!resJSON.data.currentEventStr) {
                 setModalOpen(true)
             } else {

@@ -1,4 +1,3 @@
-// pages/api/create-connect-account.js
 import Stripe from 'stripe';
 import dbConnect from '../../utils/dbConnect';
 import User from '../../models/Account';
@@ -6,7 +5,6 @@ import User from '../../models/Account';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
-// pages/api/createConnectAccount.js
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
@@ -28,10 +26,10 @@ export default async function handler(req, res) {
                 console.log('Using existing Stripe account:', user.stripeAccountId);
                 stripeAccountId = user.stripeAccountId;
             } else {
-                console.log('Creating new Stripe account...');
+                console.log('Creating new minimal Stripe account...');
                 
                 const account = await stripe.accounts.create({
-                    type: 'standard',
+                    type: 'express',  // Changed from 'standard'
                     email: email,
                     business_type: 'individual',
                     capabilities: {
@@ -40,7 +38,6 @@ export default async function handler(req, res) {
                     }
                 });
                 
-                console.log('Stripe account created:', account.id);
                 stripeAccountId = account.id;
 
                 await User.findOneAndUpdate(
@@ -56,17 +53,17 @@ export default async function handler(req, res) {
                 );
             }
 
-            // Ensure baseUrl starts with http:// or https://
             const formattedBaseUrl = baseUrl.startsWith('http') ? baseUrl : `http://${baseUrl}`;
             console.log('Formatted base URL:', formattedBaseUrl);
 
-            // Use stripeAccountId instead of account
+            // Create account link with minimal collection
             const accountLink = await stripe.accountLinks.create({
-                account: stripeAccountId,  // Use the stored ID here
+                account: stripeAccountId,
                 refresh_url: `${formattedBaseUrl}/onboarding/refresh`,
                 return_url: `${formattedBaseUrl}/onboarding/success`,
                 type: 'account_onboarding',
-                collect: 'eventually_due'
+                collect: 'currently_due',
+                payment_method_collection: 'none'  // This might help skip some business fields
             });
             
             console.log('Account link created:', accountLink.url);

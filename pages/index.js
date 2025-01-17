@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/router';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import getCurrentEvent from '../requests/getCurrentEvent';
 import deleteThisEvent from '../requests/deleteThisEvent';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
 import WishCard from '../components/WishCard';
 import ConnectOnboarding from '../components/ConnectOnboarding';
+import CreatePayoutLink from '../components/CreatePayoutLink';
 import AccountStatus from '../components/AccountStatus';
 
 
 const Index = (props) => {
 
-  const [thisWish, setThisWish] = useState({})
+  console.log("props from index: ", props)
 
   const router = useRouter()
   const { user } = useUser();
@@ -22,17 +24,20 @@ const Index = (props) => {
     return date.toLocaleDateString('en-US', options);
   }
 
-  const deleteNote = async () => {
-    const noteId = router.query.id;
-    try {
-      const deleted = await fetch(`/api/notes/${noteId}`, {
-        method: "Delete"
-      });
-      console.log("deleted: ", deleted)
-      router.push("/");
-    } catch (error) {
-      console.log(error)
-    }
+
+
+  const checkOnboardingStatus = async (accountId) => {
+    const accountRes = await fetch(`/api/checkOnboardingStatus?id=${accountId}`, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
+    const onboardingData = await accountRes.json();
+    props.setOnboardingData(onboardingData)
+
   }
 
   const handleDeletion = () => {
@@ -53,10 +58,16 @@ const Index = (props) => {
       user.email,
       props.setCurrentEvent,
       props.setAccountId,
+      props.setStripeUserId,
       props.setModalOpen,
       props.setNotes,
     )
   }, [user])
+
+  useEffect(() => {
+    if (!props.accountId) return
+    checkOnboardingStatus(props.accountId)
+  }, [props.accountId])
 
   if (!props.currentEvent) return
   if (!user) return
@@ -64,54 +75,115 @@ const Index = (props) => {
     <div className="container">
       <div className="wrapper">
 
-        {!thisWish._id &&
-          <>
-            <div>
-              <ConnectOnboarding userId={props.accountId} email={user.email} />
-            </div>
-            <div>
-              <AccountStatus user={user} />
-            </div>
-            <h1>{props.currentEvent.name}</h1>
-            <h4>{formatDate(props.currentEvent.date)}</h4>
-            <p>{props.currentEvent.description}</p>
-            <div className="cardspace">
-              {props.notes.map(note => (
-                <div
-                  key={note._id}
-                  className='card'
-                  style={{ marginRight: "16px" }}
-                >
-                  <h3>{note.title}</h3>
-                  <h3>${note.paid} of ${note.price}</h3>
-                  <button onClick={() => { router.push(`/${note._id}`) }}>
-                    {"View"}
-                  </button>
-
-                </div>
-              ))}
-              <div
-                className='card'
-                onClick={() => router.push("/new")}
-                style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
-              >
-                <h3>{"+ Add a wish"}</h3>
-              </div>
-            </div>
-            <div className='doublegapver' />
-            <div className='doublegapver' />
-            <div className='doublegapver' />
-            <button onClick={handleDeletion}>{"DELETE EVENT"}</button>
-          </>
-        }
-
-        {thisWish._id &&
+        {/* <h3>Your details are submitted: {`${props.onboardingData.isDetailsSubmitted}`}</h3>
+        {!props.onboardingData.isDetailsSubmitted && (
           <div>
-            <h1>{thisWish.title}</h1>
-            <p>{thisWish.description}</p>
-            <button onClick={deleteNote}>Delete</button>
+            <ConnectOnboarding userId={props.stripeUserId} email={user.email} />
           </div>
-        }
+        )}
+        <h3>Your account is enabled: {`${props.onboardingData.isEnabled}`}</h3>
+        {!props.onboardingData.isEnabled && (
+          <div>
+            <ConnectOnboarding userId={props.stripeUserId} email={user.email} />
+          </div>
+        )}
+        <h3>Payouts are enabled: {`${props.onboardingData.payoutsEnabled}`}</h3>
+        {!props.onboardingData.payoutsEnabled && (
+          <div>
+            <CreatePayoutLink accountId={props.accountId} />
+          </div>
+        )} */}
+
+        <div>
+          <AccountStatus user={user} />
+        </div>
+        <h1>{props.currentEvent.name}</h1>
+        <h4>{formatDate(props.currentEvent.date)}</h4>
+        <p>{props.currentEvent.description}</p>
+        <div className="cardspace">
+          {props.notes.map(note => {
+            const remainingVal = note.price - note.paid
+            const data = [
+              { name: "PAID", value: note.paid, color: "#143950" },
+              { name: "REMAINING", value: remainingVal, color: "lightgrey" }
+            ]
+            return (
+              <div
+                key={note._id}
+                className='card'
+                style={{ marginRight: "16px" }}
+                onClick={() => { router.push(`/${note._id}`) }}
+              >
+                <h3>{note.title}</h3>
+                <h4>${note.paid} of ${note.price}</h4>
+                <h4>{note.senders && note.senders.length} contributer{note.senders && (note.senders.length < 1 || note.senders.length > 1 && 's')}</h4>
+
+                <div style={{ display: "flex" }}>
+                  {note.senders && note.senders.map((sender) => (
+                    <div
+                      key={sender}
+                      style={{ height: "16px", width: "12px", backgroundColor: "grey", margin: "2px" }}
+                    />
+                  ))}
+                </div>
+
+                <ResponsiveContainer
+                  width="100%"
+                  height={160}
+                >
+                  <PieChart>
+                    <Pie
+                      data={data}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      dataKey="value"
+                      paddingAngle={2}
+                    >
+                      {data.map((entry, index) => (
+                        <Cell
+                          key={entry.name}
+                          fill={entry.color}
+                        />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+
+                {/* <button onClick={() => { router.push(`/${note._id}`) }}>
+                      {"View"}
+                    </button> */}
+
+                <div className='doublegapver' />
+                <div className='doublegapver' />
+
+              </div>
+            )
+
+          })}
+          <div
+            className='card'
+            onClick={() => router.push("/new")}
+            style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+          >
+            <h3>{"+ Add a wish"}</h3>
+          </div>
+        </div>
+        <div className='doublegapver' />
+        <div className='doublegapver' />
+        <div className='doublegapver' />
+
+        <h3>{"Here is the link for you to share:"}</h3>
+        <a href={`https://the-registry-web.site/for/${props.currentEvent.name}`} target="_blank">
+          {`the-registry-web.site/for/${props.currentEvent.name}`}
+        </a>
+
+        <div className='doublegapver' />
+        <div className='doublegapver' />
+        <div className='doublegapver' />
+        <button onClick={handleDeletion}>{"DELETE EVENT"}</button>
+
       </div>
     </div>
   )
