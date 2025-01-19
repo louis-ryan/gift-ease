@@ -9,7 +9,6 @@ export default async (req, res) => {
     }
 
     const { query: { id } } = req;
-    console.log('Request body:', req.body);
 
     try {
         const account = await Account.findByIdAndUpdate(
@@ -20,8 +19,6 @@ export default async (req, res) => {
                 runValidators: true
             }
         );
-
-        console.log('Updated account:', account);
 
         if (!account) {
             return res.status(400).json({ success: false });

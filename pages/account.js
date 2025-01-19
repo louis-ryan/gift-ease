@@ -16,8 +16,6 @@ import {
 
 const StripeRegistration = (props) => {
 
-    console.log("props from account: ", props.onboardingData)
-
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -29,8 +27,6 @@ const StripeRegistration = (props) => {
             account_holder_name: ''
         }
     });
-
-    console.log("form data: ", formData)
 
     const { user } = useUser();
 
