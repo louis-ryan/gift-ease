@@ -9,8 +9,6 @@ export default async function handler(req, res) {
 
     const { accountId } = req.body;
 
-    console.log("account id: ", accountId)
-
     try {
         const accountLink = await stripe.accountLinks.create({
             account: accountId,

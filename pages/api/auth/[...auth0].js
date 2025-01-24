@@ -3,15 +3,12 @@ import { handleAuth, handleCallback, handleLogin } from '@auth0/nextjs-auth0';
 export default handleAuth({
   async callback(req, res) {
     try {
-      console.log('Callback initiated');
-      console.log('AUTH0_BASE_URL:', process.env.AUTH0_BASE_URL);
-      console.log('Redirect URI:', `${process.env.AUTH0_BASE_URL}/api/auth/callback`);
-      
+
       await handleCallback(req, res, {
         redirectUri: `${process.env.AUTH0_BASE_URL}/api/auth/callback`,
         postLoginRedirect: '/'
       });
-      
+
       console.log('Callback completed successfully');
       console.log('Redirecting to:', '/');
     } catch (error) {

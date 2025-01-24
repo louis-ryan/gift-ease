@@ -15,10 +15,10 @@ export default async (req, res) => {
         return;
     }
 
-    const { query: { name } } = req;
+    const { query: { uri } } = req;
 
     try {
-        const event = await Event.findOne({ name: name });
+        const event = await Event.findOne({ uri: uri });
 
         if (!event) {
             return res.status(400).json({ success: false });

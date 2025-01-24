@@ -11,6 +11,9 @@ const EventSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a name'],
         maxlength: [100, 'Name cannot be more than 100 characters'],
+    },
+    uri: {
+        type: String,
         unique: true
     },
     date: {

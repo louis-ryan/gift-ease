@@ -9,7 +9,6 @@ const postNewEvent = async (user, formData, setModalOpen, setErrors, setEvents, 
             body: JSON.stringify(formData)
         })
         const resJSON = await res.json()
-        console.log("post new event res: ", resJSON)
         if (resJSON.success === true) {
             setCurrentEvent(resJSON.data)
             getEventsForThisUser(user.sub, setEvents)

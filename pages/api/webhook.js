@@ -23,13 +23,7 @@ export default async function handler(req, res) {
         const sig = req.headers['stripe-signature'];
 
         event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
-        
-        // Log every event we receive
-        console.log('Webhook event received:', {
-            type: event.type,
-            accountId: event.data.object.id,
-            timestamp: new Date().toISOString()
-        });
+
 
     } catch (err) {
         console.error(`Webhook Error: ${err.message}`);
@@ -41,20 +35,9 @@ export default async function handler(req, res) {
 
         if (event.type === 'account.updated') {
             const account = event.data.object;
-            
-            console.log('Processing account.updated:', {
-                accountId: account.id,
-                details_submitted: account.details_submitted,
-                charges_enabled: account.charges_enabled,
-                payouts_enabled: account.payouts_enabled
-            });
 
             // Find user before update
             const existingUser = await User.findOne({ stripeAccountId: account.id });
-            console.log('Existing user state:', {
-                userId: existingUser?._id,
-                currentStatus: existingUser?.stripeAccountStatus
-            });
 
             // Update user
             const updatedUser = await User.findOneAndUpdate(
@@ -78,9 +61,9 @@ export default async function handler(req, res) {
     } catch (err) {
         console.error('Error processing webhook:', err);
         // Still return 200 to acknowledge receipt
-        res.status(200).json({ 
+        res.status(200).json({
             received: true,
-            error: err.message 
+            error: err.message
         });
     }
 }

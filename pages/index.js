@@ -13,8 +13,6 @@ import AccountStatus from '../components/AccountStatus';
 
 const Index = (props) => {
 
-  console.log("props from index: ", props)
-
   const router = useRouter()
   const { user } = useUser();
 
@@ -74,25 +72,6 @@ const Index = (props) => {
   return (
     <div className="container">
       <div className="wrapper">
-
-        {/* <h3>Your details are submitted: {`${props.onboardingData.isDetailsSubmitted}`}</h3>
-        {!props.onboardingData.isDetailsSubmitted && (
-          <div>
-            <ConnectOnboarding userId={props.stripeUserId} email={user.email} />
-          </div>
-        )}
-        <h3>Your account is enabled: {`${props.onboardingData.isEnabled}`}</h3>
-        {!props.onboardingData.isEnabled && (
-          <div>
-            <ConnectOnboarding userId={props.stripeUserId} email={user.email} />
-          </div>
-        )}
-        <h3>Payouts are enabled: {`${props.onboardingData.payoutsEnabled}`}</h3>
-        {!props.onboardingData.payoutsEnabled && (
-          <div>
-            <CreatePayoutLink accountId={props.accountId} />
-          </div>
-        )} */}
 
         <div>
           <AccountStatus user={user} />
@@ -175,8 +154,8 @@ const Index = (props) => {
         <div className='doublegapver' />
 
         <h3>{"Here is the link for you to share:"}</h3>
-        <a href={`https://the-registry-web.site/for/${props.currentEvent.name}`} target="_blank">
-          {`the-registry-web.site/for/${props.currentEvent.name}`}
+        <a href={`https://the-registry-web.site/for/${props.currentEvent.uri}`} target="_blank">
+          {`the-registry-web.site/for/${props.currentEvent.uri}`}
         </a>
 
         <div className='doublegapver' />

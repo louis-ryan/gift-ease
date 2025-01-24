@@ -19,14 +19,10 @@ export default async function handler(req, res) {
                 // expand: ['data.transfer'] // Uncomment to include transfer details
             });
 
-            console.log("payments: ", payments)
-
             const successfulPayments = payments.data.filter(payment =>
                 payment.status === 'succeeded' &&
                 payment.metadata.giftId === giftId // Assuming you stored giftId in metadata
             );
-
-            console.log("successful payments: ", successfulPayments)
 
             const totalPaid = successfulPayments.reduce((sum, payment) =>
                 sum + payment.amount, 0

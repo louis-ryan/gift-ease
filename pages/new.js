@@ -5,7 +5,6 @@ import { useRouter } from 'next/router';
 const NewNote = (props) => {
     const [form, setForm] = useState({ event: props.currentEvent._id, title: '', price: '', description: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
-    console.log("is submitting: ", isSubmitting)
     const [errors, setErrors] = useState({});
     const router = useRouter();
 
@@ -20,7 +19,6 @@ const NewNote = (props) => {
     }, [errors])
 
     const createNote = async () => {
-        console.log("form: ", form)
         try {
             const res = await fetch('/api/notes', {
                 method: 'POST',
@@ -30,7 +28,6 @@ const NewNote = (props) => {
                 },
                 body: JSON.stringify(form)
             })
-            console.log("create note res: ", res)
             router.push("/");
         } catch (error) {
             console.log(error);

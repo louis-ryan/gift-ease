@@ -118,7 +118,6 @@ const Note = () => {
                                 <Tooltip
                                     content={({ active, payload }) => {
                                         if (active && payload && payload.length) {
-                                            console.log("tooltip data: ", payload)
                                             return (
                                                 <div style={{ backgroundColor: "white", padding: "16px", boxShadow: "0px 0px 8px lightgrey", borderRadius: "8px" }}>
                                                     <h3>{payload[0].payload.name}</h3>

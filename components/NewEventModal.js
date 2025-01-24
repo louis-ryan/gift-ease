@@ -7,6 +7,7 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
     const [formData, setFormData] = useState({
         user: user.sub,
         name: '',
+        uri: '',
         date: '',
         description: '',
         current: true
@@ -19,10 +20,24 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        setFormData(prevData => ({
-            ...prevData,
-            [name]: type === 'checkbox' ? checked : value
-        }));
+
+        setFormData(prevData => {
+            const newData = {
+                ...prevData,
+                [name]: type === 'checkbox' ? checked : value
+            };
+            if (name === 'name') {
+                newData.uri = value
+                    .toLowerCase() // Convert to lowercase
+                    .replace(/[']/g, '') // Remove apostrophes
+                    .replace(/[^a-z0-9-\s]/g, '') // Remove any special characters except hyphens
+                    .replace(/\s+/g, '-') // Convert spaces to hyphens
+                    .replace(/-+/g, '-') // Convert multiple consecutive hyphens to single hyphen
+                    .trim() // Remove leading and trailing spaces
+                    .replace(/^-+|-+$/g, ''); // Remove leading and trailing hyphens
+            }
+            return newData;
+        });
     };
 
     const handleSubmit = (e) => {
@@ -53,6 +68,23 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
                             className={errors.name && "inputerror"}
                             required
                         />
+                        <div className="error">{errors.name?.message}</div>
+                        <div className="doublegapver" />
+                        <label htmlFor="name">Personalised URL:</label>
+                        <div style={{ display: "flex" }}>
+                            <p style={{width: "50%"}}> {"the-registry-web.site/for/"} </p>
+                            <input
+                                type="text"
+                                id="uri"
+                                name="uri"
+                                value={formData.uri}
+                                onChange={handleChange}
+                                className={errors.name && "inputerror"}
+                                required
+                                style={{width: "50%"}}
+                            />
+                        </div>
+
                         <div className="error">{errors.name?.message}</div>
                         <div className="doublegapver" />
                         <label htmlFor="date">Event Date:</label>

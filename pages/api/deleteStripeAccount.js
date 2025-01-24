@@ -14,12 +14,7 @@ export default async function handler(req, res) {
         
         const { stripeAccountId, user } = req.body;
         
-        // Debug logs
-        console.log('Looking for user:', user);
-        
-        // First find the user to verify the data
         const userDoc = await User.findOne({ user: user });
-        console.log('Found user document:', userDoc);
         
         if (!userDoc || !userDoc.stripeAccountId) {
             return res.status(404).json({ 
