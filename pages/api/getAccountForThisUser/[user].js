@@ -29,11 +29,7 @@ export default async (req, res) => {
                 user: userSub,
                 email: userEmail,
                 currentEventStr: "",
-                stripeAccountStatus: {
-                    detailsSubmitted: false,
-                    chargesEnabled: false,
-                    payoutsEnabled: false
-                }
+                accountSetupComplete: false
             });
 
             res.status(201).json({ success: true, data: newAccount, message: "No account was found, one has been created." })

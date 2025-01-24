@@ -17,6 +17,7 @@ function MyApp({ Component, pageProps }) {
     const [currentEvent, setCurrentEvent] = useState({})
     const [currentEventStr, setCurrentEventStr] = useState("")
     const [accountId, setAccountId] = useState("")
+    const [accountSetupComplete, setAccountSetupComplete] = useState(false)
     const [stripeUserId, setStripeUserId] = useState("")
     const [modalOpen, setModalOpen] = useState(false)
     const [notes, setNotes] = useState([])
@@ -28,24 +29,6 @@ function MyApp({ Component, pageProps }) {
 
     return (
         <UserProvider>
-            <Navbar
-                events={events}
-                setEvents={setEvents}
-                currentEvent={currentEvent}
-                setCurrentEvent={setCurrentEvent}
-                currentEventStr={currentEventStr}
-                setCurrentEventStr={setCurrentEventStr}
-                accountId={accountId}
-                setAccountId={setAccountId}
-                stripeUserId={stripeUserId}
-                setStripeUserId={setStripeUserId}
-                modalOpen={modalOpen}
-                setModalOpen={setModalOpen}
-                notes={notes}
-                setNotes={setNotes}
-                onboardingData={onboardingData}
-                setOnboardingData={setOnboardingData}
-            />
             <Component
                 events={events}
                 setEvents={setEvents}
@@ -55,6 +38,8 @@ function MyApp({ Component, pageProps }) {
                 setCurrentEventStr={setCurrentEventStr}
                 accountId={accountId}
                 setAccountId={setAccountId}
+                accountSetupComplete={accountSetupComplete}
+                setAccountSetupComplete={setAccountSetupComplete}
                 stripeUserId={stripeUserId}
                 setStripeUserId={setStripeUserId}
                 modalOpen={modalOpen}

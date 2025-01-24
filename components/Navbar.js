@@ -40,9 +40,11 @@ const Navbar = ({
                 <div className="logincontainer">
                     {user ? (
                         <>
-                            <div className='profilepicture'>
-                                <img height={40} width={40} src={user.picture} alt="profile picture" />
-                            </div>
+                            <Link href="/account">
+                                <div className='profilepicture'>
+                                    <img height={40} width={40} src={user.picture} alt="profile picture" />
+                                </div>
+                            </Link>
                             <div className='doublegaphor' />
                             <div>
                                 <EventsListDropdown

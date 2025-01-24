@@ -8,11 +8,6 @@ const AccountSchema = new mongoose.Schema({
     },
     name: String,
     stripeAccountId: String,
-    stripeAccountStatus: {
-        detailsSubmitted: { type: Boolean, default: false },
-        chargesEnabled: { type: Boolean, default: false },
-        payoutsEnabled: { type: Boolean, default: false },
-    },
     user: {
         type: String,
         required: true,
@@ -22,7 +17,8 @@ const AccountSchema = new mongoose.Schema({
     currentEventStr: {
         type: String,
         required: false,
-    }
+    },
+    accountSetupComplete: Boolean
 }, { timestamps: true })
 
 module.exports = mongoose.models.Account || mongoose.model('Account', AccountSchema);

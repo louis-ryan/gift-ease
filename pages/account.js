@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/router';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
@@ -29,6 +30,8 @@ const StripeRegistration = (props) => {
     });
 
     const { user } = useUser();
+
+    const router = useRouter()
 
     const getFormattedPhone = (formData) => {
         const prefix = COUNTRY_BANK_FORMATS[formData.country]?.phonePrefix || '';
@@ -65,6 +68,24 @@ const StripeRegistration = (props) => {
             });
         } catch (error) {
             console.error('Error setting stripe user account id in Mongo:', error);
+        }
+    }
+
+    const setPaymentSetupComplete = async (userId) => {
+        try {
+            const accountRes = await fetch(`/api/setPaymentSetupComplete?id=${userId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            });
+            const { data } = await accountRes.json();
+            props.setAccountSetupComplete(data.accountSetupComplete)
+        } catch (error) {
+            console.error('Error setting setup complete value:', error);
         }
     }
 
@@ -147,6 +168,13 @@ const StripeRegistration = (props) => {
         }
     };
 
+    useEffect(() => {
+        if (!router) return
+        if (!router.query.setup) return
+        if (!props.stripeUserId) return
+        setPaymentSetupComplete(props.stripeUserId)
+    }, [router, props.stripeUserId])
+
 
     useEffect(() => {
         if (!user) return
@@ -158,6 +186,7 @@ const StripeRegistration = (props) => {
             props.setStripeUserId,
             props.setModalOpen,
             props.setNotes,
+            props.setAccountSetupComplete
         )
     }, [user])
 
@@ -169,34 +198,45 @@ const StripeRegistration = (props) => {
     if (!props.currentEvent) return
     if (!user) return
     return (
-        <div className="container">
+        <div className="container" >
             <div className="wrapper">
+
+                <Link href={"/"}>
+                    <h4>{"< Back to Dashboard"}</h4>
+                </Link>
 
                 <h1>Account</h1>
 
-                <h4>Your Details are submitted: {`${props.onboardingData.isDetailsSubmitted}`}</h4>
-                <h4>Payouts are enabled: {`${props.onboardingData.payoutsEnabled}`}</h4>
+                {props.accountSetupComplete ? (
+                    <div style={{ border: "1px solid grey", padding: "16px" }}>
+                        <h2> Your Account is Set Up </h2>
+                        <p>Please be aware that it can take a while for your first transaction to be completed</p>
+                    </div>
+                ) : (
+                    <div style={{ border: "1px solid grey", padding: "16px" }}>
+                        {!props.onboardingData.isDetailsSubmitted && (
+                            <>
+                                <h2>Submit Your Details</h2>
+                                <p>Step {step} of 4</p>
+                                {error && <div className="error">{error}</div>}
+                                <form onSubmit={handleSubmit}>
+                                    {step === 1 && renderPersonalInfo(formData, handleInputChange, setStep)}
+                                    {step === 2 && renderAddress(formData, handleInputChange, setStep)}
+                                    {step === 3 && renderDOB(formData, handleInputChange, setStep)}
+                                    {step === 4 && renderBankInfo(formData, handleBankAccountChange, setStep, loading)}
+                                </form>
+                            </>
+                        )}
 
-                <div style={{ border: "1px solid grey", padding: "16px" }}>
-                    {!props.onboardingData.isDetailsSubmitted && (
-                        <>
-                            <h2>Submit Your Details</h2>
-                            <p>Step {step} of 4</p>
-                            {error && <div className="error">{error}</div>}
-                            <form onSubmit={handleSubmit}>
-                                {step === 1 && renderPersonalInfo(formData, handleInputChange, setStep)}
-                                {step === 2 && renderAddress(formData, handleInputChange, setStep)}
-                                {step === 3 && renderDOB(formData, handleInputChange, setStep)}
-                                {step === 4 && renderBankInfo(formData, handleBankAccountChange, setStep, loading)}
-                            </form>
-                        </>
-                    )}
+                        {props.onboardingData.isDetailsSubmitted && !props.onboardingData.payoutsEnabled && (
+                            <CreatePayoutLink accountId={props.accountId} />
+                        )}
 
-                    {props.onboardingData.isDetailsSubmitted && !props.onboardingData.payoutsEnabled && (
-                        <CreatePayoutLink accountId={props.accountId} />
-                    )}
+                    </div>
+                )
+                }
 
-                </div>
+
 
                 <div style={{ height: "32px" }} />
 
