@@ -19,36 +19,57 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
     };
 
     const checkUriUniqueness = async (uri) => {
-        try {
-            const response = await fetch('/api/getEventUris');
-            const { data: existingUris } = await response.json();
-            return !existingUris.includes(uri);
-        } catch (error) {
-            console.error('Error checking URI uniqueness:', error);
-            return false;
-        }
-    };
+    try {
+        const response = await fetch('/api/getEventUris');
+        const { data: existingUris } = await response.json();
+        return !existingUris.includes(uri);
+    } catch (error) {
+        console.error('Error checking URI uniqueness:', error);
+        return false;
+    }
+};
 
-    const handleChange = (e) => {
+    const handleChange = async (e) => {
         const { name, value, type, checked } = e.target;
 
-        setFormData(prevData => {
-            const newData = {
-                ...prevData,
-                [name]: type === 'checkbox' ? checked : value
-            };
-            if (name === 'name') {
-                newData.uri = value
-                    .toLowerCase()
-                    .replace(/[']/g, '')
-                    .replace(/[^a-z0-9-\s]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-')
-                    .trim()
-                    .replace(/^-+|-+$/g, '');
+        let newData = {
+            ...formData,
+            [name]: type === 'checkbox' ? checked : value
+        };
+
+        if (name === 'name') {
+            newData.uri = value
+                .toLowerCase()
+                .replace(/[']/g, '')
+                .replace(/[^a-z0-9-\s]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .trim()
+                .replace(/^-+|-+$/g, '');
+        }
+
+        if (currentStep === 2 && (name === 'uri' || name === 'name')) {
+            console.log('Checking URI uniqueness for:', newData.uri);
+            const isUnique = await checkUriUniqueness(newData.uri);
+            console.log('Is URI unique?', isUnique);
+            
+            if (!isUnique) {
+                const newErrors = {
+                    ...errors,
+                    uri: { message: 'This URL is already taken' }
+                };
+                console.log('Setting errors:', newErrors);
+                setErrors(newErrors);
+            } else {
+                const newErrors = {
+                    ...errors,
+                    uri: undefined
+                };
+                setErrors(newErrors);
             }
-            return newData;
-        });
+        }
+        
+        setFormData(newData);
     };
 
     const handleSubmit = (e) => {
@@ -57,17 +78,17 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
     };
 
     const nextStep = async () => {
-        setCurrentStep(prev => prev + 1);
-        if (currentStep === 1) {
+        if (currentStep === 2) {
             const isUnique = await checkUriUniqueness(formData.uri);
             if (!isUnique) {
                 setErrors(prev => ({
                     ...prev,
-                    name: { message: 'This URL is already taken. Please choose a different name.' }
+                    uri: { message: 'This URL is already taken. Each event URL must be unique.' }
                 }));
                 return;
             }
         }
+        setCurrentStep(prev => prev + 1);
     };
 
     const prevStep = () => {
@@ -75,7 +96,7 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
     };
 
     const renderStep = () => {
-        switch (currentStep) {
+        switch(currentStep) {
             case 1:
                 return (
                     <>
@@ -106,11 +127,11 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
                                 name="uri"
                                 value={formData.uri}
                                 onChange={handleChange}
-                                className={errors.name ? "inputerror w-1/2" : "w-1/2"}
+                                className={errors.uri ? "inputerror w-1/2" : "w-1/2"}
                                 required
                             />
                         </div>
-                        <div className="error">{errors.name?.message}</div>
+                        <div className="error">{errors.uri?.message}</div>
                     </>
                 );
             case 3:
