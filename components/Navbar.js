@@ -38,35 +38,31 @@ const Navbar = ({
                     <h2>Wish List Sundae</h2>
                 </Link>
                 <div className="logincontainer">
-                    {user ? (
-                        <>
-                            <Link href="/account">
-                                <div className='profilepicture'>
-                                    <img height={40} width={40} src={user.picture} alt="profile picture" />
-                                </div>
-                            </Link>
-                            <div className='doublegaphor' />
-                            <div>
-                                <EventsListDropdown
-                                    user={user}
-                                    events={events}
-                                    setEvents={setEvents}
-                                    setModalOpen={setModalOpen}
-                                    currentEvent={currentEvent}
-                                    setCurrentEvent={setCurrentEvent}
-                                    setNotes={setNotes}
-                                />
+
+                    <>
+                        <Link href="/account">
+                            <div className='profilepicture'>
+                                <img height={40} width={40} src={user.picture} alt="profile picture" />
                             </div>
-                            <div className='gaphor' />
-                            <Link href="/api/auth/logout">
-                                <h2>Logout</h2>
-                            </Link>
-                        </>
-                    ) : (
-                        <Link href="/api/auth/login">
-                            <h2>Login</h2>
                         </Link>
-                    )}
+                        <div className='doublegaphor' />
+                        <div>
+                            <EventsListDropdown
+                                user={user}
+                                events={events}
+                                setEvents={setEvents}
+                                setModalOpen={setModalOpen}
+                                currentEvent={currentEvent}
+                                setCurrentEvent={setCurrentEvent}
+                                setNotes={setNotes}
+                            />
+                        </div>
+                        <div className='gaphor' />
+                        <Link href="/api/auth/logout">
+                            <h2>Logout</h2>
+                        </Link>
+                    </>
+
                 </div>
             </nav>
         </>

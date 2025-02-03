@@ -10,6 +10,7 @@ import WishCard from '../components/WishCard';
 import ConnectOnboarding from '../components/ConnectOnboarding';
 import CreatePayoutLink from '../components/CreatePayoutLink';
 import AccountStatus from '../components/AccountStatus';
+import ShareLink from '../components/shareLinkComponent';
 
 
 const Index = (props) => {
@@ -113,7 +114,7 @@ const Index = (props) => {
                 <div
                   key={note._id}
                   className='card'
-                  style={{ marginRight: "16px" }}
+                  style={{ marginRight: "5%" }}
                   onClick={() => { router.push(`/${note._id}`) }}
                 >
                   <h3>{note.title}</h3>
@@ -176,10 +177,12 @@ const Index = (props) => {
           <div className='doublegapver' />
           <div className='doublegapver' />
 
-          <h3>{"Here is the link for you to share:"}</h3>
+          {/* <h3>{"Here is the link for you to share:"}</h3>
           <a href={`https://the-registry-web.site/for/${props.currentEvent.uri}`} target="_blank">
             {`the-registry-web.site/for/${props.currentEvent.uri}`}
-          </a>
+          </a> */}
+
+          <ShareLink currentEvent={props.currentEvent}/>
 
           <div className='doublegapver' />
           <div className='doublegapver' />
