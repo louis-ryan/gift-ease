@@ -13,9 +13,12 @@ import {
     renderDOB,
     renderBankInfo
 } from '../components/OnboardingForm'
+import BalanceDashboard from '../components/BalanceDashboard';
 
 
 const StripeRegistration = (props) => {
+
+    console.log("props: ", props)
 
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -28,6 +31,12 @@ const StripeRegistration = (props) => {
             account_holder_name: ''
         }
     });
+    const [transactionData, setTransactionData] = useState({
+        available_balance: [],
+        pending_balance: [],
+        pending_payouts: [],
+        recent_transfers: []
+    })
 
     const { user } = useUser();
 
@@ -38,6 +47,20 @@ const StripeRegistration = (props) => {
         const cleanPhone = formData.phone.replace(prefix, '');
         return `${prefix}${cleanPhone}`;
     };
+
+    const getTransactionData = async (accountId) => {
+        const res = await fetch(`/api/getTransactionInfo?id=${accountId}`, {
+            method: 'GET',
+            headers: {
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+            }
+        });
+        const transactionDataFromStripe = await res.json();
+        setTransactionData(transactionDataFromStripe
+        )
+    }
 
     const checkOnboardingStatus = async (accountId) => {
         const accountRes = await fetch(`/api/checkOnboardingStatus?id=${accountId}`, {
@@ -193,6 +216,7 @@ const StripeRegistration = (props) => {
     useEffect(() => {
         if (!props.accountId) return
         checkOnboardingStatus(props.accountId)
+        getTransactionData(props.accountId)
     }, [props.accountId])
 
     if (!props.currentEvent) return
@@ -208,10 +232,16 @@ const StripeRegistration = (props) => {
                 <h1>Account</h1>
 
                 {props.accountSetupComplete ? (
-                    <div style={{ border: "1px solid grey", padding: "16px" }}>
-                        <h2> Your Account is Set Up </h2>
-                        <p>Please be aware that it can take a while for your first transaction to be completed</p>
-                    </div>
+                    <>
+                        <div style={{ border: "1px solid lightgrey", padding: "16px", borderRadius: "4px" }}>
+                            <h4>Your Account ID: {props.accountId}</h4>
+                        </div>
+
+                        <div style={{ height: "16px" }} />
+
+                        <BalanceDashboard data={transactionData} />
+                    </>
+
                 ) : (
                     <div style={{ border: "1px solid grey", padding: "16px" }}>
                         {!props.onboardingData.isDetailsSubmitted && (
