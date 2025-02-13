@@ -11,6 +11,7 @@ import ConnectOnboarding from '../components/ConnectOnboarding';
 import CreatePayoutLink from '../components/CreatePayoutLink';
 import AccountStatus from '../components/AccountStatus';
 import ShareLink from '../components/shareLinkComponent';
+import UploaderComponent from '../components/UploaderComponent';
 
 
 const Index = (props) => {
@@ -96,10 +97,7 @@ const Index = (props) => {
       />
       <div className="container">
         <div className="wrapper">
-
-          <div>
-            <AccountStatus user={user} />
-          </div>
+          <UploaderComponent />
           <h1>{props.currentEvent.name}</h1>
           <h4>{formatDate(props.currentEvent.date)}</h4>
           <p>{props.currentEvent.description}</p>
@@ -182,7 +180,7 @@ const Index = (props) => {
             {`the-registry-web.site/for/${props.currentEvent.uri}`}
           </a> */}
 
-          <ShareLink currentEvent={props.currentEvent}/>
+          <ShareLink currentEvent={props.currentEvent} />
 
           <div className='doublegapver' />
           <div className='doublegapver' />
