@@ -81,68 +81,68 @@ const Note = () => {
     return (
 
         <div className="container">
-            <div className="wrapper">
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
 
-                    <div style={{ width: "20%" }}>
-                        <h1>{note.title}</h1>
-                        <p>{note.description}</p>
-                        <button onClick={deleteNote}>Delete</button>
-                    </div>
+            <div style={{ display: "flex", justifyContent: "center", height: "100vh", width: "100vw", alignItems: "center" }}>
 
-                    <div style={{ width: "80%" }}>
-                        <ResponsiveContainer
-                            width="100%"
-                            height={600}
-                        >
-                            <PieChart>
-                                <Pie
-                                    data={data}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={200}
-                                    outerRadius={300}
-                                    dataKey="value"
-                                    onMouseEnter={(_, index) => setActiveIndex(index)}
-                                    onMouseLeave={() => setActiveIndex(null)}
-                                    paddingAngle={2}
-                                >
-                                    {data.map((entry, index) => (
-                                        <Cell
-                                            key={entry.name}
-                                            fill={entry.color}
-                                            opacity={activeIndex === index ? 0.8 : 1}
-                                        />
-                                    ))}
-                                </Pie>
-                                <Tooltip
-                                    content={({ active, payload }) => {
-                                        if (active && payload && payload.length) {
-                                            return (
-                                                <div style={{ backgroundColor: "white", padding: "16px", boxShadow: "0px 0px 8px lightgrey", borderRadius: "8px" }}>
-                                                    <h3>{payload[0].payload.name}</h3>
-                                                    <h4>${payload[0].value}</h4>
-                                                    {payload[0].payload.details && (
-                                                        <h4>{payload[0].payload.details}</h4>
-                                                    )}
-                                                    {payload[0].payload.gif && (
-                                                        <img src={payload[0].payload.gif} alt="gif" />
-                                                    )}
-                                                </div>
-                                            );
-                                        }
-                                        return null;
-                                    }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-
-                    </div>
+                <div style={{ padding: "24px", backgroundColor: "lightgrey", position: "absolute", zIndex: "4", top: "24px", left: "24px" }}>
+                    <h1>{note.title}</h1>
+                    <p>{note.description}</p>
+                    <button onClick={deleteNote}>Delete</button>
                 </div>
 
-                <div style={{ height: "24px" }} />
+                <div style={{ width: "80%" }}>
+                    <ResponsiveContainer
+                        width="100%"
+                        height={600}
+                    >
+                        <PieChart>
+                            <Pie
+                                data={data}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={200}
+                                outerRadius={300}
+                                dataKey="value"
+                                onMouseEnter={(_, index) => setActiveIndex(index)}
+                                onMouseLeave={() => setActiveIndex(null)}
+                                paddingAngle={2}
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell
+                                        key={entry.name}
+                                        fill={entry.color}
+                                        opacity={activeIndex === index ? 0.8 : 1}
+                                    />
+                                ))}
+                            </Pie>
+                            <Tooltip
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div style={{ backgroundColor: "white", padding: "16px", boxShadow: "0px 0px 8px lightgrey", borderRadius: "8px" }}>
+                                                <h3>{payload[0].payload.name}</h3>
+                                                <h4>${payload[0].value}</h4>
+                                                {payload[0].payload.details && (
+                                                    <h4>{payload[0].payload.details}</h4>
+                                                )}
+                                                {payload[0].payload.gif && (
+                                                    <img src={payload[0].payload.gif} alt="gif" />
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                        </PieChart>
+                    </ResponsiveContainer>
 
+                </div>
             </div>
+
+            <div style={{ height: "24px" }} />
+
+
         </div>
 
 

@@ -1,9 +1,7 @@
 .navbar {
   padding: 24px;
-  margin-bottom: 40px;
   display: flex;
   justify-content: space-between;
-  box-shadow: 0px 0px 16px lightgrey;
 }
 
 .logincontainer {

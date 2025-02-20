@@ -1,11 +1,11 @@
 .cardspace {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
 }
 
 .card {
   border: 1px solid grey;
-  padding: 16px;
   width: 30%;
   margin-top: 32px;
   border-radius: 8px;

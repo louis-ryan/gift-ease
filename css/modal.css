@@ -4,7 +4,7 @@
   left: 0;
   height: 100vh;
   width: 100vw;
-  z-index: 2;
+  z-index: 8;
 }
 
 .dark {
@@ -13,7 +13,7 @@
 }
 
 .clickable {
-  z-index: 4;
+  z-index: 16;
   display: flex;
   justify-content: center;
   align-items: center;

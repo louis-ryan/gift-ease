@@ -1,147 +1,135 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const SimpleImageUpload = () => {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [preview, setPreview] = useState('');
-    const [uploading, setUploading] = useState(false);
-    const [message, setMessage] = useState('');
+const SimpleImageUpload = ({ currEvent, setCurrentEvent, setUploading }) => {
 
-    const handleFileSelect = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            if (!file.type.startsWith('image/')) {
-                setMessage('Please select an image file');
-                return;
-            }
-            setSelectedFile(file);
-            setMessage('');
+    const processAndUploadFile = async (file) => {
+        if (!file) return;
 
-            // Create preview
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    const handleUpload = async () => {
-        if (!selectedFile) {
-            setMessage('Please select a file first');
-            return;
-        }
-
+        console.log('File selected:', file.name, file.type, file.size);
         setUploading(true);
-        setMessage('Uploading...');
 
         try {
+            let processedFile = file;
+
+            // Handle HEIC files
+            if (file.type === 'image/heic' || file.name.toLowerCase().endsWith('.heic')) {
+                const heic2any = (await import('heic2any')).default;
+                const jpegBlob = await heic2any({
+                    blob: file,
+                    toType: 'image/jpeg',
+                    quality: 0.8
+                });
+
+                processedFile = new File([jpegBlob], file.name.replace('.heic', '.jpg'), {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+            }
+
+            // Compress the image
+            const compressedFile = await compressImage(processedFile);
+
+            // Upload to S3
             const formData = new FormData();
-            formData.append('file', selectedFile);
+            formData.append('file', compressedFile);
+
             const response = await fetch('api/uploadToAWS', {
                 method: 'POST',
                 body: formData
             });
+
             if (!response.ok) throw new Error('Upload failed');
 
-            // Simulated upload delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const resJSON = await response.json();
+            await assignUrlToEvent(resJSON.url);
 
-            setMessage('Upload successful!');
-
-            
         } catch (error) {
-            setMessage('Upload failed. Please try again.');
+            console.error('Processing/upload error:', error);
         } finally {
             setUploading(false);
         }
     };
 
-    const handleReset = () => {
-        setSelectedFile(null);
-        setPreview('');
-        setMessage('');
-        setUploading(false);
+    const handleFileSelect = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/') && !file.name.toLowerCase().endsWith('.heic')) {
+            return;
+        }
+
+        await processAndUploadFile(file);
     };
 
-    const containerStyle = {
-        padding: '16px',
-        border: '1px solid lightgrey',
-        borderRadius: '8px',
+    const compressImage = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onerror = () => reject(new Error('FileReader failed'));
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onerror = () => reject(new Error('Image loading failed'));
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > height && width > 1200) {
+                        height = Math.round((height * 1200) / width);
+                        width = 1200;
+                    } else if (height > 1200) {
+                        width = Math.round((width * 1200) / height);
+                        height = 1200;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    }, 'image/jpeg', 0.8);
+                };
+            };
+        });
     };
 
-    const dropzoneStyle = {
-        border: '2px dashed #ccc',
-        borderRadius: '4px',
-        padding: '20px',
-        textAlign: 'center',
-        marginBottom: '20px',
-        cursor: 'pointer',
-    };
-
-    const previewStyle = {
-        maxWidth: '100%',
-        maxHeight: '200px',
-        margin: '10px 0',
-    };
-
-    const buttonStyle = {
-        backgroundColor: uploading ? '#ccc' : '#007bff',
-        color: 'white',
-        padding: '10px 20px',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: uploading ? 'not-allowed' : 'pointer',
-        marginRight: '10px',
-    };
-
-    const messageStyle = {
-        margin: '10px 0',
-        color: message.includes('failed') ? 'red' : message.includes('successful') ? 'green' : 'black',
+    const assignUrlToEvent = async (url) => {
+        try {
+            const res = await fetch(`api/addUrlToEvent?id=${currEvent}`, {
+                method: 'PATCH',
+                headers: { "Accept": "application/json", "Content-Type": "application/json" },
+                body: JSON.stringify(url)
+            });
+            const resJSON = await res.json();
+            setCurrentEvent(resJSON.data);
+        } catch (error) {
+            console.error("Issue sending new event to server: ", error);
+        }
     };
 
     return (
-        <div style={containerStyle}>
-            <div style={dropzoneStyle}>
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    style={{ display: 'none' }}
-                    id="fileInput"
-                />
-                <label htmlFor="fileInput" style={{ cursor: 'pointer' }}>
-                    {preview ? (
-                        <img src={preview} alt="Preview" style={previewStyle} />
-                    ) : (
-                        'Click to select an image'
-                    )}
-                </label>
-            </div>
+        <>
+            <input
+                type="file"
+                accept="image/*,.heic"
+                onChange={handleFileSelect}
+                id="fileInput"
+                style={{ display: "none" }}
+            />
 
-            {message && <div style={messageStyle}>{message}</div>}
-
-            <div>
-                <button
-                    onClick={handleUpload}
-                    disabled={!selectedFile || uploading}
-                    style={buttonStyle}
-                >
-                    {uploading ? 'Uploading...' : 'Upload to S3'}
-                </button>
-
-                {preview && (
-                    <button
-                        onClick={handleReset}
-                        style={{
-                            ...buttonStyle,
-                            backgroundColor: '#dc3545',
-                        }}
-                    >
-                        Reset
-                    </button>
-                )}
-            </div>
-        </div>
+            <label
+                htmlFor="fileInput"
+                style={{ position: "absolute", zIndex: "4", left: "24px", marginTop: "24px", backgroundColor: "white", padding: "24px", cursor: "pointer", borderRadius: "8px" }}
+            >
+                upload
+            </label>
+        </>
     );
 };
 

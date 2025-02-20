@@ -1914,6 +1914,11 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
+heic2any@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.npmjs.org/heic2any/-/heic2any-0.0.4.tgz"
+  integrity sha512-3lLnZiDELfabVH87htnRolZ2iehX9zwpRyGNz22GKXIu0fznlblf0/ftppXKNqS26dqFSeqfIBhAmAj/uSp0cA==
+
 hexoid@^2.0.0:
   version "2.0.0"
   resolved "https://registry.npmjs.org/hexoid/-/hexoid-2.0.0.tgz"

@@ -43,11 +43,6 @@ export default async function uploadToS3(req, res) {
     }
 
     const file = fileArray[0];
-    console.log('File details:', {
-      filepath: file.filepath,
-      type: file.mimetype,
-      size: file.size
-    });
 
     const fileBuffer = fs.readFileSync(file.filepath);
 

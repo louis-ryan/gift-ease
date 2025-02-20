@@ -25,7 +25,8 @@ const EventSchema = new mongoose.Schema({
         type: String,
         maxlength: [500, 'Description cannot be more than 500 characters']
     },
-    current: Boolean
+    current: Boolean,
+    imageUrl: String
 })
 
 module.exports = mongoose.models.Event || mongoose.model('Event', EventSchema);

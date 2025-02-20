@@ -3,10 +3,22 @@ import fetch from 'isomorphic-unfetch';
 import { useRouter } from 'next/router';
 
 const NewNote = (props) => {
-    const [form, setForm] = useState({ event: props.currentEvent._id, title: '', price: '', description: '' });
+    const [form, setForm] = useState({
+        event: props.currentEvent._id,
+        title: '',
+        price: '',
+        description: '',
+        noteUrl: ''
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
     const router = useRouter();
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [preview, setPreview] = useState('');
+    const [uploading, setUploading] = useState(false);
+    const [message, setMessage] = useState('');
+
+    console.log("form: ", form)
 
     useEffect(() => {
         if (isSubmitting) {
@@ -48,6 +60,61 @@ const NewNote = (props) => {
         })
     }
 
+    const handleUpload = async (selectedFile) => {
+        if (!selectedFile) {
+            setMessage('Please select a file first');
+            return;
+        }
+
+        setUploading(true);
+        setMessage('Uploading...');
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            const response = await fetch('api/uploadToAWS', {
+                method: 'POST',
+                body: formData
+            });
+            if (!response.ok) throw new Error('Upload failed');
+
+            // Simulated upload delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            setMessage('Upload successful!');
+
+            const resJSON = await response.json()
+
+            setForm({
+                ...form,
+                noteUrl: resJSON.url
+            })
+        } catch (error) {
+            setMessage('Upload failed. Please try again.');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleFileSelect = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                setMessage('Please select an image file');
+                return;
+            }
+            handleUpload(file)
+
+
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handlePrice = (e) => {
         const cleanValue = e.target.value.replace(/[^\d.]/g, '');
         const parts = cleanValue.split('.');
@@ -79,6 +146,7 @@ const NewNote = (props) => {
                     {isSubmitting
                         ? <div />
                         : <form onSubmit={handleSubmit}>
+                            <label>Title</label>
                             <input
                                 fluid
                                 error={errors.title ? { content: 'Please enter a title', pointing: 'below' } : null}
@@ -89,6 +157,7 @@ const NewNote = (props) => {
                                 value={form.title}
                             />
                             <div className='gapver' />
+                            <label>Price</label>
                             <input
                                 fluid
                                 error={errors.price ? { content: 'Please enter a price', pointing: 'below' } : null}
@@ -99,6 +168,7 @@ const NewNote = (props) => {
                                 value={form.price}
                             />
                             <div className='gapver' />
+                            <label>Description</label>
                             <textarea
                                 fluid
                                 label='Description'
@@ -108,6 +178,34 @@ const NewNote = (props) => {
                                 onChange={handleChange}
                                 value={form.description}
                             />
+                            <div className='gapver' />
+                            {uploading ? (
+                                <div>uploading...</div>
+                            ) : (
+                                <>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                        style={{ display: "none" }}
+                                        id="fileInput"
+                                    />
+                                    <label htmlFor="fileInput" style={{ cursor: 'pointer' }}>
+                                        {preview ? (
+                                            <img
+                                                src={preview}
+                                                alt="Preview"
+                                                style={{ width: '100%' }}
+                                            />
+                                        ) : (
+                                            'Image'
+                                        )}
+                                    </label>
+                                </>
+                            )}
+
+                            <div className='gapver' />
+
                             <button type='submit'>Create</button>
                         </form>
                     }

@@ -16,6 +16,8 @@ import UploaderComponent from '../components/UploaderComponent';
 
 const Index = (props) => {
 
+  const [uploading, setUploading] = useState(false);
+
   const router = useRouter()
   const { user } = useUser();
 
@@ -97,12 +99,70 @@ const Index = (props) => {
       />
       <div className="container">
         <div className="wrapper">
-          <UploaderComponent />
-          <h1>{props.currentEvent.name}</h1>
-          <h4>{formatDate(props.currentEvent.date)}</h4>
-          <p>{props.currentEvent.description}</p>
+
+          <UploaderComponent
+            currEvent={props.currentEvent._id}
+            setCurrentEvent={props.setCurrentEvent}
+            setUploading={setUploading}
+          />
+
+          {props.currentEvent.imageUrl ? (
+            <div style={{
+              height: "400px",
+              overflow: "hidden",
+              position: "relative",
+              width: "100vw", // Full viewport width
+              marginLeft: "calc(-50vw + 50%)", // Centers the div if inside a contained element
+              marginRight: "calc(-50vw + 50%)" // Centers the div if inside a contained element
+            }}>
+              {uploading ? (
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  <div>
+                    UPLOADING
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src={props.currentEvent.imageUrl}
+                  alt="header image"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    position: "relative",
+                    display: "block"
+                  }}
+                />
+              )}
+
+            </div>
+          ) : (
+            <div style={{
+              height: "400px",
+              width: "100vw",
+              marginLeft: "calc(-50vw + 50%)",
+              marginRight: "calc(-50vw + 50%)",
+              backgroundColor: "lightgrey"
+            }} />
+          )}
+
+
+          <div style={{ position: "absolute", zIndex: "4", top: "392px", backgroundColor: "white", padding: "0px 80px", borderRadius: "8px 8px 0px 0px", marginLeft: "-80px" }}>
+            <h1>{props.currentEvent.name ? props.currentEvent.name : "no name"}</h1>
+            <h4>{props.currentEvent.date ? formatDate(props.currentEvent.date) : "nodate"}</h4>
+          </div>
+
+
           <div className="cardspace">
-            {props.notes.map(note => {
+            {props.notes.map((note, idx) => {
               const remainingVal = note.price - note.paid
               const data = [
                 { name: "PAID", value: note.paid, color: "#143950" },
@@ -112,21 +172,44 @@ const Index = (props) => {
                 <div
                   key={note._id}
                   className='card'
-                  style={{ marginRight: "5%" }}
+                  style={{ position: "relative", overflow: "hidden" }}
                   onClick={() => { router.push(`/${note._id}`) }}
                 >
-                  <h3>{note.title}</h3>
-                  <h4>${note.paid} of ${note.price}</h4>
-                  <h4>{note.senders && note.senders.length} contributer{note.senders && (note.senders.length < 1 || note.senders.length > 1 && 's')}</h4>
 
-                  <div style={{ display: "flex" }}>
+                  {note.noteUrl && (
+                    <img
+                      src={note.noteUrl}
+                      alt="note image"
+                      style={{
+                        position: "absolute",
+                        height: "100%",
+                        zIndex: "-1",
+                        objectFit: "cover",
+                        left: "50%",
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
+                        opacity: "50%"
+                      }}
+                    />
+                  )}
+
+                  <div style={{ backgroundColor: "white", padding: "16px" }}>
+                    <h3>{note.title}</h3>
+                    <h4>${note.paid} of ${note.price}</h4>
+                    <h4>{note.senders && note.senders.length} contributer{note.senders && (note.senders.length < 1 || note.senders.length > 1 && 's')}</h4>
+                  </div>
+
+                  <div style={{ height: "16px" }} />
+
+
+                  {/* <div style={{ display: "flex" }}>
                     {note.senders && note.senders.map((sender) => (
                       <div
                         key={sender}
                         style={{ height: "16px", width: "12px", backgroundColor: "grey", margin: "2px" }}
                       />
                     ))}
-                  </div>
+                  </div> */}
 
                   <ResponsiveContainer
                     width="100%"

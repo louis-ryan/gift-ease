@@ -149,22 +149,6 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
                         />
                     </>
                 );
-            case 4:
-                return (
-                    <>
-                        <h3>Step 4: Event Description</h3>
-                        <label htmlFor="description">Event Description:</label>
-                        <textarea
-                            id="description"
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            className={errors.description && "inputerror"}
-                            rows="4"
-                        ></textarea>
-                        <div className="error">{errors.description?.message}</div>
-                    </>
-                );
             default:
                 return null;
         }
@@ -193,7 +177,7 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
                             >
                                 Back
                             </button>
-                            {currentStep < 4 ? (
+                            {currentStep < 3 ? (
                                 <button
                                     type="button"
                                     onClick={nextStep}
