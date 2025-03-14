@@ -33,7 +33,7 @@ export default async function handler(req, res) {
             },
             business_profile: {
                 mcc: '5399',
-                url: 'https://wishlistsundae.com',
+                url: 'https://wishlistagogo.com',
                 product_description: 'Receiving gifts and payments'
             },
             tos_acceptance: {

@@ -1,35 +1,42 @@
 p {
-  color: grey;
+  color: rgb(143, 143, 143);
   font-size: 1rem;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 h1 {
   font-size: 2.5rem;
-  color: #143950;
-  font-family: serif;
-  font-weight: 800;
+  color: #426073;
+  font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+  font-weight: 400;
 }
 
 h2 {
   font-size: 1.5rem;
+  font-weight: 400;
   color: #143950;
+  letter-spacing: 2px;
 }
 
 h3 {
   font-size: 1.2rem;
-  color: #143950;
+  color: #718897;
   font-family: Arial, Helvetica, sans-serif;
 }
 
 h4 {
   font-size: 1rem;
-  color: grey;
+  color: rgb(167, 167, 167);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+  letter-spacing: 1.5px;
 }
 
 label {
-  font-size: 1.2rem;
-  color: #143950;
+  font-size: 1rem;
+  color: #426073;
   font-family: Arial, Helvetica, sans-serif;
+  font-weight: 400;
 }
 
 a {

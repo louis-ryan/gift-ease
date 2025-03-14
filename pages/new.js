@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import fetch from 'isomorphic-unfetch';
 import { useRouter } from 'next/router';
 
@@ -13,7 +14,6 @@ const NewNote = (props) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState({});
     const router = useRouter();
-    const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState('');
     const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState('');
@@ -62,12 +62,10 @@ const NewNote = (props) => {
 
     const handleUpload = async (selectedFile) => {
         if (!selectedFile) {
-            setMessage('Please select a file first');
             return;
         }
 
         setUploading(true);
-        setMessage('Uploading...');
 
         try {
             const formData = new FormData();
@@ -81,8 +79,6 @@ const NewNote = (props) => {
             // Simulated upload delay
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            setMessage('Upload successful!');
-
             const resJSON = await response.json()
 
             setForm({
@@ -90,7 +86,7 @@ const NewNote = (props) => {
                 noteUrl: resJSON.url
             })
         } catch (error) {
-            setMessage('Upload failed. Please try again.');
+            console.log('Upload failed. Please try again.');
         } finally {
             setUploading(false);
         }
@@ -99,14 +95,10 @@ const NewNote = (props) => {
     const handleFileSelect = (event) => {
         const file = event.target.files[0];
         if (file) {
-            if (!file.type.startsWith('image/')) {
-                setMessage('Please select an image file');
-                return;
-            }
+            if (!file.type.startsWith('image/')) return;
+
             handleUpload(file)
 
-
-            // Create preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreview(reader.result);
@@ -141,6 +133,9 @@ const NewNote = (props) => {
     return (
         <div className="container">
             <div className="smallwrapper">
+                <Link href={"/"}>
+                    <h4>{"< Back to Dashboard"}</h4>
+                </Link>
                 <h1>New Wish</h1>
                 <div>
                     {isSubmitting

@@ -14,7 +14,7 @@ const ShareLink = ({ currentEvent }) => {
   return (
     <div style={{
       padding: '16px',
-      border: '1px solid grey',
+      border: '1px solid lightgrey',
       borderRadius: '8px',
     }}>
       <h3>Share this event</h3>

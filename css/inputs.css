@@ -2,7 +2,16 @@ input,
 textarea {
   width: 100%;
   padding: 8px;
-  border: 1px solid grey;
+  border: 1px solid lightgrey;
+  border-radius: 4px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(107, 107, 107);
+  resize: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgb(179, 179, 179);
 }
 
 .inputerror {
@@ -11,4 +20,8 @@ textarea {
 
 select {
   padding: 8px 16px;
+  border: 1px solid lightgrey;
+  border-radius: 4px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: grey;
 }

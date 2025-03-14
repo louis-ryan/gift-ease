@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/router';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import Link from 'next/link';
 import getCurrentEvent from '../requests/getCurrentEvent';
 import deleteThisEvent from '../requests/deleteThisEvent';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
@@ -155,10 +156,10 @@ const Index = (props) => {
           )}
 
 
-          <div style={{ position: "absolute", zIndex: "4", top: "392px", backgroundColor: "white", padding: "0px 80px", borderRadius: "8px 8px 0px 0px", marginLeft: "-80px" }}>
+          {/* <div style={{ position: "absolute", zIndex: "4", top: "392px", backgroundColor: "white", padding: "0px 80px", borderRadius: "8px 8px 0px 0px", marginLeft: "-80px" }}>
             <h1>{props.currentEvent.name ? props.currentEvent.name : "no name"}</h1>
             <h4>{props.currentEvent.date ? formatDate(props.currentEvent.date) : "nodate"}</h4>
-          </div>
+          </div> */}
 
 
           <div className="cardspace">
@@ -166,7 +167,7 @@ const Index = (props) => {
               const remainingVal = note.price - note.paid
               const data = [
                 { name: "PAID", value: note.paid, color: "#143950" },
-                { name: "REMAINING", value: remainingVal, color: "lightgrey" }
+                { name: "REMAINING", value: remainingVal, color: "white" }
               ]
               return (
                 <div
@@ -187,8 +188,7 @@ const Index = (props) => {
                         objectFit: "cover",
                         left: "50%",
                         top: "50%",
-                        transform: "translate(-50%, -50%)",
-                        opacity: "50%"
+                        transform: "translate(-50%, -50%)"
                       }}
                     />
                   )}
@@ -196,7 +196,7 @@ const Index = (props) => {
                   <div style={{ backgroundColor: "white", padding: "16px" }}>
                     <h3>{note.title}</h3>
                     <h4>${note.paid} of ${note.price}</h4>
-                    <h4>{note.senders && note.senders.length} contributer{note.senders && (note.senders.length < 1 || note.senders.length > 1 && 's')}</h4>
+                    <p>{note.senders && note.senders.length}  {note.senders ? `contributer${note.senders && (note.senders.length < 1 || note.senders.length > 1 && 's')}` : " "}</p>
                   </div>
 
                   <div style={{ height: "16px" }} />
@@ -220,10 +220,10 @@ const Index = (props) => {
                         data={data}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
+                        innerRadius={0}
                         outerRadius={80}
                         dataKey="value"
-                        paddingAngle={2}
+                        paddingAngle={0}
                       >
                         {data.map((entry, index) => (
                           <Cell
@@ -263,7 +263,16 @@ const Index = (props) => {
             {`the-registry-web.site/for/${props.currentEvent.uri}`}
           </a> */}
 
-          <ShareLink currentEvent={props.currentEvent} />
+          {props.accountSetupComplete ? (
+            <ShareLink currentEvent={props.currentEvent} />
+          ) : (
+            <>
+              <div>You need to complete the setup with Stripe before you can start sending your wish list.</div>
+              <Link href="/account">Complete Setup Here</Link>
+            </>
+          )}
+
+
 
           <div className='doublegapver' />
           <div className='doublegapver' />

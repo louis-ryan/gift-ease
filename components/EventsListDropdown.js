@@ -19,9 +19,9 @@ const EventsListDropdown = ({ user, events, setEvents, setModalOpen, currentEven
 
     return (
         <select
-            name="dropdown"
             onChange={handleChange}
             value={currentEvent._id}
+            style={{fontSize: "24px", fontFamily: "serif", height: "80px", color: "#426073", border: "none"}}
         >
             {events.map((event) => (
                 <option

@@ -18,8 +18,6 @@ import BalanceDashboard from '../components/BalanceDashboard';
 
 const StripeRegistration = (props) => {
 
-    console.log("props: ", props)
-
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -211,6 +209,7 @@ const StripeRegistration = (props) => {
             props.setNotes,
             props.setAccountSetupComplete
         )
+        setFormData({ ...formData, email: user.email })
     }, [user])
 
     useEffect(() => {
@@ -223,7 +222,7 @@ const StripeRegistration = (props) => {
     if (!user) return
     return (
         <div className="container" >
-            <div className="wrapper">
+            <div style={{ width: "600px" }}>
 
                 <Link href={"/"}>
                     <h4>{"< Back to Dashboard"}</h4>
@@ -243,34 +242,46 @@ const StripeRegistration = (props) => {
                     </>
 
                 ) : (
-                    <div style={{ border: "1px solid grey", padding: "16px" }}>
+                    <>
                         {!props.onboardingData.isDetailsSubmitted && (
                             <>
+                                <p>Get ready to set up your account in just 2 easy steps. This will allow payments from your friends and family to be passed directly into your bank account.</p>
+                                <p>First, enter your details here, then you will be taken to Stripe to confirm your identity.</p>
+                                <h4>Step 1 of 2</h4>
                                 <h2>Submit Your Details</h2>
-                                <p>Step {step} of 4</p>
+                                {/* <p>Step {step} of 2</p> */}
                                 {error && <div className="error">{error}</div>}
                                 <form onSubmit={handleSubmit}>
-                                    {step === 1 && renderPersonalInfo(formData, handleInputChange, setStep)}
-                                    {step === 2 && renderAddress(formData, handleInputChange, setStep)}
-                                    {step === 3 && renderDOB(formData, handleInputChange, setStep)}
-                                    {step === 4 && renderBankInfo(formData, handleBankAccountChange, setStep, loading)}
+                                    {step && renderPersonalInfo(formData, handleInputChange, setStep)}
+                                    {/* {step === 2 && renderAddress(formData, handleInputChange, setStep)}
+                                    {step === 3 && renderDOB(formData, handleInputChange, setStep)} */}
+                                    {step && renderBankInfo(formData, handleBankAccountChange, setStep, loading)}
                                 </form>
+
+                                {/* <img
+                                    src="/poweredbystripe2.png"
+                                    alt="powered by stripe logo"
+                                    style={{ width: "100%", opacity: "50%", padding: "80px" }}
+                                /> */}
                             </>
                         )}
 
                         {props.onboardingData.isDetailsSubmitted && !props.onboardingData.payoutsEnabled && (
-                            <CreatePayoutLink accountId={props.accountId} />
-                        )}
+                            <>
 
-                    </div>
+                                <CreatePayoutLink accountId={props.accountId} />
+                            </>
+
+                        )}
+                    </>
                 )
                 }
 
 
 
-                <div style={{ height: "32px" }} />
+                {/* <div style={{ height: "32px" }} />
 
-                <button onClick={() => deleteStripeAccount(user.sub, props.accountId)}>DELETE ACCOUNT</button>
+                <button onClick={() => deleteStripeAccount(user.sub, props.accountId)}>DELETE ACCOUNT</button> */}
 
             </div>
         </div>

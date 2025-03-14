@@ -34,9 +34,15 @@ const Navbar = ({
                 />
             }
             <nav className="navbar">
-                <Link href="/">
-                    <h2>Wish List Sundae</h2>
-                </Link>
+                <EventsListDropdown
+                    user={user}
+                    events={events}
+                    setEvents={setEvents}
+                    setModalOpen={setModalOpen}
+                    currentEvent={currentEvent}
+                    setCurrentEvent={setCurrentEvent}
+                    setNotes={setNotes}
+                />
                 <div className="logincontainer">
 
                     <>
@@ -46,18 +52,10 @@ const Navbar = ({
                             </div>
                         </Link>
                         <div className='doublegaphor' />
-                        <div>
-                            <EventsListDropdown
-                                user={user}
-                                events={events}
-                                setEvents={setEvents}
-                                setModalOpen={setModalOpen}
-                                currentEvent={currentEvent}
-                                setCurrentEvent={setCurrentEvent}
-                                setNotes={setNotes}
-                            />
-                        </div>
-                        <div className='gaphor' />
+
+
+
+
                         <Link href="/api/auth/logout">
                             <h2>Logout</h2>
                         </Link>
