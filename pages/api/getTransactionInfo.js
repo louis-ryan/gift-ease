@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   try {
     const { accountId } = req.query;
-    
+
     // Get the balance for the connected account to see pending amounts
     const balance = await stripe.balance.retrieve({
       stripeAccount: accountId
@@ -24,12 +24,13 @@ export default async function handler(req, res) {
     });
 
     // Get recent transfers to this account
-    const balanceTransactions = await stripe.balanceTransactions.list({
+    const charges = await stripe.charges.list({
       limit: 100
     }, {
       stripeAccount: accountId
     });
 
+    // Then update the response structure
     const response = {
       pending_balance: balance.pending.map(fund => ({
         amount: fund.amount,
@@ -47,14 +48,14 @@ export default async function handler(req, res) {
         arrival_date: payout.arrival_date,
         status: payout.status
       })),
-      recent_transactions: balanceTransactions.data.map(transaction => ({
-        id: transaction.id,
-        amount: transaction.amount,
-        currency: transaction.currency,
-        created: transaction.created,
-        description: transaction.description,
-        type: transaction.type,
-        status: transaction.status
+      recent_transactions: charges.data.map(charge => ({
+        id: charge.id,
+        amount: charge.amount,
+        currency: charge.currency,
+        created: charge.created,
+        description: charge.description,
+        status: charge.status,
+        payment_method: charge.payment_method_details?.type || 'unknown'
       }))
     };
 
@@ -65,15 +66,15 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Error fetching balance and payout data:', error);
-    
+
     if (error.type === 'StripeInvalidRequestError') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Invalid account ID or permissions issue',
-        error: error.message 
+        error: error.message
       });
     }
-    
-    res.status(500).json({ 
+
+    res.status(500).json({
       message: 'Error fetching balance and payout data',
       error: error.message
     });
