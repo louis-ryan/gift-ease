@@ -1,12 +1,11 @@
 .cardspace {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
 }
 
 .card {
   border: 1px solid lightgrey;
-  width: 30%;
   margin-top: 32px;
   border-radius: 8px;
   cursor: pointer;

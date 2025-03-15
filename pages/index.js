@@ -13,6 +13,7 @@ import CreatePayoutLink from '../components/CreatePayoutLink';
 import AccountStatus from '../components/AccountStatus';
 import ShareLink from '../components/shareLinkComponent';
 import UploaderComponent from '../components/UploaderComponent';
+import CoverImage from '../components/CoverImage';
 
 
 const Index = (props) => {
@@ -107,54 +108,10 @@ const Index = (props) => {
             setUploading={setUploading}
           />
 
-          {props.currentEvent.imageUrl ? (
-            <div style={{
-              height: "400px",
-              overflow: "hidden",
-              position: "relative",
-              width: "100vw", // Full viewport width
-              marginLeft: "calc(-50vw + 50%)", // Centers the div if inside a contained element
-              marginRight: "calc(-50vw + 50%)" // Centers the div if inside a contained element
-            }}>
-              {uploading ? (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center"
-                  }}
-                >
-                  <div>
-                    UPLOADING
-                  </div>
-                </div>
-              ) : (
-                <img
-                  src={props.currentEvent.imageUrl}
-                  alt="header image"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    position: "relative",
-                    display: "block"
-                  }}
-                />
-              )}
-
-            </div>
-          ) : (
-            <div style={{
-              height: "400px",
-              width: "100vw",
-              marginLeft: "calc(-50vw + 50%)",
-              marginRight: "calc(-50vw + 50%)",
-              backgroundColor: "lightgrey"
-            }} />
-          )}
-
+          <CoverImage
+            uploading={uploading}
+            imgUrl={props.currentEvent.imageUrl}
+          />
 
           {/* <div style={{ position: "absolute", zIndex: "4", top: "392px", backgroundColor: "white", padding: "0px 80px", borderRadius: "8px 8px 0px 0px", marginLeft: "-80px" }}>
             <h1>{props.currentEvent.name ? props.currentEvent.name : "no name"}</h1>

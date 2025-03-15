@@ -110,22 +110,22 @@ const StripeRegistration = (props) => {
         }
     }
 
-    const deleteStripeAccount = async (userId, accountId) => {
-        try {
-            await fetch('/api/deleteStripeAccount', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    stripeAccountId: accountId,
-                    user: userId
-                })
-            });
-        } catch (error) {
-            console.error('Error deleting user stripe account:', error);
-        }
-    };
+    // const deleteStripeAccount = async (userId, accountId) => {
+    //     try {
+    //         await fetch('/api/deleteStripeAccount', {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify({
+    //                 stripeAccountId: accountId,
+    //                 user: userId
+    //             })
+    //         });
+    //     } catch (error) {
+    //         console.error('Error deleting user stripe account:', error);
+    //     }
+    // };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -228,8 +228,6 @@ const StripeRegistration = (props) => {
                     <h4>{"< Back to Dashboard"}</h4>
                 </Link>
 
-                <h1>Account</h1>
-
                 {props.accountSetupComplete ? (
                     <>
                         <div style={{ border: "1px solid lightgrey", padding: "16px", borderRadius: "4px" }}>
@@ -243,10 +241,8 @@ const StripeRegistration = (props) => {
 
                 ) : (
                     <>
-                        {!props.onboardingData.isDetailsSubmitted && (
+                        {!props.onboardingData.isDetailsSubmitted ? (
                             <>
-                                <p>Get ready to set up your account in just 2 easy steps. This will allow payments from your friends and family to be passed directly into your bank account.</p>
-                                <p>First, enter your details here, then you will be taken to Stripe to confirm your identity.</p>
                                 <h4>Step 1 of 2</h4>
                                 <h2>Submit Your Details</h2>
                                 {/* <p>Step {step} of 2</p> */}
@@ -264,9 +260,7 @@ const StripeRegistration = (props) => {
                                     style={{ width: "100%", opacity: "50%", padding: "80px" }}
                                 /> */}
                             </>
-                        )}
-
-                        {props.onboardingData.isDetailsSubmitted && !props.onboardingData.payoutsEnabled && (
+                        ) : (
                             <>
 
                                 <CreatePayoutLink accountId={props.accountId} />

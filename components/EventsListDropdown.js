@@ -18,22 +18,31 @@ const EventsListDropdown = ({ user, events, setEvents, setModalOpen, currentEven
     }, [user])
 
     return (
-        <select
-            onChange={handleChange}
-            value={currentEvent._id}
-            style={{fontSize: "24px", fontFamily: "serif", height: "80px", color: "#426073", border: "none"}}
-        >
-            {events.map((event) => (
-                <option
-                    key={event._id}
-                    value={event._id}
-                    href="#"
-                >
-                    {event.name}
-                </option>
-            ))}
-            <option value={'NEW'}>+ Create New</option>
-        </select>
+        <div style={{ display: "flex", alignItems: "center" }}>
+            <div
+                onClick={() => setModalOpen(true)}
+                style={{ fontSize: "16px", fontFamily: "serif", color: "#426073", border: "1px solid lightgrey", height: "40px", width: "40px", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%" }}
+            >
+                <div>+</div>
+            </div>
+            <div className='gaphor' />
+            <select
+                onChange={handleChange}
+                value={currentEvent._id}
+                style={{ fontSize: "16px", fontFamily: "serif", height: "40px", color: "#426073" }}
+            >
+                {events.map((event) => (
+                    <option
+                        key={event._id}
+                        value={event._id}
+                        href="#"
+                    >
+                        {event.name}
+                    </option>
+                ))}
+                {/* <option value={'NEW'}>+ Create New</option> */}
+            </select>
+        </div>
     )
 };
 
