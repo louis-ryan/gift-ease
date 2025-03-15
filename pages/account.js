@@ -259,10 +259,11 @@ const StripeRegistration = (props) => {
                                     alt="powered by stripe logo"
                                     style={{ width: "100%", opacity: "50%", padding: "80px" }}
                                 /> */}
-                            </>
+                            </> 
                         ) : (
                             <>
-
+                                <h4>Step 2 of 2</h4>
+                                <h2>Finalise Setup with Stripe</h2>
                                 <CreatePayoutLink accountId={props.accountId} />
                             </>
 

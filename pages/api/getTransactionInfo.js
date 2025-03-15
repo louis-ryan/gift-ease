@@ -25,9 +25,10 @@ export default async function handler(req, res) {
 
     // Get recent transfers to this account
     const transfers = await stripe.transfers.list({
-      destination: accountId,
       limit: 100,
       expand: ['data.destination_payment']
+    }, {
+      stripeAccount: accountId
     });
 
     const response = {
