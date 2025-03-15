@@ -47,7 +47,7 @@ const StripeRegistration = (props) => {
     };
 
     const getTransactionData = async (accountId) => {
-        const res = await fetch(`/api/getTransactionInfo?id=${accountId}`, {
+        const res = await fetch(`/api/getTransactionInfo?accountId=${accountId}`, {
             method: 'GET',
             headers: {
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
