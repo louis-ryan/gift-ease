@@ -24,9 +24,8 @@ export default async function handler(req, res) {
     });
 
     // Get recent transfers to this account
-    const transfers = await stripe.transfers.list({
-      limit: 100,
-      expand: ['data.destination_payment']
+    const balanceTransactions = await stripe.balanceTransactions.list({
+      limit: 100
     }, {
       stripeAccount: accountId
     });
@@ -35,7 +34,7 @@ export default async function handler(req, res) {
       pending_balance: balance.pending.map(fund => ({
         amount: fund.amount,
         currency: fund.currency,
-        estimated_arrival: new Date(Date.now() + (7 * 24 * 60 * 60 * 1000)) // Estimate 7 days
+        estimated_arrival: new Date(Date.now() + (7 * 24 * 60 * 60 * 1000))
       })),
       available_balance: balance.available.map(fund => ({
         amount: fund.amount,
@@ -48,14 +47,14 @@ export default async function handler(req, res) {
         arrival_date: payout.arrival_date,
         status: payout.status
       })),
-      recent_transfers: transfers.data.map(transfer => ({
-        id: transfer.id,
-        amount: transfer.amount,
-        currency: transfer.currency,
-        created: transfer.created,
-        description: transfer.description,
-        metadata: transfer.metadata,
-        status: transfer.status
+      recent_transactions: balanceTransactions.data.map(transaction => ({
+        id: transaction.id,
+        amount: transaction.amount,
+        currency: transaction.currency,
+        created: transaction.created,
+        description: transaction.description,
+        type: transaction.type,
+        status: transaction.status
       }))
     };
 

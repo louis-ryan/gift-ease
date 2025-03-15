@@ -22,59 +22,68 @@ const BalanceDashboard = ({ data }) => {
         return amount >= 100; // 100 cents = $1 USD
     };
 
-    const isFirstPayoutComplete = (transferDate) => {
+    const isFirstPayoutComplete = (transactionDate) => {
         const now = new Date();
-        const transferTimestamp = transferDate * 1000;
-        const sevenDayPayoutDate = new Date(transferTimestamp + (7 * 24 * 60 * 60 * 1000));
+        const transactionTimestamp = transactionDate * 1000;
+        const sevenDayPayoutDate = new Date(transactionTimestamp + (7 * 24 * 60 * 60 * 1000));
         return now > sevenDayPayoutDate;
     };
 
-    // Find first valid payout (above threshold) and check if it's complete
-    const firstValidTransfer = data.recent_transfers.find(transfer => 
-        isAboveThreshold(transfer.amount)
-    );
-    
-    const hasCompletedFirstPayout = firstValidTransfer ? 
-        isFirstPayoutComplete(firstValidTransfer.created) : false;
+    // Find first valid transaction (above threshold) and check if it's complete
+    const firstValidTransaction = data.recent_transactions ?
+        data.recent_transactions.find(transaction =>
+            isAboveThreshold(transaction.amount)
+        ) : null;
 
-    const getEstimatedPayoutDate = (transferDate, amount) => {
+    const hasCompletedFirstPayout = firstValidTransaction ?
+        isFirstPayoutComplete(firstValidTransaction.created) : false;
+
+    const getEstimatedPayoutDate = (transactionDate, amount) => {
         if (!isAboveThreshold(amount)) {
             return null; // No payout date for small amounts
         }
-        const transferTimestamp = transferDate * 1000;
-        const isFirstValid = firstValidTransfer && 
-            firstValidTransfer.id === data.recent_transfers.find(t => 
+        const transactionTimestamp = transactionDate * 1000;
+        const isFirstValid = firstValidTransaction &&
+            firstValidTransaction.id === data.recent_transactions.find(t =>
                 isAboveThreshold(t.amount)
             )?.id;
         const delayDays = (isFirstValid && !hasCompletedFirstPayout) ? 7 : 3;
-        const payoutDate = new Date(transferTimestamp + (delayDays * 24 * 60 * 60 * 1000));
+        const payoutDate = new Date(transactionTimestamp + (delayDays * 24 * 60 * 60 * 1000));
         return payoutDate;
     };
 
-    const isPayoutComplete = (transferDate, amount) => {
+    const isPayoutComplete = (transactionDate, amount) => {
         if (!isAboveThreshold(amount)) {
             return false;
         }
         const now = new Date();
-        const payoutDate = getEstimatedPayoutDate(transferDate, amount);
+        const payoutDate = getEstimatedPayoutDate(transactionDate, amount);
         return payoutDate ? now > payoutDate : false;
     };
 
-    const calculateProgress = (transferDate, amount) => {
+    const calculateProgress = (transactionDate, amount) => {
         if (!isAboveThreshold(amount)) {
             return 0;
         }
         const now = new Date();
-        const transferDateTime = new Date(transferDate * 1000);
-        const payoutDateTime = getEstimatedPayoutDate(transferDate, amount);
+        const transactionDateTime = new Date(transactionDate * 1000);
+        const payoutDateTime = getEstimatedPayoutDate(transactionDate, amount);
 
         if (!payoutDateTime) return 0;
 
-        const total = payoutDateTime - transferDateTime;
-        const elapsed = now - transferDateTime;
+        const total = payoutDateTime - transactionDateTime;
+        const elapsed = now - transactionDateTime;
 
         return Math.min(Math.max((elapsed / total) * 100, 0), 100);
     };
+
+    // Only show payment_intent type transactions that are incoming payments
+    const relevantTransactions = data.recent_transactions ?
+        data.recent_transactions.filter(transaction =>
+            transaction.type === 'payment' ||
+            transaction.type === 'payment_intent' ||
+            transaction.type === 'charge'
+        ) : [];
 
     return (
         <div>
@@ -83,102 +92,113 @@ const BalanceDashboard = ({ data }) => {
                 padding: '16px',
                 borderRadius: '4px'
             }}>
-                <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Recent Transfers & Expected Payouts</h2>
+                <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Recent Payments & Expected Payouts</h2>
                 <div>
-                    {data.recent_transfers.map((transfer) => {
-                        const progress = calculateProgress(transfer.created, transfer.amount);
-                        const complete = isPayoutComplete(transfer.created, transfer.amount);
-                        const isSmallAmount = !isAboveThreshold(transfer.amount);
+                    {relevantTransactions.length > 0 ? (
+                        relevantTransactions.map((transaction) => {
+                            const progress = calculateProgress(transaction.created, transaction.amount);
+                            const complete = isPayoutComplete(transaction.created, transaction.amount);
+                            const isSmallAmount = !isAboveThreshold(transaction.amount);
 
-                        return (
-                            <div key={transfer.id} style={{
-                                padding: '16px 0',
-                                borderBottom: '1px solid #eee'
-                            }}>
-                                <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    marginBottom: '12px'
+                            return (
+                                <div key={transaction.id} style={{
+                                    padding: '16px 0',
+                                    borderBottom: '1px solid #eee'
                                 }}>
-                                    <div>
-                                        <div style={{ fontSize: '16px', marginBottom: '4px' }}>
-                                            {formatCurrency(transfer.amount, transfer.currency)}
-                                        </div>
-                                        <div style={{ fontSize: '12px', color: '#999' }}>
-                                            ID: {transfer.id}
-                                        </div>
-                                    </div>
-                                    {isSmallAmount ? (
-                                        <div style={{
-                                            backgroundColor: '#fff3cd',
-                                            color: '#856404',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            fontSize: '14px'
-                                        }}>
-                                            Below Minimum Threshold
-                                        </div>
-                                    ) : complete ? (
-                                        <div style={{
-                                            backgroundColor: '#e8f5e9',
-                                            color: '#2e7d32',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            fontSize: '14px'
-                                        }}>
-                                            Payout Complete
-                                        </div>
-                                    ) : null}
-                                </div>
-
-                                {!isSmallAmount && (
                                     <div style={{
-                                        position: 'relative',
-                                        height: '24px',
-                                        backgroundColor: '#f5f5f5',
-                                        borderRadius: '12px',
-                                        overflow: 'hidden'
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        marginBottom: '12px'
                                     }}>
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            height: '100%',
-                                            width: `${progress}%`,
-                                            backgroundColor: complete ? '#4caf50' : '#2196f3',
-                                            transition: 'width 0.3s ease'
-                                        }} />
-
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: 0,
-                                            left: 0,
-                                            width: '100%',
-                                            height: '100%',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center',
-                                            padding: '0 12px',
-                                            color: '#fff',
-                                            fontSize: '12px',
-                                            zIndex: 1
-                                        }}>
-                                            <span style={{
-                                                color: progress > 40 ? '#fff' : '#333'
-                                            }}>
-                                                {formatDate(transfer.created)}
-                                            </span>
-                                            <span style={{
-                                                color: progress < 60 ? '#333' : '#fff'
-                                            }}>
-                                                {formatDate(getEstimatedPayoutDate(transfer.created, transfer.amount).getTime() / 1000)}
-                                            </span>
+                                        <div>
+                                            <div style={{ fontSize: '16px', marginBottom: '4px' }}>
+                                                {formatCurrency(transaction.amount, transaction.currency)}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#999' }}>
+                                                {transaction.description || `Type: ${transaction.type}`}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#999' }}>
+                                                ID: {transaction.id}
+                                            </div>
                                         </div>
+                                        {isSmallAmount ? (
+                                            <div style={{
+                                                backgroundColor: '#fff3cd',
+                                                color: '#856404',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '14px'
+                                            }}>
+                                                Below Minimum Threshold
+                                            </div>
+                                        ) : complete ? (
+                                            <div style={{
+                                                backgroundColor: '#e8f5e9',
+                                                color: '#2e7d32',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px',
+                                                fontSize: '14px'
+                                            }}>
+                                                Payout Complete
+                                            </div>
+                                        ) : null}
                                     </div>
-                                )}
-                            </div>
-                        );
-                    })}
+
+                                    {!isSmallAmount && (
+                                        <div style={{
+                                            position: 'relative',
+                                            height: '24px',
+                                            backgroundColor: '#f5f5f5',
+                                            borderRadius: '12px',
+                                            overflow: 'hidden'
+                                        }}>
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                height: '100%',
+                                                width: `${progress}%`,
+                                                backgroundColor: complete ? '#4caf50' : '#2196f3',
+                                                transition: 'width 0.3s ease'
+                                            }} />
+
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: 0,
+                                                left: 0,
+                                                width: '100%',
+                                                height: '100%',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                padding: '0 12px',
+                                                color: '#fff',
+                                                fontSize: '12px',
+                                                zIndex: 1
+                                            }}>
+                                                <span style={{
+                                                    color: progress > 40 ? '#fff' : '#333'
+                                                }}>
+                                                    {formatDate(transaction.created)}
+                                                </span>
+                                                <span style={{
+                                                    color: progress < 60 ? '#333' : '#fff'
+                                                }}>
+                                                    {getEstimatedPayoutDate(transaction.created, transaction.amount) ?
+                                                        formatDate(getEstimatedPayoutDate(transaction.created, transaction.amount).getTime() / 1000) :
+                                                        'N/A'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div style={{ padding: '16px 0', color: '#666' }}>
+                            No transaction history available
+                        </div>
+                    )}
                 </div>
             </div>
 
