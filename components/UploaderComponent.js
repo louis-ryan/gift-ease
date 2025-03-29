@@ -127,7 +127,11 @@ const SimpleImageUpload = ({ currEvent, setCurrentEvent, setUploading }) => {
                 htmlFor="fileInput"
                 style={{ position: "absolute", zIndex: "4", left: "24px", marginTop: "24px", backgroundColor: "white", padding: "24px", cursor: "pointer", borderRadius: "8px" }}
             >
-                upload
+                <img
+                src={"icon_image.png"}
+                alt="icon image"
+                style={{height: "40px"}}
+                />
             </label>
         </>
     );

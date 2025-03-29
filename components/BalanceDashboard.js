@@ -18,10 +18,6 @@ const BalanceDashboard = ({ data }) => {
         });
     };
 
-    const isAboveThreshold = (amount) => {
-        return amount >= 100; // 100 cents = $1 USD
-    };
-
     // When using the charges API, we don't need to filter by type
     // since all objects returned are already charges
     const relevantTransactions = data?.recent_transactions || [];
@@ -56,7 +52,7 @@ const BalanceDashboard = ({ data }) => {
                                 </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
-                                <div style={{ 
+                                <div style={{
                                     backgroundColor: '#e3f2fd',
                                     color: '#0d47a1',
                                     padding: '4px 8px',
@@ -76,50 +72,50 @@ const BalanceDashboard = ({ data }) => {
             )}
 
             {/* Available Balance Section */}
-            {data?.available_balance && data.available_balance.length > 0 && 
-             data.available_balance.some(balance => balance.amount > 0) && (
-                <div style={{
-                    border: '1px solid lightgrey',
-                    padding: '16px',
-                    borderRadius: '4px',
-                    marginBottom: '20px',
-                    backgroundColor: '#f9f9f9'
-                }}>
-                    <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Available Balance</h2>
-                    {data.available_balance.map((balance, index) => (
-                        balance.amount > 0 && (
-                            <div key={index} style={{
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                padding: '12px',
-                                backgroundColor: 'white',
-                                borderRadius: '4px',
-                                marginBottom: '8px'
-                            }}>
-                                <div>
-                                    <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                                        {formatCurrency(balance.amount, balance.currency)}
+            {data?.available_balance && data.available_balance.length > 0 &&
+                data.available_balance.some(balance => balance.amount > 0) && (
+                    <div style={{
+                        border: '1px solid lightgrey',
+                        padding: '16px',
+                        borderRadius: '4px',
+                        marginBottom: '20px',
+                        backgroundColor: '#f9f9f9'
+                    }}>
+                        <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Available Balance</h2>
+                        {data.available_balance.map((balance, index) => (
+                            balance.amount > 0 && (
+                                <div key={index} style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    padding: '12px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '4px',
+                                    marginBottom: '8px'
+                                }}>
+                                    <div>
+                                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                                            {formatCurrency(balance.amount, balance.currency)}
+                                        </div>
+                                        <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+                                            {balance.currency.toUpperCase()}
+                                        </div>
                                     </div>
-                                    <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
-                                        {balance.currency.toUpperCase()}
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{
+                                            backgroundColor: '#e8f5e9',
+                                            color: '#2e7d32',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px',
+                                            fontSize: '14px'
+                                        }}>
+                                            Available
+                                        </div>
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <div style={{ 
-                                        backgroundColor: '#e8f5e9',
-                                        color: '#2e7d32',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '14px'
-                                    }}>
-                                        Available
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    ))}
-                </div>
-            )}
+                            )
+                        ))}
+                    </div>
+                )}
 
             {/* Transactions Section */}
             <div style={{
@@ -136,37 +132,19 @@ const BalanceDashboard = ({ data }) => {
                                     padding: '16px 0',
                                     borderBottom: '1px solid #eee'
                                 }}>
-                                    <div style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        marginBottom: '12px'
-                                    }}>
-                                        <div>
-                                            <div style={{ fontSize: '16px', marginBottom: '4px' }}>
-                                                {formatCurrency(transaction.amount, transaction.currency)}
-                                            </div>
-                                            <div style={{ fontSize: '12px', color: '#999' }}>
-                                                {transaction.description || `Payment via ${transaction.payment_method || 'unknown'}`}
-                                            </div>
-                                            <div style={{ fontSize: '12px', color: '#999' }}>
-                                                ID: {transaction.id}
-                                            </div>
+
+                                    <div>
+                                        <div style={{ fontSize: '16px', marginBottom: '4px' }}>
+                                            {formatCurrency(transaction.amount, transaction.currency)}
                                         </div>
-                                        <div style={{
-                                            backgroundColor: 
-                                                transaction.status === 'succeeded' ? '#e8f5e9' : 
-                                                transaction.status === 'pending' ? '#fff3cd' : '#f5f5f5',
-                                            color: 
-                                                transaction.status === 'succeeded' ? '#2e7d32' : 
-                                                transaction.status === 'pending' ? '#856404' : '#666',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            fontSize: '14px'
-                                        }}>
-                                            {transaction.status === 'succeeded' ? 'Completed' : 
-                                             transaction.status === 'pending' ? 'Pending' : transaction.status}
+                                        <div style={{ fontSize: '12px', color: '#999' }}>
+                                            {transaction.description || `Payment via ${transaction.payment_method || 'unknown'}`}
+                                        </div>
+                                        <div style={{ fontSize: '12px', color: '#999' }}>
+                                            ID: {transaction.id}
                                         </div>
                                     </div>
+
                                     <div style={{ fontSize: '14px', color: '#666' }}>
                                         {formatDate(transaction.created)}
                                     </div>

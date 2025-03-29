@@ -57,7 +57,12 @@ const Navbar = ({
 
 
                         <Link href="/api/auth/logout">
-                            <h2>Logout</h2>
+                            <img
+                                src={"icon_logout.png"}
+                                alt="logout icon"
+                                style={{ height: "40px" }}
+
+                            />
                         </Link>
                     </>
 
