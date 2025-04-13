@@ -1,13 +1,12 @@
 import React from 'react';
 
 const BalanceDashboard = ({ data }) => {
-    const formatCurrency = (amount, currency) => {
-        const value = Math.abs(amount) / 100;
+    const formatCurrency = (amount, currency = 'USD') => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: currency.toUpperCase(),
             minimumFractionDigits: 2
-        }).format(value);
+        }).format(amount);
     };
 
     const formatDate = (timestamp) => {
@@ -18,104 +17,51 @@ const BalanceDashboard = ({ data }) => {
         });
     };
 
-    // When using the charges API, we don't need to filter by type
-    // since all objects returned are already charges
-    const relevantTransactions = data?.recent_transactions || [];
+    // Ensure data is always an array
+    const payments = Array.isArray(data) ? data : [];
+    // Calculate total paid from payments array
+    const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
     return (
         <div>
-            {/* Pending Balance Section - Added to show pending funds */}
-            {data?.pending_balance && data.pending_balance.length > 0 && (
+            {/* Total Paid Balance Section */}
+            <div style={{
+                border: '1px solid lightgrey',
+                padding: '16px',
+                borderRadius: '4px',
+                marginBottom: '20px',
+                backgroundColor: '#f9f9f9'
+            }}>
+                <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Total Paid</h2>
                 <div style={{
-                    border: '1px solid lightgrey',
-                    padding: '16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    padding: '12px',
+                    backgroundColor: 'white',
                     borderRadius: '4px',
-                    marginBottom: '20px',
-                    backgroundColor: '#f9f9f9'
+                    marginBottom: '8px'
                 }}>
-                    <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Pending Balance</h2>
-                    {data.pending_balance.map((balance, index) => (
-                        <div key={index} style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            padding: '12px',
-                            backgroundColor: 'white',
-                            borderRadius: '4px',
-                            marginBottom: '8px'
-                        }}>
-                            <div>
-                                <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                                    {formatCurrency(balance.amount, balance.currency)}
-                                </div>
-                                <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
-                                    {balance.currency.toUpperCase()}
-                                </div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <div style={{
-                                    backgroundColor: '#e3f2fd',
-                                    color: '#0d47a1',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    fontSize: '14px',
-                                    marginBottom: '4px'
-                                }}>
-                                    Pending
-                                </div>
-                                <div style={{ fontSize: '14px', color: '#666' }}>
-                                    Est. arrival: {new Date(balance.estimated_arrival).toLocaleDateString()}
-                                </div>
-                            </div>
+                    <div>
+                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                            {formatCurrency(totalPaid)}
                         </div>
-                    ))}
-                </div>
-            )}
-
-            {/* Available Balance Section */}
-            {data?.available_balance && data.available_balance.length > 0 &&
-                data.available_balance.some(balance => balance.amount > 0) && (
-                    <div style={{
-                        border: '1px solid lightgrey',
-                        padding: '16px',
-                        borderRadius: '4px',
-                        marginBottom: '20px',
-                        backgroundColor: '#f9f9f9'
-                    }}>
-                        <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Available Balance</h2>
-                        {data.available_balance.map((balance, index) => (
-                            balance.amount > 0 && (
-                                <div key={index} style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    padding: '12px',
-                                    backgroundColor: 'white',
-                                    borderRadius: '4px',
-                                    marginBottom: '8px'
-                                }}>
-                                    <div>
-                                        <div style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                                            {formatCurrency(balance.amount, balance.currency)}
-                                        </div>
-                                        <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
-                                            {balance.currency.toUpperCase()}
-                                        </div>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div style={{
-                                            backgroundColor: '#e8f5e9',
-                                            color: '#2e7d32',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px',
-                                            fontSize: '14px'
-                                        }}>
-                                            Available
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        ))}
+                        <div style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
+                            USD
+                        </div>
                     </div>
-                )}
+                    <div style={{ textAlign: 'right' }}>
+                        <div style={{
+                            backgroundColor: '#e8f5e9',
+                            color: '#2e7d32',
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '14px'
+                        }}>
+                            Received
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Transactions Section */}
             <div style={{
@@ -123,37 +69,49 @@ const BalanceDashboard = ({ data }) => {
                 padding: '16px',
                 borderRadius: '4px'
             }}>
-                <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Recent Payments & Expected Payouts</h2>
+                <h2 style={{ margin: '0 0 16px 0', fontSize: '18px' }}>Payment History</h2>
                 <div>
-                    {relevantTransactions && relevantTransactions.length > 0 ? (
-                        relevantTransactions.map((transaction) => {
+                    {payments && payments.length > 0 ? (
+                        payments.map((payment) => {
                             return (
-                                <div key={transaction.id} style={{
+                                <div key={payment.id} style={{
                                     padding: '16px 0',
                                     borderBottom: '1px solid #eee'
                                 }}>
-
-                                    <div>
-                                        <div style={{ fontSize: '16px', marginBottom: '4px' }}>
-                                            {formatCurrency(transaction.amount, transaction.currency)}
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <div>
+                                            <div style={{ fontSize: '16px', marginBottom: '4px' }}>
+                                                {formatCurrency(payment.amount)}
+                                            </div>
+                                            <div style={{ fontSize: '14px', color: '#666' }}>
+                                                {formatDate(payment.date)}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#999' }}>
+                                                {payment.id}
+                                            </div>
                                         </div>
-                                        <div style={{ fontSize: '12px', color: '#999' }}>
-                                            {transaction.description || `Payment via ${transaction.payment_method || 'unknown'}`}
+                                        <div style={{ fontSize: '14px', color: '#666' }}>
+                                            Event ID: {payment.eventId.substring(0, 8)}...
                                         </div>
-                                        <div style={{ fontSize: '12px', color: '#999' }}>
-                                            ID: {transaction.id}
+                                        <div>
+                                            <div style={{ fontSize: '14px', color: '#666' }}>
+                                                Gift ID: {payment.giftId.substring(0, 8)}...
+                                            </div>
+                                            <div style={{ 
+                                                fontSize: '12px', 
+                                                color: payment.status === 'succeeded' ? '#2e7d32' : '#d32f2f',
+                                                fontWeight: 'bold'
+                                            }}>
+                                                Status: {payment.status}
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <div style={{ fontSize: '14px', color: '#666' }}>
-                                        {formatDate(transaction.created)}
                                     </div>
                                 </div>
                             );
                         })
                     ) : (
                         <div style={{ padding: '16px 0', color: '#666' }}>
-                            No recent transaction history available
+                            No payment history available
                         </div>
                     )}
                 </div>

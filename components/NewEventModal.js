@@ -49,16 +49,13 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
         }
 
         if (currentStep === 2 && (name === 'uri' || name === 'name')) {
-            console.log('Checking URI uniqueness for:', newData.uri);
             const isUnique = await checkUriUniqueness(newData.uri);
-            console.log('Is URI unique?', isUnique);
             
             if (!isUnique) {
                 const newErrors = {
                     ...errors,
                     uri: { message: 'This URL is already taken' }
                 };
-                console.log('Setting errors:', newErrors);
                 setErrors(newErrors);
             } else {
                 const newErrors = {

@@ -11,7 +11,7 @@ export default async function handler(req, res) {
             return res.status(405).json({ error: 'Method not allowed' });
         }
 
-        const { giftId, eventId } = req.query;
+        const { accountId } = req.query;
 
         try {
             const payments = await stripe.paymentIntents.list({
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
             const successfulPayments = payments.data.filter(payment =>
                 payment.status === 'succeeded' &&
-                payment.metadata.giftId === giftId // Assuming you stored giftId in metadata
+                payment.metadata.recipientId === accountId
             );
 
             const totalPaid = successfulPayments.reduce((sum, payment) =>
@@ -36,9 +36,6 @@ export default async function handler(req, res) {
                     giftId: payment.metadata.giftId,
                     eventId: payment.metadata.eventId,
                     status: payment.status,
-                    senderName: payment.metadata.senderName,
-                    description: payment.metadata.description,
-                    gifUrl: payment.metadata.gifUrl
                     // Add other fields you need
                 })),
                 totalPaid

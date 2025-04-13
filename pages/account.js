@@ -47,17 +47,26 @@ const StripeRegistration = (props) => {
     };
 
     const getTransactionData = async (accountId) => {
-        const res = await fetch(`/api/getTransactionInfo?accountId=${accountId}`, {
-            method: 'GET',
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0'
+        try {
+            const res = await fetch(
+                `/api/getStripePaymentsForAccount?accountId=${accountId}`,
+                {
+                    method: 'GET',
+                    credentials: 'include',  // Important for CORS with credentials
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // No need to explicitly set Origin as browser will do this
+                    }
+                }
+            );
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
             }
-        });
-        const transactionDataFromStripe = await res.json();
-        setTransactionData(transactionDataFromStripe
-        )
+            const { payments } = await res.json();
+            setTransactionData(payments)
+        } catch (error) {
+            console.error("Error fetching payments:", error);
+        }
     }
 
     const checkOnboardingStatus = async (accountId) => {
@@ -230,11 +239,13 @@ const StripeRegistration = (props) => {
 
                 {props.accountSetupComplete ? (
                     <>
-                        <div style={{ border: "1px solid lightgrey", padding: "16px", borderRadius: "4px" }}>
+
+                        <h1>Account</h1>
+                        {/* <div style={{ border: "1px solid lightgrey", padding: "16px", borderRadius: "4px" }}>
                             <h4>Your Account ID: {props.accountId}</h4>
                         </div>
 
-                        <div style={{ height: "16px" }} />
+                        <div style={{ height: "16px" }} /> */}
 
                         <BalanceDashboard data={transactionData} />
                     </>
@@ -259,7 +270,7 @@ const StripeRegistration = (props) => {
                                     alt="powered by stripe logo"
                                     style={{ width: "100%", opacity: "50%", padding: "80px" }}
                                 /> */}
-                            </> 
+                            </>
                         ) : (
                             <>
                                 <h4>Step 2 of 2</h4>

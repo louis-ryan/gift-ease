@@ -21,10 +21,8 @@ export default async function handler(req, res) {
 
         try {
             if (user?.stripeAccountId) {
-                console.log('Using existing Stripe account:', user.stripeAccountId);
                 stripeAccountId = user.stripeAccountId;
             } else {
-                console.log('Creating new minimal Stripe account...');
                 const account = await stripe.accounts.create({
                     type: 'express',  // Changed from 'standard'
                     email: email,

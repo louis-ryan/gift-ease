@@ -4,8 +4,6 @@ const SimpleImageUpload = ({ currEvent, setCurrentEvent, setUploading }) => {
 
     const processAndUploadFile = async (file) => {
         if (!file) return;
-
-        console.log('File selected:', file.name, file.type, file.size);
         setUploading(true);
 
         try {

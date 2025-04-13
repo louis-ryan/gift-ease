@@ -18,8 +18,6 @@ const NewNote = (props) => {
     const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState('');
 
-    console.log("form: ", form)
-
     useEffect(() => {
         if (isSubmitting) {
             if (Object.keys(errors).length === 0) {

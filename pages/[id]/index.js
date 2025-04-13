@@ -27,7 +27,7 @@ const Note = () => {
 
     const getPaymentsData = async (noteId, note) => {
         try {
-            const res = await fetch(`/api/getStripePaymentsForSingle?giftId=${noteId}`,
+            const res = await fetch(`/api/getStripePaymentsForGift?giftId=${noteId}`,
                 {
                     method: 'GET',
                     credentials: 'include',  // Important for CORS with credentials

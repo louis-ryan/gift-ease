@@ -3,7 +3,7 @@ import organizePaymentsByGift from "./organizePaymentsByGift";
 const getPaymentsData = async (eventId, wishes, setNotes) => {
     try {
         const res = await fetch(
-            `/api/getStripePayments?eventId=${eventId}`,
+            `/api/getStripePaymentsForEvent?eventId=${eventId}`,
             {
                 method: 'GET',
                 credentials: 'include',  // Important for CORS with credentials

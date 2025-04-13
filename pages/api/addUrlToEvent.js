@@ -25,8 +25,6 @@ export default async (req, res) => {
             }
         );
 
-        console.log('Updated event:', event);
-
         res.status(200).json({ success: true, data: event });
 
     } catch (error) {
