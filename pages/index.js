@@ -75,8 +75,7 @@ const Index = (props) => {
     checkOnboardingStatus(props.accountId)
   }, [props.accountId])
 
-  if (!props.currentEvent) return
-  if (!user) return
+  if (!props.currentEvent._id) return
   return (
     <>
       <Navbar
@@ -110,7 +109,7 @@ const Index = (props) => {
 
           <CoverImage
             uploading={uploading}
-            imgUrl={props.currentEvent.imageUrl}
+            imageUrl={props.currentEvent.imageUrl}
           />
 
           {/* <div style={{ position: "absolute", zIndex: "4", top: "392px", backgroundColor: "white", padding: "0px 80px", borderRadius: "8px 8px 0px 0px", marginLeft: "-80px" }}>

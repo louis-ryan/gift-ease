@@ -21,7 +21,7 @@ function AuthWrapper({ children }) {
         }
     }, [user, isLoading, router]);
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return
 
     return children;
 }
