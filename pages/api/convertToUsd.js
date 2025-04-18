@@ -1,14 +1,20 @@
+// pages/api/convertToUsd.js
 import axios from 'axios';
 
+// Cache exchange rates to avoid excessive API calls
 let exchangeRatesCache = {
     rates: {},
     timestamp: 0,
     expiryTime: 3600000 // 1 hour in milliseconds
 };
 
+/**
+ * Fetches current exchange rates from European Central Bank (free, no API key)
+ */
 async function getExchangeRates() {
     const currentTime = Date.now();
 
+    // Check if cache is still valid
     if (currentTime - exchangeRatesCache.timestamp < exchangeRatesCache.expiryTime) {
         return exchangeRatesCache.rates;
     }
@@ -26,7 +32,6 @@ async function getExchangeRates() {
             rates['EUR'] = 1;
 
             // Extract rates from XML using regex
-            // This is a simple way without using an XML parser
             const currencyRegex = /currency='([A-Z]+)' rate='([0-9.]+)'/g;
             let match;
 
@@ -75,7 +80,6 @@ async function getExchangeRates() {
         }
 
         // If all else fails, provide a minimal fallback with major currencies
-        // These are very approximate and should only be used as a last resort
         return {
             'USD': 1,
             'EUR': 0.91,
@@ -113,8 +117,7 @@ export default async function handler(req, res) {
             return res.json({
                 originalAmount: numericAmount,
                 originalCurrency: currency,
-                usdAmount: numericAmount,
-                usdAmountForStripe: Math.round(numericAmount * 100),
+                usdAmount: Math.round(numericAmount), // Round to nearest whole dollar
                 exchangeRate: 1
             });
         }
@@ -128,18 +131,17 @@ export default async function handler(req, res) {
         }
 
         // Convert to USD
-        // Since our rates are USD based, we need to divide
         const exchangeRate = rates[currency];
-        const usdAmount = numericAmount / exchangeRate;
+        const exactUsdAmount = numericAmount / exchangeRate;
 
-        // Format for Stripe (which requires cents)
-        const usdAmountForStripe = Math.round(usdAmount * 100);
+        // Round to nearest whole dollar (for your specific requirement)
+        const roundedUsdAmount = Math.round(exactUsdAmount);
 
         res.status(200).json({
             originalAmount: numericAmount,
             originalCurrency: currency,
-            usdAmount: usdAmount,
-            usdAmountForStripe: usdAmountForStripe,
+            usdAmount: roundedUsdAmount, // Rounded to nearest whole dollar
+            exactUsdAmount: exactUsdAmount, // Also provide the exact amount for reference
             exchangeRate: exchangeRate
         });
 

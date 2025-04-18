@@ -47,11 +47,11 @@ const Navbar = ({
                 <div className="logincontainer">
 
                     <>
-                        <CurrencySelector
+                        {/* <CurrencySelector
                             selectedCurrency={selectedCurrency}
                             setSelectedCurrency={setSelectedCurrency}
                             stripeUserId={stripeUserId}
-                        />
+                        /> */}
 
                         <Link href="/account">
                             <div className='profilepicture'>

@@ -122,7 +122,8 @@ const Index = (props) => {
 
 
           <div className="cardspace">
-            {props.notes.map((note, idx) => {
+            {props.notes.map(note => {
+              const paidConvert = Math.ceil(note.paid / note.price * note.amount)
               const remainingVal = note.price - note.paid
               const data = [
                 { name: "PAID", value: note.paid, color: "#143950" },
@@ -152,10 +153,21 @@ const Index = (props) => {
                     />
                   )}
 
-                  <div style={{ backgroundColor: "white", padding: "16px" }}>
+                  <div style={{ backgroundColor: "white", padding: "16px", opacity: "0.9" }}>
                     <h3>{note.title}</h3>
-                    <h4>${note.paid} of ${note.price}</h4>
-                    <p>{note.senders && note.senders.length}  {note.senders ? `contributer${note.senders && (note.senders.length < 1 || note.senders.length > 1 && 's')}` : " "}</p>
+                    <h4>
+                      {paidConvert ? paidConvert : note.paid}
+                      {note.currency ? note.currency : 'USD'}
+                      {' of '}
+                      {note.amount ? note.amount : note.price}
+                      {note.currency ? note.currency : 'USD'}
+                    </h4>
+                    <p>
+                      {note.senders && note.senders.length}
+                      {note.senders ?
+                        ` contributer${note.senders.length < 2 ? '' : 's'}` :
+                        "no contributions yet"}
+                    </p>
                   </div>
 
                   <div style={{ height: "16px" }} />
@@ -170,29 +182,31 @@ const Index = (props) => {
                     ))}
                   </div> */}
 
-                  <ResponsiveContainer
-                    width="100%"
-                    height={160}
-                  >
-                    <PieChart>
-                      <Pie
-                        data={data}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={0}
-                        outerRadius={80}
-                        dataKey="value"
-                        paddingAngle={0}
-                      >
-                        {data.map((entry, index) => (
-                          <Cell
-                            key={entry.name}
-                            fill={entry.color}
-                          />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div style={{ opacity: "0.9" }}>
+                    <ResponsiveContainer
+                      width="100%"
+                      height={160}
+                    >
+                      <PieChart>
+                        <Pie
+                          data={data}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={0}
+                          outerRadius={80}
+                          dataKey="value"
+                          paddingAngle={0}
+                        >
+                          {data.map((entry, index) => (
+                            <Cell
+                              key={entry.name}
+                              fill={entry.color}
+                            />
+                          ))}
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
 
                   {/* <button onClick={() => { router.push(`/${note._id}`) }}>
                       {"View"}

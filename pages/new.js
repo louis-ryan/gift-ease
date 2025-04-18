@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useUser } from '@auth0/nextjs-auth0/client';
+import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
 import Link from 'next/link';
 import fetch from 'isomorphic-unfetch';
 import { useRouter } from 'next/router';
@@ -21,6 +23,8 @@ const NewNote = (props) => {
     const [uploading, setUploading] = useState(false);
     const [message, setMessage] = useState('');
 
+    const { user } = useUser();
+
     useEffect(() => {
         if (isSubmitting) {
             if (Object.keys(errors).length === 0) {
@@ -30,6 +34,21 @@ const NewNote = (props) => {
             }
         }
     }, [errors])
+
+    useEffect(() => {
+        if (!user) return
+        getOrCreateNewAccount(
+            user.sub,
+            user.email,
+            props.setCurrentEvent,
+            props.setAccountId,
+            props.setStripeUserId,
+            props.setModalOpen,
+            props.setNotes,
+            props.setAccountSetupComplete,
+            props.setSelectedCurrency
+        )
+    }, [user])
 
     const createNote = async () => {
         try {
@@ -59,6 +78,28 @@ const NewNote = (props) => {
             router.push("/");
         } catch (error) {
             console.log(error);
+        }
+    }
+
+    const setAccountCurrency = async (e) => {
+        const newCurrency = e.target.value;
+        try {
+            const account = await fetch(`/api/setAccountCurrency?id=${props.stripeUserId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                },
+                body: JSON.stringify({
+                    currency: newCurrency
+                })
+            });
+            const { data } = await account.json();
+            props.setSelectedCurrency(data.currency)
+        } catch (error) {
+            console.error('Error setting stripe user account id in Mongo:', error);
         }
     }
 
@@ -172,8 +213,11 @@ const NewNote = (props) => {
                             <div style={{ display: "flex" }}>
                                 <select
                                     name='currency'
-                                    value={form.currency}
-                                    onChange={handleChange}
+                                    value={props.selectedCurrency}
+                                    onChange={(e) => {
+                                        handleChange(e)
+                                        setAccountCurrency(e)
+                                    }}
                                 >
                                     {currencies.map((currency) => (
                                         <option key={currency.code} value={currency.code}>
