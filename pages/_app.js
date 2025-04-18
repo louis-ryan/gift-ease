@@ -28,6 +28,7 @@ function AuthWrapper({ children }) {
 
 function MyApp({ Component, pageProps }) {
 
+    const [selectedCurrency, setSelectedCurrency] = useState('USD');
     const [events, setEvents] = useState([]);
     const [currentEvent, setCurrentEvent] = useState({})
     const [currentEventStr, setCurrentEventStr] = useState("")
@@ -46,6 +47,8 @@ function MyApp({ Component, pageProps }) {
         <UserProvider>
             <AuthWrapper>
                 <Component
+                    selectedCurrency={selectedCurrency}
+                    setSelectedCurrency={setSelectedCurrency}
                     events={events}
                     setEvents={setEvents}
                     currentEvent={currentEvent}

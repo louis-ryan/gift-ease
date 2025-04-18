@@ -18,6 +18,7 @@ const AccountSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    currency: String,
     accountSetupComplete: Boolean
 }, { timestamps: true })
 

@@ -1,6 +1,7 @@
 import getCurrentEvent from "./getCurrentEvent"
 
-const getOrCreateNewAccount = async (sub, email, setCurrentEvent, setAccountId, setStripeUserId, setModalOpen, setNotes, setAccountSetupComplete) => {
+const getOrCreateNewAccount = async (sub, email, setCurrentEvent, setAccountId, setStripeUserId, setModalOpen, setNotes, setAccountSetupComplete, setSelectedCurrency) => {
+    console.log('setSelectedCurrency: ', setSelectedCurrency)
     try {
         const res = await fetch(`api/getAccountForThisUser/${sub + '||' + email}`)
         const resJSON = await res.json()
@@ -8,6 +9,7 @@ const getOrCreateNewAccount = async (sub, email, setCurrentEvent, setAccountId, 
             setStripeUserId(resJSON.data._id)
             setAccountId(resJSON.data.stripeAccountId)
             setAccountSetupComplete(resJSON.data.accountSetupComplete)
+            setSelectedCurrency(resJSON.data.currency)
             if (!resJSON.data.currentEventStr) {
                 setModalOpen(true)
             } else {

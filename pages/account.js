@@ -205,7 +205,6 @@ const StripeRegistration = (props) => {
         setPaymentSetupComplete(props.stripeUserId)
     }, [router, props.stripeUserId])
 
-
     useEffect(() => {
         if (!user) return
         getOrCreateNewAccount(
@@ -216,7 +215,8 @@ const StripeRegistration = (props) => {
             props.setStripeUserId,
             props.setModalOpen,
             props.setNotes,
-            props.setAccountSetupComplete
+            props.setAccountSetupComplete,
+            props.setSelectedCurrency
         )
         setFormData({ ...formData, email: user.email })
     }, [user])

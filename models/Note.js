@@ -11,6 +11,8 @@ const NoteSchema = new mongoose.Schema({
         unique: true,
         maxlength: [40, 'Title cannot be more than 40 characters']
     },
+    currency: String,
+    amount: String,
     price: {
         type: String,
         required: [true, 'Please add a price'],

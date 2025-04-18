@@ -66,7 +66,8 @@ const Index = (props) => {
       props.setStripeUserId,
       props.setModalOpen,
       props.setNotes,
-      props.setAccountSetupComplete
+      props.setAccountSetupComplete,
+      props.setSelectedCurrency
     )
   }, [user])
 
@@ -79,6 +80,8 @@ const Index = (props) => {
   return (
     <>
       <Navbar
+        selectedCurrency={props.selectedCurrency}
+        setSelectedCurrency={props.setSelectedCurrency}
         events={props.events}
         setEvents={props.setEvents}
         currentEvent={props.currentEvent}

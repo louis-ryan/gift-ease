@@ -2,19 +2,20 @@ import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import NewEventModal from './NewEventModal';
 import EventsListDropdown from './EventsListDropdown';
+import CurrencySelector from './CurrencySelector';
 
 
 const Navbar = ({
+    selectedCurrency,
+    setSelectedCurrency,
     events,
     setEvents,
     currentEvent,
     setCurrentEvent,
-    currentEventStr,
-    setCurrentEventStr,
     modalOpen,
     setModalOpen,
-    notes,
-    setNotes
+    setNotes,
+    stripeUserId
 }) => {
 
     const { user } = useUser();
@@ -46,15 +47,18 @@ const Navbar = ({
                 <div className="logincontainer">
 
                     <>
+                        <CurrencySelector
+                            selectedCurrency={selectedCurrency}
+                            setSelectedCurrency={setSelectedCurrency}
+                            stripeUserId={stripeUserId}
+                        />
+
                         <Link href="/account">
                             <div className='profilepicture'>
                                 <img height={40} width={40} src={user.picture} alt="profile picture" />
                             </div>
                         </Link>
                         <div className='doublegaphor' />
-
-
-
 
                         <Link href="/api/auth/logout">
                             <img

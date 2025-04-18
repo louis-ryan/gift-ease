@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import fetch from 'isomorphic-unfetch';
 import { useRouter } from 'next/router';
+import currencies from '../utils/currencyList';
 
 const NewNote = (props) => {
     const [form, setForm] = useState({
         event: props.currentEvent._id,
         title: '',
+        currency: props.selectedCurrency,
+        amount: '',
         price: '',
         description: '',
         noteUrl: ''
@@ -30,13 +33,28 @@ const NewNote = (props) => {
 
     const createNote = async () => {
         try {
-            const res = await fetch('/api/notes', {
+            const res = await fetch('/api/convertToUsd', {
                 method: 'POST',
                 headers: {
                     "Accept": "application/json",
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify(form)
+                body: JSON.stringify({
+                    amount: form.amount,
+                    currency: form.currency
+                })
+            })
+            const { usdAmount } = await res.json()
+            await fetch('/api/notes', {
+                method: 'POST',
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    ...form,
+                    price: usdAmount
+                })
             })
             router.push("/");
         } catch (error) {
@@ -105,13 +123,13 @@ const NewNote = (props) => {
         }
     };
 
-    const handlePrice = (e) => {
+    const handlePrice = async (e) => {
         const cleanValue = e.target.value.replace(/[^\d.]/g, '');
         const parts = cleanValue.split('.');
         const formattedValue = parts[0] + (parts.length > 1 ? '.' + parts[1].slice(0, 2) : '');
         setForm({
             ...form,
-            price: formattedValue
+            amount: formattedValue
         })
     }
 
@@ -151,15 +169,30 @@ const NewNote = (props) => {
                             />
                             <div className='gapver' />
                             <label>Price</label>
-                            <input
-                                fluid
-                                error={errors.price ? { content: 'Please enter a price', pointing: 'below' } : null}
-                                label='Price'
-                                placeholder='670.00'
-                                inputMode='decimal'
-                                onChange={handlePrice}
-                                value={form.price}
-                            />
+                            <div style={{ display: "flex" }}>
+                                <select
+                                    name='currency'
+                                    value={form.currency}
+                                    onChange={handleChange}
+                                >
+                                    {currencies.map((currency) => (
+                                        <option key={currency.code} value={currency.code}>
+                                            {currency.code}
+                                        </option>
+                                    ))}
+                                </select>
+                                <div style={{ width: "8px" }} />
+                                <input
+                                    fluid
+                                    error={errors.amount ? { content: 'Please enter a price', pointing: 'below' } : null}
+                                    label='Price'
+                                    placeholder='670.00'
+                                    inputMode='decimal'
+                                    onChange={handlePrice}
+                                    value={form.amount}
+                                />
+                            </div>
+
                             <div className='gapver' />
                             <label>Description</label>
                             <textarea
