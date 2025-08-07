@@ -29,7 +29,8 @@ export default async (req, res) => {
                 user: userSub,
                 email: userEmail,
                 currentEventStr: "",
-                accountSetupComplete: false
+                accountSetupComplete: false,
+                currency: "USD"
             });
 
             res.status(201).json({ success: true, data: newAccount, message: "No account was found, one has been created." })

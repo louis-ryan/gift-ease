@@ -20,8 +20,6 @@ const Navbar = ({
 
     const { user } = useUser();
 
-    if (!currentEvent) return
-
     return (
         <>
             {modalOpen && user &&

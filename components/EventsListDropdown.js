@@ -28,7 +28,7 @@ const EventsListDropdown = ({ user, events, setEvents, setModalOpen, currentEven
             <div className='gaphor' />
             <select
                 onChange={handleChange}
-                value={currentEvent._id}
+                value={currentEvent._id || ''}
                 style={{ fontSize: "16px", fontFamily: "serif", height: "40px", color: "#426073" }}
             >
                 {events.map((event) => (

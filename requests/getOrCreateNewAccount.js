@@ -9,7 +9,7 @@ const getOrCreateNewAccount = async (sub, email, setCurrentEvent, setAccountId, 
             setStripeUserId(resJSON.data._id)
             setAccountId(resJSON.data.stripeAccountId)
             setAccountSetupComplete(resJSON.data.accountSetupComplete)
-            setSelectedCurrency(resJSON.data.currency)
+            setSelectedCurrency(resJSON.data.currency || 'USD')
             if (!resJSON.data.currentEventStr) {
                 setModalOpen(true)
             } else {

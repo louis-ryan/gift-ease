@@ -10,7 +10,7 @@ const organizePaymentsByGift = (payments, wishes, setNotes) => {
 
             updatedWishes[idx] = {
                 ...wish,
-                paid: wish.paid = wish.paid + payment.amount,
+                paid: wish.paid + payment.amount,
                 senders: updatedWishes[idx].senders ? [...updatedWishes[idx].senders] : []
             }
             updatedWishes[idx].senders.push(payment.amount)

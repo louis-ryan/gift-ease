@@ -76,7 +76,47 @@ const Index = (props) => {
     checkOnboardingStatus(props.accountId)
   }, [props.accountId])
 
-  if (!props.currentEvent._id) return
+  if (!props.currentEvent._id) {
+    return (
+      <>
+        <Navbar
+          selectedCurrency={props.selectedCurrency}
+          setSelectedCurrency={props.setSelectedCurrency}
+          events={props.events}
+          setEvents={props.setEvents}
+          currentEvent={props.currentEvent}
+          setCurrentEvent={props.setCurrentEvent}
+          currentEventStr={props.currentEventStr}
+          setCurrentEventStr={props.setCurrentEventStr}
+          accountId={props.accountId}
+          setAccountId={props.setAccountId}
+          accountSetupComplete={props.accountSetupComplete}
+          setAccountSetupComplete={props.setAccountSetupComplete}
+          stripeUserId={props.stripeUserId}
+          setStripeUserId={props.setStripeUserId}
+          modalOpen={props.modalOpen}
+          setModalOpen={props.setModalOpen}
+          notes={props.notes}
+          setNotes={props.setNotes}
+          onboardingData={props.onboardingData}
+          setOnboardingData={props.setOnboardingData}
+        />
+        <div className="container">
+          <div className="wrapper">
+            <div style={{ textAlign: 'center', padding: '50px' }}>
+              <h2>Welcome to Gift Easy!</h2>
+              <p>Please create your first event to get started.</p>
+              {props.modalOpen && (
+                <div style={{ marginTop: '20px' }}>
+                  <p>Creating your first event...</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
   return (
     <>
       <Navbar
