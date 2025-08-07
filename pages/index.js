@@ -140,15 +140,14 @@ const Index = (props) => {
       <div className="container">
         <div className="wrapper">
 
-          <UploaderComponent
-            currEvent={props.currentEvent._id}
-            setCurrentEvent={props.setCurrentEvent}
-            setUploading={setUploading}
-          />
-
           <CoverImage
             uploading={uploading}
             imageUrl={props.currentEvent.imageUrl}
+            eventName={props.currentEvent.name}
+            eventDate={props.currentEvent.date}
+            currEvent={props.currentEvent._id}
+            setCurrentEvent={props.setCurrentEvent}
+            setUploading={setUploading}
           />
 
           {/* <div style={{ position: "absolute", zIndex: "4", top: "392px", backgroundColor: "white", padding: "0px 80px", borderRadius: "8px 8px 0px 0px", marginLeft: "-80px" }}>
@@ -206,22 +205,12 @@ const Index = (props) => {
                     </p>
                   </div>
 
-                  <div style={{ height: "16px" }} />
-
-
-                  {/* <div style={{ display: "flex" }}>
-                    {note.senders && note.senders.map((sender) => (
-                      <div
-                        key={sender}
-                        style={{ height: "16px", width: "12px", backgroundColor: "grey", margin: "2px" }}
-                      />
-                    ))}
-                  </div> */}
+                  <div style={{ height: "12px" }} /> {/* Reduced from 16px */}
 
                   <div style={{ opacity: "0.9" }}>
                     <ResponsiveContainer
                       width="100%"
-                      height={160}
+                      height={140} /* Reduced from 160px */
                     >
                       <PieChart>
                         <Pie
@@ -229,7 +218,7 @@ const Index = (props) => {
                           cx="50%"
                           cy="50%"
                           innerRadius={0}
-                          outerRadius={80}
+                          outerRadius={70} /* Reduced from 80px */
                           dataKey="value"
                           paddingAngle={0}
                         >
@@ -244,12 +233,8 @@ const Index = (props) => {
                     </ResponsiveContainer>
                   </div>
 
-                  {/* <button onClick={() => { router.push(`/${note._id}`) }}>
-                      {"View"}
-                    </button> */}
-
-                  <div className='doublegapver' />
-                  <div className='doublegapver' />
+                  <div className='gapver' /> {/* Reduced spacing */}
+                  <div className='gapver' />
 
                 </div>
               )
@@ -263,9 +248,8 @@ const Index = (props) => {
               <h3>{"+ Add a wish"}</h3>
             </div>
           </div>
-          <div className='doublegapver' />
-          <div className='doublegapver' />
-          <div className='doublegapver' />
+          <div className='gapver' /> {/* Reduced spacing */}
+          <div className='gapver' />
 
           {/* <h3>{"Here is the link for you to share:"}</h3>
           <a href={`https://the-registry-web.site/for/${props.currentEvent.uri}`} target="_blank">
@@ -395,6 +379,28 @@ const Index = (props) => {
           .setup-button {
             width: 100%;
             justify-content: center;
+          }
+        }
+
+        /* Additional responsive improvements */
+        @media (max-width: 768px) {
+          .cardspace {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .cardspace {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+          }
+        }
+
+        @media (min-width: 1025px) {
+          .cardspace {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
           }
         }
       `}</style>

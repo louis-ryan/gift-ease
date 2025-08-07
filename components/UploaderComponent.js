@@ -123,12 +123,29 @@ const SimpleImageUpload = ({ currEvent, setCurrentEvent, setUploading }) => {
 
             <label
                 htmlFor="fileInput"
-                style={{ position: "absolute", zIndex: "4", left: "24px", marginTop: "24px", backgroundColor: "white", padding: "24px", cursor: "pointer", borderRadius: "8px" }}
+                style={{ 
+                    position: "absolute", 
+                    zIndex: "4", 
+                    right: "24px", 
+                    bottom: "20px", 
+                    backgroundColor: "rgba(255, 255, 255, 0.9)", 
+                    padding: "8px", 
+                    cursor: "pointer", 
+                    borderRadius: "50%",
+                    width: "32px",
+                    height: "32px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.3)",
+                    backdropFilter: "blur(10px)",
+                    border: "1px solid rgba(255, 255, 255, 0.5)"
+                }}
             >
                 <img
                 src={"icon_image.png"}
                 alt="icon image"
-                style={{height: "40px"}}
+                style={{height: "16px", width: "16px"}}
                 />
             </label>
         </>
