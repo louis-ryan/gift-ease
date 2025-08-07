@@ -72,7 +72,7 @@ const NewNote = (props) => {
                 },
                 body: JSON.stringify({
                     ...form,
-                    price: usdAmount
+                    price: usdAmount.toString() // Convert to string to match Note model
                 })
             })
             router.push("/");

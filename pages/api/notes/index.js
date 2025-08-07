@@ -13,7 +13,7 @@ export default async (req, res) => {
 
                 res.status(200).json({ success: true, data: notes })
             } catch (error) {
-                res.status(400).json({ success: false });
+                res.status(400).json({ success: false, error: error.message });
             }
             break;
         case 'POST':
@@ -22,7 +22,12 @@ export default async (req, res) => {
 
                 res.status(201).json({ success: true, data: note })
             } catch (error) {
-                res.status(400).json({ success: false });
+                console.error('Error creating note:', error);
+                res.status(400).json({ 
+                    success: false, 
+                    error: error.message,
+                    details: error.errors 
+                });
             }
             break;
         default:
