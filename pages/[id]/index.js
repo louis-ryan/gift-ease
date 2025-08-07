@@ -128,6 +128,16 @@ const Note = () => {
                                                 {payload[0].payload.gif && (
                                                     <img src={payload[0].payload.gif} alt="gif" />
                                                 )}
+                                                {payload[0].payload.cardHTML && (
+                                                    <div 
+                                                        dangerouslySetInnerHTML={{ __html: payload[0].payload.cardHTML }}
+                                                        style={{ 
+                                                            marginTop: '12px',
+                                                            display: 'flex',
+                                                            justifyContent: 'center'
+                                                        }}
+                                                    />
+                                                )}
                                             </div>
                                         );
                                     }
