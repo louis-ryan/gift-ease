@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import postNewEvent from "../requests/postNewEvent";
 
 const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent, setNotes }) => {
@@ -28,7 +28,27 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
         }
     };
 
-    const handleChange = async (e) => {
+    // Debounced URI check
+    const debouncedUriCheck = useCallback(
+        (() => {
+            let timeoutId;
+            return (uri) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(async () => {
+                    if (uri) {
+                        const isUnique = await checkUriUniqueness(uri);
+                        setErrors(prev => ({
+                            ...prev,
+                            uri: isUnique ? undefined : { message: 'This URL is already taken' }
+                        }));
+                    }
+                }, 300); // 300ms delay
+            };
+        })(),
+        []
+    );
+
+    const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
         let newData = {
@@ -37,7 +57,7 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
         };
 
         if (name === 'name') {
-            newData.uri = value
+            const newUri = value
                 .toLowerCase()
                 .replace(/[']/g, '')
                 .replace(/[^a-z0-9-\s]/g, '')
@@ -45,24 +65,28 @@ const NewEventModal = ({ events, setEvents, setModalOpen, user, setCurrentEvent,
                 .replace(/-+/g, '-')
                 .trim()
                 .replace(/^-+|-+$/g, '');
+            
+            newData.uri = newUri;
+            
+            // Clear URI error when name changes
+            setErrors(prev => ({
+                ...prev,
+                uri: undefined
+            }));
+            
+            // Debounced URI check
+            debouncedUriCheck(newUri);
         }
 
-        if (name === 'uri' || name === 'name') {
-            const isUnique = await checkUriUniqueness(newData.uri);
+        if (name === 'uri') {
+            // Clear URI error when manually editing URI
+            setErrors(prev => ({
+                ...prev,
+                uri: undefined
+            }));
             
-            if (!isUnique) {
-                const newErrors = {
-                    ...errors,
-                    uri: { message: 'This URL is already taken' }
-                };
-                setErrors(newErrors);
-            } else {
-                const newErrors = {
-                    ...errors,
-                    uri: undefined
-                };
-                setErrors(newErrors);
-            }
+            // Debounced URI check
+            debouncedUriCheck(value);
         }
         
         setFormData(newData);
