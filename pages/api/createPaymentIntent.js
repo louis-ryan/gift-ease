@@ -1,5 +1,7 @@
 import Stripe from 'stripe';
 import { corsMiddleware, runMiddleware } from '../../utils/cors'
+import dbConnect from '../../utils/dbConnect';
+import Card from '../../models/Card';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -16,7 +18,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { amount, recipientId, giftId, eventId, senderName, description, cardHTML } = req.body;
+    const { amount, recipientId, giftId, eventId, senderName, description, cardHTML, cardText, backgroundImage, overlayImages } = req.body;
 
     try {
       // Calculate fees
@@ -42,10 +44,25 @@ export default async function handler(req, res) {
           giftId: giftId,
           eventId: eventId,
           senderName: senderName,
-          description: description,
-          cardHTML: cardHTML || ''
+          description: description
         }
       });
+
+      // Save card data to database if provided
+      if (cardHTML) {
+        await dbConnect();
+        const cardData = new Card({
+          paymentIntentId: paymentIntent.id,
+          giftId,
+          eventId,
+          senderName,
+          cardHTML,
+          cardText: cardText || '',
+          backgroundImage: backgroundImage || '',
+          overlayImages: overlayImages || []
+        });
+        await cardData.save();
+      }
 
       res.status(200).json({
         clientSecret: paymentIntent.client_secret

@@ -1,5 +1,7 @@
 import Stripe from 'stripe';
 import { corsMiddleware, runMiddleware } from '../../utils/cors'
+import dbConnect from '../../utils/dbConnect';
+import Card from '../../models/Card';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -14,6 +16,8 @@ export default async function handler(req, res) {
         const { giftId } = req.query;
 
         try {
+            await dbConnect();
+
             const payments = await stripe.paymentIntents.list({
                 // Filter by metadata if you stored giftId in metadata
                 // expand: ['data.transfer'] // Uncomment to include transfer details
@@ -28,20 +32,27 @@ export default async function handler(req, res) {
                 sum + payment.amount, 0
             ) / 100; // Convert from cents to dollars
 
+            // Fetch card data for each payment
+            const paymentsWithCards = await Promise.all(
+                successfulPayments.map(async (payment) => {
+                    const cardData = await Card.findOne({ paymentIntentId: payment.id });
+                    return {
+                        id: payment.id,
+                        amount: payment.amount / 100,
+                        date: payment.created,
+                        giftId: payment.metadata.giftId,
+                        eventId: payment.metadata.eventId,
+                        status: payment.status,
+                        senderName: payment.metadata.senderName,
+                        description: payment.metadata.description,
+                        gifUrl: payment.metadata.gifUrl,
+                        cardHTML: cardData ? cardData.cardHTML : null
+                    };
+                })
+            );
+
             res.status(200).json({
-                payments: successfulPayments.map(payment => ({
-                    id: payment.id,
-                    amount: payment.amount / 100,
-                    date: payment.created,
-                    giftId: payment.metadata.giftId,
-                    eventId: payment.metadata.eventId,
-                    status: payment.status,
-                    senderName: payment.metadata.senderName,
-                    description: payment.metadata.description,
-                    gifUrl: payment.metadata.gifUrl,
-                    cardHTML: payment.metadata.cardHTML
-                    // Add other fields you need
-                })),
+                payments: paymentsWithCards,
                 totalPaid
             });
         } catch (err) {
