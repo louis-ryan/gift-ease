@@ -40,6 +40,9 @@ export default async function handler(req, res) {
                     giftId: payment.metadata.giftId,
                     eventId: payment.metadata.eventId,
                     status: payment.status,
+                    senderName: payment.metadata.senderName,
+                    description: payment.metadata.description,
+                    cardHTML: payment.metadata.cardHTML
                     // Add other fields you need
                 })),
                 totalPaid

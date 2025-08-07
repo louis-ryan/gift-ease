@@ -16,7 +16,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { amount, recipientId, giftId, eventId, senderName, description } = req.body;
+    const { amount, recipientId, giftId, eventId, senderName, description, cardHTML } = req.body;
 
     try {
       // Calculate fees
@@ -42,7 +42,8 @@ export default async function handler(req, res) {
           giftId: giftId,
           eventId: eventId,
           senderName: senderName,
-          description: description
+          description: description,
+          cardHTML: cardHTML || ''
         }
       });
 

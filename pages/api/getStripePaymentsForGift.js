@@ -38,7 +38,8 @@ export default async function handler(req, res) {
                     status: payment.status,
                     senderName: payment.metadata.senderName,
                     description: payment.metadata.description,
-                    gifUrl: payment.metadata.gifUrl
+                    gifUrl: payment.metadata.gifUrl,
+                    cardHTML: payment.metadata.cardHTML
                     // Add other fields you need
                 })),
                 totalPaid

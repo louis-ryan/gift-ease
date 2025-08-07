@@ -46,7 +46,8 @@ const Note = () => {
                 value: payment.amount,
                 color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
                 details: payment.description,
-                gif: payment.gifUrl
+                gif: payment.gifUrl,
+                cardHTML: payment.cardHTML
             }));
             const totalGoal = parseFloat(note.price)
             const totalPaid = resJSON.totalPaid
