@@ -20,6 +20,23 @@ const Navbar = ({
 
     const { user } = useUser();
 
+    // Get user picture with fallback
+    const getUserPicture = () => {
+        if (!user) return '/default-avatar.png'; // Fallback image
+        return user.picture || user.picture_url || '/default-avatar.png';
+    };
+
+    // Get user initials for fallback
+    const getUserInitials = () => {
+        if (!user || !user.name) return '?';
+        return user.name
+            .split(' ')
+            .map(name => name.charAt(0))
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
     return (
         <>
             {modalOpen && user &&
@@ -53,7 +70,35 @@ const Navbar = ({
 
                         <Link href="/account">
                             <div className='profilepicture'>
-                                <img height={40} width={40} src={user.picture} alt="profile picture" />
+                                {user && user.picture ? (
+                                    <img 
+                                        height={40} 
+                                        width={40} 
+                                        src={user.picture} 
+                                        alt="profile picture"
+                                        onError={(e) => {
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                ) : null}
+                                <div 
+                                    className="profile-fallback"
+                                    style={{ 
+                                        display: user && user.picture ? 'none' : 'flex',
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        backgroundColor: '#3b82f6',
+                                        color: 'white',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '16px',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    {getUserInitials()}
+                                </div>
                             </div>
                         </Link>
                         <div className='doublegaphor' />

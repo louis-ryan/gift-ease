@@ -230,65 +230,264 @@ const StripeRegistration = (props) => {
     if (!props.currentEvent) return
     if (!user) return
     return (
-        <div className="container" >
-            <div style={{ width: "600px" }}>
-
-                <Link href={"/"}>
-                    <h4>{"< Back to Dashboard"}</h4>
-                </Link>
+        <div className="container">
+            <div className="account-container">
+                <div className="back-link">
+                    <Link href={"/"}>
+                        <div className="back-button">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <span>Back to Dashboard</span>
+                        </div>
+                    </Link>
+                </div>
 
                 {props.accountSetupComplete ? (
-                    <>
-
-                        <h1>Account</h1>
-                        {/* <div style={{ border: "1px solid lightgrey", padding: "16px", borderRadius: "4px" }}>
-                            <h4>Your Account ID: {props.accountId}</h4>
+                    <div className="account-content">
+                        <div className="account-header">
+                            <h1 className="account-title">Account Dashboard</h1>
+                            <p className="account-subtitle">Manage your payments and account settings</p>
                         </div>
-
-                        <div style={{ height: "16px" }} /> */}
-
                         <BalanceDashboard data={transactionData} />
-                    </>
-
+                    </div>
                 ) : (
-                    <>
+                    <div className="setup-content">
                         {!props.onboardingData.isDetailsSubmitted ? (
-                            <>
-                                <h4>Step 1 of 2</h4>
-                                <h2>Submit Your Details</h2>
-                                {/* <p>Step {step} of 2</p> */}
-                                {error && <div className="error">{error}</div>}
-                                <form onSubmit={handleSubmit}>
-                                    {step && renderPersonalInfo(formData, handleInputChange, setStep)}
-                                    {/* {step === 2 && renderAddress(formData, handleInputChange, setStep)}
-                                    {step === 3 && renderDOB(formData, handleInputChange, setStep)} */}
-                                    {step && renderBankInfo(formData, handleBankAccountChange, setStep, loading)}
-                                </form>
+                            <div className="setup-step">
+                                <div className="setup-header">
+                                    <div className="step-indicator">
+                                        <div className="step-number">1</div>
+                                        <div className="step-info">
+                                            <div className="step-label">Step 1 of 2</div>
+                                            <div className="step-title">Account Verification</div>
+                                        </div>
+                                    </div>
+                                    <div className="setup-description">
+                                        <p>To ensure secure payments and comply with financial regulations, we need to verify your identity. This information is encrypted and protected by Stripe's bank-level security.</p>
+                                    </div>
+                                </div>
 
-                                {/* <img
-                                    src="/poweredbystripe2.png"
-                                    alt="powered by stripe logo"
-                                    style={{ width: "100%", opacity: "50%", padding: "80px" }}
-                                /> */}
-                            </>
+                                <div className="form-container">
+                                    {error && <div className="error-message">{error}</div>}
+                                    <form onSubmit={handleSubmit} className="setup-form">
+                                        {step && renderPersonalInfo(formData, handleInputChange, setStep)}
+                                        {step && renderBankInfo(formData, handleBankAccountChange, setStep, loading)}
+                                    </form>
+                                </div>
+
+                                <div className="security-notice">
+                                    <div className="security-icon">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M9 12L11 14L15 10" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </div>
+                                    <div className="security-text">
+                                        <strong>Bank-level security</strong> - Your data is encrypted and protected by Stripe's enterprise-grade security infrastructure.
+                                    </div>
+                                </div>
+                            </div>
                         ) : (
-                            <>
-                                <h4>Step 2 of 2</h4>
-                                <h2>Finalise Setup with Stripe</h2>
+                            <div className="setup-step">
+                                <div className="setup-header">
+                                    <div className="step-indicator">
+                                        <div className="step-number">2</div>
+                                        <div className="step-info">
+                                            <div className="step-label">Step 2 of 2</div>
+                                            <div className="step-title">Complete Setup</div>
+                                        </div>
+                                    </div>
+                                    <div className="setup-description">
+                                        <p>Almost done! Complete your Stripe account setup to start receiving payments for your wishes.</p>
+                                    </div>
+                                </div>
                                 <CreatePayoutLink accountId={props.accountId} />
-                            </>
-
+                            </div>
                         )}
-                    </>
-                )
-                }
+                    </div>
+                )}
 
+                <style jsx>{`
+                    .account-container {
+                        max-width: 800px;
+                        margin: 0 auto;
+                        padding: 40px 20px;
+                    }
 
+                    .back-link {
+                        margin-bottom: 32px;
+                    }
 
-                {/* <div style={{ height: "32px" }} />
+                    .back-button {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        color: #6B7280;
+                        font-size: 14px;
+                        font-weight: 500;
+                        text-decoration: none;
+                        transition: color 0.2s ease;
+                    }
 
-                <button onClick={() => deleteStripeAccount(user.sub, props.accountId)}>DELETE ACCOUNT</button> */}
+                    .back-button:hover {
+                        color: #374151;
+                    }
 
+                    .account-content {
+                        background: white;
+                        border-radius: 16px;
+                        padding: 40px;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    }
+
+                    .account-header {
+                        margin-bottom: 32px;
+                    }
+
+                    .account-title {
+                        font-size: 32px;
+                        font-weight: 700;
+                        color: #111827;
+                        margin: 0 0 8px 0;
+                    }
+
+                    .account-subtitle {
+                        font-size: 16px;
+                        color: #6B7280;
+                        margin: 0;
+                    }
+
+                    .setup-content {
+                        background: white;
+                        border-radius: 16px;
+                        padding: 40px;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    }
+
+                    .setup-step {
+                        max-width: 600px;
+                    }
+
+                    .setup-header {
+                        margin-bottom: 32px;
+                    }
+
+                    .step-indicator {
+                        display: flex;
+                        align-items: center;
+                        gap: 16px;
+                        margin-bottom: 24px;
+                    }
+
+                    .step-number {
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 50%;
+                        background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+                        color: white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: 600;
+                        font-size: 16px;
+                    }
+
+                    .step-info {
+                        flex: 1;
+                    }
+
+                    .step-label {
+                        font-size: 14px;
+                        color: #6B7280;
+                        font-weight: 500;
+                        margin-bottom: 4px;
+                    }
+
+                    .step-title {
+                        font-size: 24px;
+                        font-weight: 600;
+                        color: #111827;
+                        margin: 0;
+                    }
+
+                    .setup-description {
+                        background: #F8FAFC;
+                        border: 1px solid #E2E8F0;
+                        border-radius: 8px;
+                        padding: 16px;
+                    }
+
+                    .setup-description p {
+                        margin: 0;
+                        color: #475569;
+                        font-size: 14px;
+                        line-height: 1.6;
+                    }
+
+                    .form-container {
+                        margin-bottom: 32px;
+                    }
+
+                    .setup-form {
+                        background: #F8FAFC;
+                        border: 1px solid #E2E8F0;
+                        border-radius: 12px;
+                        padding: 24px;
+                    }
+
+                    .error-message {
+                        background: #FEF2F2;
+                        border: 1px solid #FECACA;
+                        color: #DC2626;
+                        padding: 12px 16px;
+                        border-radius: 8px;
+                        margin-bottom: 16px;
+                        font-size: 14px;
+                    }
+
+                    .security-notice {
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                        background: #F0FDF4;
+                        border: 1px solid #BBF7D0;
+                        border-radius: 8px;
+                        padding: 16px;
+                    }
+
+                    .security-icon {
+                        flex-shrink: 0;
+                        margin-top: 2px;
+                    }
+
+                    .security-text {
+                        font-size: 14px;
+                        color: #166534;
+                        line-height: 1.5;
+                    }
+
+                    @media (max-width: 640px) {
+                        .account-container {
+                            padding: 20px 16px;
+                        }
+
+                        .setup-content,
+                        .account-content {
+                            padding: 24px;
+                        }
+
+                        .step-indicator {
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: 12px;
+                        }
+
+                        .step-title {
+                            font-size: 20px;
+                        }
+                    }
+                `}</style>
             </div>
         </div>
     )

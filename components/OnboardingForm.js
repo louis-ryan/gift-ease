@@ -182,6 +182,28 @@ export const renderPersonalInfo = (formData, handleInputChange, setStep) => (
 
 export const renderBankInfo = (formData, handleBankAccountChange, setStep, loading) => {
     const countryConfig = COUNTRY_BANK_FORMATS[formData.country];
+    
+    // Check if all required fields are filled
+    const isFormValid = () => {
+        // Check if account holder name is filled
+        if (!formData.bankAccount.account_holder_name || formData.bankAccount.account_holder_name.trim() === '') {
+            return false;
+        }
+        
+        // Check if all required bank fields are filled
+        const requiredFields = Object.entries(countryConfig.bankFields)
+            .filter(([fieldName, fieldConfig]) => fieldConfig.required)
+            .map(([fieldName]) => fieldName);
+            
+        for (const fieldName of requiredFields) {
+            if (!formData.bankAccount[fieldName] || formData.bankAccount[fieldName].trim() === '') {
+                return false;
+            }
+        }
+        
+        return true;
+    };
+    
     return (
         <div>
             <div>
@@ -215,8 +237,13 @@ export const renderBankInfo = (formData, handleBankAccountChange, setStep, loadi
                 {/* <button type="button" onClick={() => setStep(1)}>Back</button> */}
                 <button
                     type="submit"
-                    disabled={loading}
-                    style={{width: "100%", padding: "16px"}}
+                    disabled={loading || !isFormValid()}
+                    style={{
+                        width: "100%", 
+                        padding: "16px",
+                        opacity: (loading || !isFormValid()) ? 0.5 : 1,
+                        cursor: (loading || !isFormValid()) ? 'not-allowed' : 'pointer'
+                    }}
                 >
                     {loading ? 'Creating Account...' : 'Complete Setup With Stripe'}
                 </button>

@@ -103,15 +103,11 @@ const Index = (props) => {
         />
         <div className="container">
           <div className="wrapper">
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-              <h2>Welcome to Gift Easy!</h2>
-              <p>Please create your first event to get started.</p>
-              {props.modalOpen && (
-                <div style={{ marginTop: '20px' }}>
-                  <p>Creating your first event...</p>
-                </div>
-              )}
-            </div>
+            {props.modalOpen && (
+              <div style={{ textAlign: 'center', padding: '50px' }}>
+                <p>Creating your first event...</p>
+              </div>
+            )}
           </div>
         </div>
       </>
@@ -279,10 +275,29 @@ const Index = (props) => {
           {props.accountSetupComplete ? (
             <ShareLink currentEvent={props.currentEvent} />
           ) : (
-            <>
-              <div>You need to complete the setup with Stripe before you can start sending your wish list.</div>
-              <Link href="/account">Complete Setup Here</Link>
-            </>
+            <div className="setup-reminder">
+              <div className="setup-content">
+                <div className="setup-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="#F59E0B" />
+                    <path d="M19 15L19.74 17.74L22.5 18.5L19.74 19.26L19 22L18.26 19.26L15.5 18.5L18.26 17.74L19 15Z" fill="#F59E0B" />
+                    <path d="M5 6L5.37 7.37L6.74 7.74L5.37 8.11L5 9.5L4.63 8.11L3.26 7.74L4.63 7.37L5 6Z" fill="#F59E0B" />
+                  </svg>
+                </div>
+                <div className="setup-text">
+                  <h3 className="setup-title">Complete Your Account Setup</h3>
+                  <p className="setup-description">
+                    To start receiving payments for your wishes, you need to complete your Stripe account setup.
+                  </p>
+                </div>
+                <Link href="/account" className="setup-button">
+                  <span>Complete Setup</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
           )}
 
 
@@ -294,6 +309,95 @@ const Index = (props) => {
 
         </div>
       </div>
+
+      <style jsx>{`
+        .setup-reminder {
+          background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+          border: 1px solid #F59E0B;
+          border-radius: 12px;
+          padding: 24px;
+          margin: 24px 0;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .setup-content {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .setup-icon {
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          background-color: #FEF3C7;
+          border-radius: 50%;
+          border: 2px solid #F59E0B;
+        }
+
+        .setup-text {
+          flex: 1;
+        }
+
+        .setup-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #92400E;
+          margin: 0 0 4px 0;
+        }
+
+        .setup-description {
+          font-size: 14px;
+          color: #92400E;
+          margin: 0;
+          line-height: 1.5;
+        }
+
+        .setup-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background-color: #F59E0B;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 8px;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 14px;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+
+        .setup-button:hover {
+          background-color: #D97706;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .setup-button svg {
+          transition: transform 0.2s ease;
+        }
+
+        .setup-button:hover svg {
+          transform: translateX(2px);
+        }
+
+        @media (max-width: 640px) {
+          .setup-content {
+            flex-direction: column;
+            text-align: center;
+            gap: 12px;
+          }
+
+          .setup-button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </>
   )
 }
