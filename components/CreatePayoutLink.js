@@ -14,7 +14,7 @@ const CreatePayoutLink = ({ accountId }) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(accountId),
+                body: JSON.stringify({ accountId: accountId }),
             });
 
             if (!response.ok) {
