@@ -21,7 +21,11 @@ const NoteSchema = new mongoose.Schema({
         required: true,
         maxlength: [200, 'Description cannot be more than 200 characters']
     },
-    noteUrl: String
+    noteUrl: String,
+    imageUrl: {
+        type: String,
+        required: false
+    }
 })
 
 module.exports = mongoose.models.Note || mongoose.model('Note', NoteSchema);
