@@ -31,16 +31,19 @@ This feature allows users to automatically populate their wish form by simply pa
 ### Supported Selectors
 
 #### Amazon
+
 - Title: `#productTitle`, `h1.a-size-large`
 - Price: `.a-price-whole`, `.a-price .a-offscreen`
 - Image: `#landingImage`, `.imgTagWrapper img`
 
 #### Target
+
 - Title: `[data-test="product-title"]`
 - Price: `[data-test="product-price"]`, `.styles__PriceText`
 - Image: `[data-test="product-image"] img`
 
 #### Walmart
+
 - Title: `[data-testid="product-title"]`
 - Price: `[data-testid="price-wrap"] .price-characteristic`
 - Image: `[data-testid="product-image"] img`
@@ -55,17 +58,20 @@ This feature allows users to automatically populate their wish form by simply pa
 ## ⚠️ Limitations & Considerations
 
 ### Technical Limitations
+
 - **Site Structure Changes**: Retailers may change their HTML structure
 - **Rate Limiting**: Some sites may block frequent requests
 - **JavaScript Content**: Dynamic content may not be captured
 - **Robots.txt**: Respects website crawling policies
 
 ### Legal Considerations
+
 - **Terms of Service**: Some sites prohibit scraping
 - **Rate Limiting**: Implemented to avoid overwhelming servers
 - **User Agent**: Proper identification in requests
 
 ### Reliability Factors
+
 - **Network Issues**: Timeout handling for slow responses
 - **Data Quality**: Price formatting varies between retailers
 - **Image URLs**: Relative vs absolute URL handling
@@ -73,6 +79,7 @@ This feature allows users to automatically populate their wish form by simply pa
 ## 🔄 Future Enhancements
 
 ### Phase 2 Improvements
+
 - **More Retailers**: Add support for additional stores
 - **Better Price Parsing**: Handle currency symbols and formatting
 - **Image Optimization**: Resize and compress product images
@@ -80,6 +87,7 @@ This feature allows users to automatically populate their wish form by simply pa
 - **Fallback Strategies**: Multiple selector attempts for better reliability
 
 ### Advanced Features
+
 - **Product Reviews**: Extract and display product ratings
 - **Availability Check**: Verify if product is in stock
 - **Price History**: Track price changes over time
@@ -115,4 +123,4 @@ npm install cheerio
 - **Error Handling**: No sensitive data exposure in error messages
 - **Rate Limiting**: Prevents abuse of the scraping service
 
-This feature significantly improves the user experience by reducing manual data entry while maintaining the flexibility of manual form completion when needed. 
+This feature significantly improves the user experience by reducing manual data entry while maintaining the flexibility of manual form completion when needed.

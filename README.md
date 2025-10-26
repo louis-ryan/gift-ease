@@ -3,13 +3,11 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 Update the `next.config.js` file with your mongodb connection string.
 
 ```js
-
 module.exports = {
-    env: {
-        MONGO_URI: "Your connection string"
-    }
-}
-
+  env: {
+    MONGO_URI: 'Your connection string',
+  },
+};
 ```
 
 ## Getting Started

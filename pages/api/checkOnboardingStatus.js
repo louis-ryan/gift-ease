@@ -26,9 +26,9 @@ export default async function handler(req, res) {
         pendingVerification: account.requirements?.pending_verification || [],
         eventuallyDue: account.requirements?.eventually_due || [],
         disabled_reason: account.requirements?.disabled_reason,
-        past_due: account.requirements?.past_due || []
+        past_due: account.requirements?.past_due || [],
       },
-      capabilities: account.capabilities
+      capabilities: account.capabilities,
     });
   } catch (error) {
     console.error('Error:', error);

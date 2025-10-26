@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { corsMiddleware, runMiddleware } from '../../utils/cors'
+import { corsMiddleware, runMiddleware } from '../../utils/cors';
 import dbConnect from '../../utils/dbConnect';
 import Card from '../../models/Card';
 
@@ -18,7 +18,18 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { amount, recipientId, giftId, eventId, senderName, description, cardHTML, cardText, backgroundImage, overlayImages } = req.body;
+    const {
+      amount,
+      recipientId,
+      giftId,
+      eventId,
+      senderName,
+      description,
+      cardHTML,
+      cardText,
+      backgroundImage,
+      overlayImages,
+    } = req.body;
 
     try {
       // Calculate fees
@@ -44,8 +55,8 @@ export default async function handler(req, res) {
           giftId: giftId,
           eventId: eventId,
           senderName: senderName,
-          description: description
-        }
+          description: description,
+        },
       });
 
       // Save card data to database if provided
@@ -59,13 +70,13 @@ export default async function handler(req, res) {
           cardHTML,
           cardText: cardText || '',
           backgroundImage: backgroundImage || '',
-          overlayImages: overlayImages || []
+          overlayImages: overlayImages || [],
         });
         await cardData.save();
       }
 
       res.status(200).json({
-        clientSecret: paymentIntent.client_secret
+        clientSecret: paymentIntent.client_secret,
       });
     } catch (err) {
       console.error('Error creating payment intent:', err);

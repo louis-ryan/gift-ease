@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import formidable from 'formidable';
 import fs from 'fs';
 
@@ -38,7 +38,7 @@ export default async function uploadToS3(req, res) {
 
     // Create formidable instance (corrected syntax)
     const form = formidable();
-    
+
     // Parse form data
     const [fields, files] = await new Promise((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
@@ -61,7 +61,7 @@ export default async function uploadToS3(req, res) {
       Bucket: process.env.AMAZON_BUCKET,
       Key: `uploads/${Date.now()}-${file.originalFilename || 'untitled'}`,
       Body: fileBuffer,
-      ContentType: file.mimetype || 'application/octet-stream'
+      ContentType: file.mimetype || 'application/octet-stream',
     };
 
     // Upload to S3
@@ -73,15 +73,14 @@ export default async function uploadToS3(req, res) {
 
     return res.status(200).json({
       message: 'Upload successful',
-      url: `https://${process.env.AMAZON_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${params.Key}`
+      url: `https://${process.env.AMAZON_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${params.Key}`,
     });
-
   } catch (error) {
     console.error('Upload error:', error);
     return res.status(500).json({
       error: 'Upload failed',
       details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     });
   }
 }

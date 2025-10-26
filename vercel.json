@@ -3,7 +3,7 @@
     {
       "src": "package.json",
       "use": "@vercel/next",
-      "config": { 
+      "config": {
         "packageManager": "npm",
         "skipBuild": false
       }

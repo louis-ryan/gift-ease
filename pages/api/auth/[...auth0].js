@@ -1,11 +1,16 @@
-import { handleAuth, handleCallback, handleLogin, handleLogout } from '@auth0/nextjs-auth0';
+import {
+  handleAuth,
+  handleCallback,
+  handleLogin,
+  handleLogout,
+} from '@auth0/nextjs-auth0';
 
 export default handleAuth({
   async callback(req, res) {
     try {
       await handleCallback(req, res, {
         redirectUri: `${process.env.AUTH0_BASE_URL}/api/auth/callback`,
-        postLoginRedirect: '/'
+        postLoginRedirect: '/',
       });
 
       console.log('Callback completed successfully');
@@ -36,9 +41,9 @@ export default handleAuth({
       // Use the specific Canva site preview URL
       const returnToUrl = 'https://wishlistagogo.com/';
       console.log('Attempting to redirect to:', returnToUrl);
-      
+
       await handleLogout(req, res, {
-        returnTo: returnToUrl
+        returnTo: returnToUrl,
       });
       console.log('Logout handled successfully');
     } catch (error) {
@@ -48,5 +53,5 @@ export default handleAuth({
       res.writeHead(302, { Location: '/' });
       res.end();
     }
-  }
+  },
 });

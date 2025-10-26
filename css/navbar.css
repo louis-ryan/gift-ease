@@ -10,19 +10,6 @@
   align-items: center;
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* Override any potential inherited backgrounds */
-nav.navbar {
-  background: transparent !important;
-  background-color: transparent !important;
-}
-
-/* Ensure no background on any navbar element */
-.navbar * {
-  background: transparent !important;
 }
 
 .logincontainer {
@@ -37,53 +24,4 @@ nav.navbar {
   height: 40px;
   overflow: hidden;
   border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.navbar img {
-  filter: brightness(0) invert(1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  padding: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-/* Style for the profile fallback */
-.profile-fallback {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-  border: 2px solid rgba(255, 255, 255, 0.3) !important;
-  background: rgba(59, 130, 246, 0.9) !important;
-  backdrop-filter: blur(10px) !important;
-}
-
-/* Style for EventsListDropdown elements */
-.navbar select {
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: #143950 !important;
-  border: 2px solid rgba(255, 255, 255, 0.5) !important;
-  border-radius: 8px !important;
-  padding: 8px 12px !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-  backdrop-filter: blur(10px) !important;
-}
-
-.navbar select option {
-  background: white !important;
-  color: #143950 !important;
-}
-
-/* Style for the add event button */
-.navbar div[onClick] {
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: #143950 !important;
-  border: 2px solid rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-  backdrop-filter: blur(10px) !important;
-  font-weight: 600 !important;
 }

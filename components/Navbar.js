@@ -1,9 +1,70 @@
 import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
+import styled from 'styled-components';
 import NewEventModal from './NewEventModal';
 import EventsListDropdown from './EventsListDropdown';
 import CurrencySelector from './CurrencySelector';
 
+const Nav = styled.nav`
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  height: 80px;
+  padding: 40px 24px;
+`;
+
+const LoginContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const ProfilePicture = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const ProfileImage = styled.img`
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+`;
+
+const ProfileFallback = styled.div`
+  display: ${props => props.show ? 'flex' : 'none'};
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  color: white;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+`;
+
+const LogoutButton = styled.div`
+  display: flex;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  cursor: pointer;
+`;
+
+const LogoutIcon = styled.img`
+  width: 28px;
+  height: 28px;
+`;
+
+const Gap = styled.div`
+  width: 16px;
+`;
 
 const Navbar = ({
     selectedCurrency,
@@ -15,9 +76,8 @@ const Navbar = ({
     modalOpen,
     setModalOpen,
     setNotes,
-    stripeUserId
+    stripeUserId,
 }) => {
-
     const { user } = useUser();
 
     // Get user picture with fallback
@@ -31,7 +91,7 @@ const Navbar = ({
         if (!user || !user.name) return '?';
         return user.name
             .split(' ')
-            .map(name => name.charAt(0))
+            .map((name) => name.charAt(0))
             .join('')
             .toUpperCase()
             .slice(0, 2);
@@ -39,7 +99,7 @@ const Navbar = ({
 
     return (
         <>
-            {modalOpen && user &&
+            {modalOpen && user && (
                 <NewEventModal
                     events={events}
                     setEvents={setEvents}
@@ -48,8 +108,8 @@ const Navbar = ({
                     setCurrentEvent={setCurrentEvent}
                     setNotes={setNotes}
                 />
-            }
-            <nav className="navbar">
+            )}
+            <Nav>
                 <EventsListDropdown
                     user={user}
                     events={events}
@@ -59,8 +119,7 @@ const Navbar = ({
                     setCurrentEvent={setCurrentEvent}
                     setNotes={setNotes}
                 />
-                <div className="logincontainer">
-
+                <LoginContainer>
                     <>
                         {/* <CurrencySelector
                             selectedCurrency={selectedCurrency}
@@ -69,12 +128,10 @@ const Navbar = ({
                         /> */}
 
                         <Link href="/account">
-                            <div className='profilepicture'>
+                            <ProfilePicture>
                                 {user && user.picture ? (
-                                    <img 
-                                        height={40} 
-                                        width={40} 
-                                        src={user.picture} 
+                                    <ProfileImage
+                                        src={user.picture}
                                         alt="profile picture"
                                         onError={(e) => {
                                             e.target.style.display = 'none';
@@ -82,41 +139,26 @@ const Navbar = ({
                                         }}
                                     />
                                 ) : null}
-                                <div 
-                                    className="profile-fallback"
-                                    style={{ 
-                                        display: user && user.picture ? 'none' : 'flex',
-                                        width: '40px',
-                                        height: '40px',
-                                        borderRadius: '50%',
-                                        backgroundColor: '#3b82f6',
-                                        color: 'white',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: '16px',
-                                        fontWeight: '600'
-                                    }}
-                                >
+                                <ProfileFallback show={!user || !user.picture}>
                                     {getUserInitials()}
-                                </div>
-                            </div>
+                                </ProfileFallback>
+                            </ProfilePicture>
                         </Link>
-                        <div className='doublegaphor' />
+                        <Gap />
 
                         <Link href="/api/auth/logout">
-                            <img
-                                src={"icon_logout.png"}
-                                alt="logout icon"
-                                style={{ height: "40px" }}
-
-                            />
+                            <LogoutButton>
+                                <LogoutIcon
+                                    src={'icon_logout.png'}
+                                    alt="logout icon"
+                                />
+                            </LogoutButton>
                         </Link>
                     </>
-
-                </div>
-            </nav>
+                </LoginContainer>
+            </Nav>
         </>
-    )
-}
+    );
+};
 
 export default Navbar;

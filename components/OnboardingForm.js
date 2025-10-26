@@ -1,86 +1,90 @@
 import { COUNTRY_BANK_FORMATS } from '../countryBankFormats';
 
 const PhoneInput = ({ country, value, onChange }) => {
-    const prefix = COUNTRY_BANK_FORMATS[country]?.phonePrefix || '';
+  const prefix = COUNTRY_BANK_FORMATS[country]?.phonePrefix || '';
 
-    const handleChange = (e) => {
-        let newValue = e.target.value;
-        if (newValue.startsWith(prefix)) {
-            newValue = newValue.slice(prefix.length);
-        }
-        newValue = newValue.replace(/[^\d+]/g, '');
-        onChange(newValue);
-    };
+  const handleChange = (e) => {
+    let newValue = e.target.value;
+    if (newValue.startsWith(prefix)) {
+      newValue = newValue.slice(prefix.length);
+    }
+    newValue = newValue.replace(/[^\d+]/g, '');
+    onChange(newValue);
+  };
 
-    return (
-        <div style={{ position: 'relative' }}>
-            <div style={{
-                position: 'absolute',
-                left: '8px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                color: '#666'
-            }}>
-                {prefix}
-            </div>
-            <input
-                type="tel"
-                value={value}
-                onChange={handleChange}
-                style={{ paddingLeft: `${prefix.length * 10 + 8}px` }}
-                placeholder="Phone number"
-            />
-        </div>
-    );
+  return (
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{
+          position: 'absolute',
+          left: '8px',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          color: '#666',
+        }}
+      >
+        {prefix}
+      </div>
+      <input
+        type="tel"
+        value={value}
+        onChange={handleChange}
+        style={{ paddingLeft: `${prefix.length * 10 + 8}px` }}
+        placeholder="Phone number"
+      />
+    </div>
+  );
 };
 
 export const renderPersonalInfo = (formData, handleInputChange, setStep) => (
+  <div>
     <div>
-        <div>
-            <label>Email</label>
-            <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-            />
-        </div>
-        <div className='doublegapver' />
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div style={{ width: "15%" }}>
-                <label>Country</label>
-                <br></br>
-                <select
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                    required
-                >
-                    {Object.keys(COUNTRY_BANK_FORMATS).map(country => (
-                        <option key={country} value={country}>
-                            {country}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div style={{ width: "85%" }}>
-                <label>Phone</label>
-                <PhoneInput
-                    country={formData.country}
-                    value={formData.phone}
-                    onChange={(value) => handleInputChange({
-                        target: {
-                            name: 'phone',
-                            value: value
-                        }
-                    })}
-                />
-            </div>
-        </div>
-        <div className='doublegapver' />
-        {/* <button type="button" onClick={() => setStep(2)}>Next</button> */}
+      <label>Email</label>
+      <input
+        type="email"
+        name="email"
+        value={formData.email}
+        onChange={handleInputChange}
+        required
+      />
     </div>
+    <div className="doublegapver" />
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ width: '15%' }}>
+        <label>Country</label>
+        <br></br>
+        <select
+          name="country"
+          value={formData.country}
+          onChange={handleInputChange}
+          required
+        >
+          {Object.keys(COUNTRY_BANK_FORMATS).map((country) => (
+            <option key={country} value={country}>
+              {country}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div style={{ width: '85%' }}>
+        <label>Phone</label>
+        <PhoneInput
+          country={formData.country}
+          value={formData.phone}
+          onChange={(value) =>
+            handleInputChange({
+              target: {
+                name: 'phone',
+                value: value,
+              },
+            })
+          }
+        />
+      </div>
+    </div>
+    <div className="doublegapver" />
+    {/* <button type="button" onClick={() => setStep(2)}>Next</button> */}
+  </div>
 );
 
 // export const renderAddress = (formData, handleInputChange, setStep) => (
@@ -180,74 +184,87 @@ export const renderPersonalInfo = (formData, handleInputChange, setStep) => (
 //     </div>
 // );
 
-export const renderBankInfo = (formData, handleBankAccountChange, setStep, loading) => {
-    const countryConfig = COUNTRY_BANK_FORMATS[formData.country];
-    
-    // Check if all required fields are filled
-    const isFormValid = () => {
-        // Check if account holder name is filled
-        if (!formData.bankAccount.account_holder_name || formData.bankAccount.account_holder_name.trim() === '') {
-            return false;
-        }
-        
-        // Check if all required bank fields are filled
-        const requiredFields = Object.entries(countryConfig.bankFields)
-            .filter(([fieldName, fieldConfig]) => fieldConfig.required)
-            .map(([fieldName]) => fieldName);
-            
-        for (const fieldName of requiredFields) {
-            if (!formData.bankAccount[fieldName] || formData.bankAccount[fieldName].trim() === '') {
-                return false;
-            }
-        }
-        
-        return true;
-    };
-    
-    return (
-        <div>
-            <div>
-                <label>Account Holder Name</label>
-                <input
-                    type="text"
-                    name="account_holder_name"
-                    value={formData.bankAccount.account_holder_name}
-                    onChange={handleBankAccountChange}
-                    required
-                />
+export const renderBankInfo = (
+  formData,
+  handleBankAccountChange,
+  setStep,
+  loading
+) => {
+  const countryConfig = COUNTRY_BANK_FORMATS[formData.country];
+
+  // Check if all required fields are filled
+  const isFormValid = () => {
+    // Check if account holder name is filled
+    if (
+      !formData.bankAccount.account_holder_name ||
+      formData.bankAccount.account_holder_name.trim() === ''
+    ) {
+      return false;
+    }
+
+    // Check if all required bank fields are filled
+    const requiredFields = Object.entries(countryConfig.bankFields)
+      .filter(([fieldName, fieldConfig]) => fieldConfig.required)
+      .map(([fieldName]) => fieldName);
+
+    for (const fieldName of requiredFields) {
+      if (
+        !formData.bankAccount[fieldName] ||
+        formData.bankAccount[fieldName].trim() === ''
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  return (
+    <div>
+      <div>
+        <label>Account Holder Name</label>
+        <input
+          type="text"
+          name="account_holder_name"
+          value={formData.bankAccount.account_holder_name}
+          onChange={handleBankAccountChange}
+          required
+        />
+      </div>
+      <div className="doublegapver" />
+      {Object.entries(countryConfig.bankFields).map(
+        ([fieldName, fieldConfig]) => (
+          <>
+            <div key={fieldName}>
+              <label>{fieldConfig.label}</label>
+              <input
+                type="text"
+                name={fieldName}
+                value={formData.bankAccount[fieldName] || ''}
+                onChange={handleBankAccountChange}
+                placeholder={fieldConfig.placeholder}
+                required={fieldConfig.required}
+              />
             </div>
-            <div className='doublegapver' />
-            {Object.entries(countryConfig.bankFields).map(([fieldName, fieldConfig]) => (
-                <>
-                    <div key={fieldName}>
-                        <label>{fieldConfig.label}</label>
-                        <input
-                            type="text"
-                            name={fieldName}
-                            value={formData.bankAccount[fieldName] || ''}
-                            onChange={handleBankAccountChange}
-                            placeholder={fieldConfig.placeholder}
-                            required={fieldConfig.required}
-                        />
-                    </div>
-                    <div className='doublegapver' />
-                </>
-            ))}
-            <div className="button-group">
-                {/* <button type="button" onClick={() => setStep(1)}>Back</button> */}
-                <button
-                    type="submit"
-                    disabled={loading || !isFormValid()}
-                    style={{
-                        width: "100%", 
-                        padding: "16px",
-                        opacity: (loading || !isFormValid()) ? 0.5 : 1,
-                        cursor: (loading || !isFormValid()) ? 'not-allowed' : 'pointer'
-                    }}
-                >
-                    {loading ? 'Creating Account...' : 'Complete Setup With Stripe'}
-                </button>
-            </div>
-        </div>
-    );
+            <div className="doublegapver" />
+          </>
+        )
+      )}
+      <div className="button-group">
+        {/* <button type="button" onClick={() => setStep(1)}>Back</button> */}
+        <button
+          type="submit"
+          disabled={loading || !isFormValid()}
+          style={{
+            width: '100%',
+            padding: '16px',
+            opacity: loading || !isFormValid() ? 0.5 : 1,
+            cursor: loading || !isFormValid() ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? 'Creating Account...' : 'Complete Setup With Stripe'}
+        </button>
+      </div>
+    </div>
+  );
 };
