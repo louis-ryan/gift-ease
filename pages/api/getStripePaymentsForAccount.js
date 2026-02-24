@@ -1,9 +1,7 @@
-import Stripe from 'stripe';
 import { corsMiddleware, runMiddleware } from '../../utils/cors';
 import dbConnect from '../../utils/dbConnect';
+import Payment from '../../models/Payment';
 import Card from '../../models/Card';
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
   try {
@@ -18,43 +16,27 @@ export default async function handler(req, res) {
     try {
       await dbConnect();
 
-      const payments = await stripe.paymentIntents.list({
-        // Filter by metadata if you stored giftId in metadata
-        // expand: ['data.transfer'] // Uncomment to include transfer details
-      });
+      const payments = await Payment.find({ recipientId: accountId }).lean();
+      const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
 
-      const successfulPayments = payments.data.filter(
-        (payment) =>
-          payment.status === 'succeeded' &&
-          payment.metadata.recipientId === accountId
-      );
-
-      const totalPaid =
-        successfulPayments.reduce((sum, payment) => sum + payment.amount, 0) /
-        100; // Convert from cents to dollars
-
-      // Fetch card data for each payment
       const paymentsWithCards = await Promise.all(
-        successfulPayments.map(async (payment) => {
-          const cardData = await Card.findOne({ paymentIntentId: payment.id });
+        payments.map(async (p) => {
+          const cardData = await Card.findOne({ paymentIntentId: p.paymentIntentId });
           return {
-            id: payment.id,
-            amount: payment.amount / 100,
-            date: payment.created,
-            giftId: payment.metadata.giftId,
-            eventId: payment.metadata.eventId,
-            status: payment.status,
-            senderName: payment.metadata.senderName,
-            description: payment.metadata.description,
+            id: p.paymentIntentId,
+            amount: p.amount,
+            date: p.createdAt,
+            giftId: p.giftId,
+            eventId: p.eventId,
+            status: 'succeeded',
+            senderName: p.senderName,
+            description: p.description,
             cardHTML: cardData ? cardData.cardHTML : null,
           };
         })
       );
 
-      res.status(200).json({
-        payments: paymentsWithCards,
-        totalPaid,
-      });
+      res.status(200).json({ payments: paymentsWithCards, totalPaid });
     } catch (err) {
       console.error('Error fetching payments:', err);
       res.status(500).json({ error: 'Failed to fetch payments' });

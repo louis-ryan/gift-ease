@@ -37,27 +37,32 @@ export default async function handler(req, res) {
       const platformFee = Math.round(amount * platformFeePercent * 100); // Convert to cents
       const amountInCents = Math.round(amount * 100);
 
+      const idempotencyKey = req.headers['idempotency-key'];
+
       // Create a PaymentIntent
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amountInCents,
-        currency: 'usd',
-        application_fee_amount: platformFee,
-        transfer_data: {
-          destination: recipientId, // The connected account ID
+      const paymentIntent = await stripe.paymentIntents.create(
+        {
+          amount: amountInCents,
+          currency: 'usd',
+          application_fee_amount: platformFee,
+          transfer_data: {
+            destination: recipientId,
+          },
+          automatic_payment_methods: {
+            enabled: true,
+          },
+          metadata: {
+            giftAmount: amount,
+            platformFee: platformFee / 100,
+            recipientId: recipientId,
+            giftId: giftId,
+            eventId: eventId,
+            senderName: senderName,
+            description: description,
+          },
         },
-        automatic_payment_methods: {
-          enabled: true,
-        },
-        metadata: {
-          giftAmount: amount,
-          platformFee: platformFee / 100, // Convert back to dollars for readability
-          recipientId: recipientId,
-          giftId: giftId,
-          eventId: eventId,
-          senderName: senderName,
-          description: description,
-        },
-      });
+        idempotencyKey ? { idempotencyKey } : undefined
+      );
 
       // Save card data to database if provided
       if (cardHTML) {

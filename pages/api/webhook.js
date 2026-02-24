@@ -2,6 +2,7 @@ import Stripe from 'stripe';
 import { buffer } from 'micro';
 import dbConnect from '../../utils/dbConnect';
 import User from '../../models/Account';
+import Payment from '../../models/Payment';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -34,10 +35,6 @@ export default async function handler(req, res) {
     if (event.type === 'account.updated') {
       const account = event.data.object;
 
-      // Find user before update
-      const existingUser = await User.findOne({ stripeAccountId: account.id });
-
-      // Update user
       const updatedUser = await User.findOneAndUpdate(
         { stripeAccountId: account.id },
         {
@@ -53,6 +50,23 @@ export default async function handler(req, res) {
         userId: updatedUser?._id,
         newStatus: updatedUser?.stripeAccountStatus,
       });
+    }
+
+    if (event.type === 'payment_intent.succeeded') {
+      const intent = event.data.object;
+      await Payment.findOneAndUpdate(
+        { paymentIntentId: intent.id },
+        {
+          paymentIntentId: intent.id,
+          giftId: intent.metadata.giftId,
+          eventId: intent.metadata.eventId,
+          recipientId: intent.metadata.recipientId,
+          senderName: intent.metadata.senderName,
+          description: intent.metadata.description,
+          amount: intent.amount / 100,
+        },
+        { upsert: true }
+      );
     }
 
     res.json({ received: true });

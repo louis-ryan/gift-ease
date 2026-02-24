@@ -7,7 +7,7 @@ const corsMiddleware = cors({
     'https://the-registry-web.site',
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Origin', 'Accept', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Origin', 'Accept', 'Authorization', 'Idempotency-Key'],
   credentials: true,
 });
 
@@ -19,7 +19,7 @@ function runMiddleware(req, res, fn) {
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       res.setHeader(
         'Access-Control-Allow-Headers',
-        'Content-Type, Authorization, Accept'
+        'Content-Type, Authorization, Accept, Idempotency-Key'
       );
       res.setHeader('Access-Control-Allow-Credentials', 'true');
       return res.status(200).end();
