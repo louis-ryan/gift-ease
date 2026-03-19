@@ -1,112 +1,145 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import styled from 'styled-components';
-import getCurrentEvent from '../requests/getCurrentEvent';
-import deleteThisEvent from '../requests/deleteThisEvent';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
+import deleteThisEvent from '../requests/deleteThisEvent';
 import Navbar from '../components/Navbar';
 import WishCard from '../components/WishCard';
 import ConnectOnboarding from '../components/ConnectOnboarding';
-import CreatePayoutLink from '../components/CreatePayoutLink';
-import AccountStatus from '../components/AccountStatus';
 import ShareLink from '../components/shareLinkComponent';
-import UploaderComponent from '../components/UploaderComponent';
 import CoverImage from '../components/CoverImage';
 import Footer from '../components/Footer';
 import DeleteModal from '../components/DeleteModal';
 import SetupReminder from '../components/SetupReminder';
 
-// Styled Components
-const MainContainer = styled.div`
+// ── Layout ──────────────────────────────────────────────────────────────
+const Page = styled.div`
+  min-height: 100vh;
+  background: #FAFAFA;
+`;
+
+const HeroSpacer = styled.div`
+  height: 320px;
+`;
+
+const Content = styled.div`
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 0 60px;
   display: flex;
-  justify-content: center;
-`;
-
-const Wrapper = styled.div`
-  width: 960px;
-`;
-
-const Spacer = styled.div`
-  height: 200px;
-`;
-
-const CardSpace = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  flex-direction: column;
   gap: 24px;
-  padding: 24px 0;
 `;
 
-const Card = styled.div`
-  position: relative;
-  overflow: hidden;
-  border-radius: 12px;
-  padding-bottom: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  transform: scale(1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  
-  &:hover {
-    transform: scale(1.02);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+// ── Section header ───────────────────────────────────────────────────────
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const SectionTitle = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: #18181B;
+  margin: 0;
+`;
+
+const SectionMeta = styled.span`
+  font-size: 13px;
+  color: #71717A;
+  font-weight: 500;
+`;
+
+// ── Cards grid ───────────────────────────────────────────────────────────
+const CardsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
   }
 `;
 
-
-
-
-// Delete Button Styled Component
-const DeleteButton = styled.button`
-  background-color: #ef4444;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 10px;
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
+// ── Add wish card ────────────────────────────────────────────────────────
+const AddWishCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  border: 1.5px dashed #D4D4D8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 260px;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    transform 0.1s ease;
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+  transition: all 0.2s ease;
+  gap: 10px;
+  color: #A1A1AA;
+
+  &:hover {
+    border-color: #8B5CF6;
+    color: #8B5CF6;
+    background: rgba(139,92,246,0.02);
+  }
+`;
+
+const AddWishIcon = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px dashed currentColor;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  font-size: 22px;
+  line-height: 1;
+`;
+
+const AddWishLabel = styled.span`
+  font-size: 14px;
+  font-weight: 600;
+`;
+
+// ── Delete button ────────────────────────────────────────────────────────
+const DeleteButton = styled.button`
+  background: white;
+  color: #EF4444;
+  border: 1.5px solid #FEE2E2;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  align-self: flex-start;
 
   &:hover {
-    background-color: #dc2626;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+    background: #FEF2F2;
+    border-color: #FECACA;
   }
 
   &:disabled {
-    background-color: #f3dede;
-    color: #9ca3af;
+    opacity: 0.4;
     cursor: not-allowed;
-    box-shadow: none;
   }
 `;
 
-// Responsive CardSpace updates
-const ResponsiveCardSpace = styled(CardSpace)`
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  @media (min-width: 769px) and (max-width: 1024px) {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-
-  @media (min-width: 1025px) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
+// ── Loading state ────────────────────────────────────────────────────────
+const LoadingCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #71717A;
+  font-size: 15px;
 `;
 
 const Index = (props) => {
@@ -118,47 +151,20 @@ const Index = (props) => {
   const router = useRouter();
   const { user } = useUser();
 
-  function formatDate(dateString) {
-    const date = new Date(dateString);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  }
-
   const checkOnboardingStatus = async (accountId) => {
-    const accountRes = await fetch(
-      `/api/checkOnboardingStatus?id=${accountId}`,
-      {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
-      }
-    );
+    const accountRes = await fetch(`/api/checkOnboardingStatus?id=${accountId}`, {
+      method: 'GET',
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate', Pragma: 'no-cache', Expires: '0' },
+    });
     const onboardingData = await accountRes.json();
     props.setOnboardingData(onboardingData);
   };
 
-  const handleDeletion = () => {
-    if (props.events === 0) return;
-    setShowDeleteModal(true);
-  };
-
   const confirmDelete = async () => {
-    if (deleteConfirmation !== props.currentEvent.name) {
-      return;
-    }
-
+    if (deleteConfirmation !== props.currentEvent.name) return;
     setIsDeleting(true);
     try {
-      await deleteThisEvent(
-        user.sub,
-        props.currentEvent._id,
-        props.setCurrentEvent,
-        props.setEvents,
-        props.setNotes
-      );
+      await deleteThisEvent(user.sub, props.currentEvent._id, props.setCurrentEvent, props.setEvents, props.setNotes);
       setShowDeleteModal(false);
       setDeleteConfirmation('');
     } catch (error) {
@@ -168,23 +174,12 @@ const Index = (props) => {
     }
   };
 
-  const cancelDelete = () => {
-    setShowDeleteModal(false);
-    setDeleteConfirmation('');
-  };
-
   useEffect(() => {
     if (!user) return;
     getOrCreateNewAccount(
-      user.sub,
-      user.email,
-      props.setCurrentEvent,
-      props.setAccountId,
-      props.setStripeUserId,
-      props.setModalOpen,
-      props.setNotes,
-      props.setAccountSetupComplete,
-      props.setSelectedCurrency
+      user.sub, user.email,
+      props.setCurrentEvent, props.setAccountId, props.setStripeUserId,
+      props.setModalOpen, props.setNotes, props.setAccountSetupComplete, props.setSelectedCurrency
     );
   }, [user]);
 
@@ -196,42 +191,42 @@ const Index = (props) => {
   if (!props.currentEvent._id) {
     return (
       <>
-        <Navbar
-          selectedCurrency={props.selectedCurrency}
-          setSelectedCurrency={props.setSelectedCurrency}
-          events={props.events}
-          setEvents={props.setEvents}
-          currentEvent={props.currentEvent}
-          setCurrentEvent={props.setCurrentEvent}
-          currentEventStr={props.currentEventStr}
-          setCurrentEventStr={props.setCurrentEventStr}
-          accountId={props.accountId}
-          setAccountId={props.setAccountId}
-          accountSetupComplete={props.accountSetupComplete}
-          setAccountSetupComplete={props.setAccountSetupComplete}
-          stripeUserId={props.stripeUserId}
-          setStripeUserId={props.setStripeUserId}
-          modalOpen={props.modalOpen}
-          setModalOpen={props.setModalOpen}
-          notes={props.notes}
-          setNotes={props.setNotes}
-          onboardingData={props.onboardingData}
-          setOnboardingData={props.setOnboardingData}
-        />
-        <div className="container">
-          <div className="wrapper">
+        <Page>
+          <HeroSpacer style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)' }} />
+          <Navbar
+            selectedCurrency={props.selectedCurrency}
+            setSelectedCurrency={props.setSelectedCurrency}
+            events={props.events}
+            setEvents={props.setEvents}
+            currentEvent={props.currentEvent}
+            setCurrentEvent={props.setCurrentEvent}
+            currentEventStr={props.currentEventStr}
+            setCurrentEventStr={props.setCurrentEventStr}
+            accountId={props.accountId}
+            setAccountId={props.setAccountId}
+            accountSetupComplete={props.accountSetupComplete}
+            setAccountSetupComplete={props.setAccountSetupComplete}
+            stripeUserId={props.stripeUserId}
+            setStripeUserId={props.setStripeUserId}
+            modalOpen={props.modalOpen}
+            setModalOpen={props.setModalOpen}
+            notes={props.notes}
+            setNotes={props.setNotes}
+            onboardingData={props.onboardingData}
+            setOnboardingData={props.setOnboardingData}
+          />
+          <Content>
             {props.modalOpen && (
-              <div style={{ textAlign: 'center', padding: '50px' }}>
-                <p>Creating your first event...</p>
-              </div>
+              <LoadingCard>Creating your first event…</LoadingCard>
             )}
-          </div>
-        </div>
+          </Content>
+        </Page>
       </>
     );
   }
+
   return (
-    <>
+    <Page>
       <CoverImage
         uploading={uploading}
         imageUrl={props.currentEvent.imageUrl}
@@ -263,55 +258,59 @@ const Index = (props) => {
         onboardingData={props.onboardingData}
         setOnboardingData={props.setOnboardingData}
       />
-      <MainContainer>
-        <Wrapper>
-          <Spacer />
-          <ResponsiveCardSpace>
-            {props.notes.map((note) => (
-              <WishCard key={note._id} note={note} />
-            ))}
-            <Card
-              onClick={() => router.push('/new')}
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <h3>{'+ Add a wish'}</h3>
-            </Card>
-          </ResponsiveCardSpace>
-          <div className="gapver" /> {/* Reduced spacing */}
-          <div className="gapver" />
-          {props.accountSetupComplete ? (
-            <ShareLink currentEvent={props.currentEvent} />
-          ) : (
-            <SetupReminder />
-          )}
-          <div className="doublegapver" />
-          <div className="doublegapver" />
-          <div className="doublegapver" />
-          <DeleteButton
-            onClick={handleDeletion}
-            disabled={props.events === 0}
-          >
-            Delete Event
-          </DeleteButton>
-          <DeleteModal
-            isOpen={showDeleteModal}
-            eventName={props.currentEvent.name}
-            deleteConfirmation={deleteConfirmation}
-            setDeleteConfirmation={setDeleteConfirmation}
-            isDeleting={isDeleting}
-            onCancel={cancelDelete}
-            onConfirm={confirmDelete}
-          />
-        </Wrapper>
-      </MainContainer>
+
+      <HeroSpacer />
+
+      <Content>
+        {/* Wishes section */}
+        <SectionHeader>
+          <SectionTitle>My Wishes</SectionTitle>
+          <SectionMeta>
+            {props.notes.length} {props.notes.length === 1 ? 'wish' : 'wishes'}
+          </SectionMeta>
+        </SectionHeader>
+
+        <CardsGrid>
+          {props.notes.map((note) => (
+            <WishCard key={note._id} note={note} />
+          ))}
+          <AddWishCard onClick={() => router.push('/new')}>
+            <AddWishIcon>+</AddWishIcon>
+            <AddWishLabel>Add a wish</AddWishLabel>
+          </AddWishCard>
+        </CardsGrid>
+
+        {/* Share / Setup reminder */}
+        {props.accountSetupComplete ? (
+          <ShareLink currentEvent={props.currentEvent} />
+        ) : (
+          <SetupReminder />
+        )}
+
+        {/* Delete event */}
+        <DeleteButton
+          onClick={() => { if (props.events !== 0) setShowDeleteModal(true); }}
+          disabled={props.events === 0}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Delete Event
+        </DeleteButton>
+
+        <DeleteModal
+          isOpen={showDeleteModal}
+          eventName={props.currentEvent.name}
+          deleteConfirmation={deleteConfirmation}
+          setDeleteConfirmation={setDeleteConfirmation}
+          isDeleting={isDeleting}
+          onCancel={() => { setShowDeleteModal(false); setDeleteConfirmation(''); }}
+          onConfirm={confirmDelete}
+        />
+      </Content>
 
       <Footer />
-
-    </>
+    </Page>
   );
 };
 

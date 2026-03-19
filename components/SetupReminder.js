@@ -1,19 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 
-// Styled Components
-const SetupReminderContainer = styled.div`
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-  border: 1px solid #f59e0b;
-  border-radius: 12px;
+const Wrap = styled.div`
+  background: linear-gradient(135deg, rgba(139,92,246,0.04) 0%, rgba(236,72,153,0.04) 100%);
+  border: 1px solid rgba(139,92,246,0.2);
+  border-radius: 16px;
   padding: 24px;
-  margin: 24px 0;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 `;
 
-const SetupContent = styled.div`
+const Inner = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
@@ -25,63 +20,50 @@ const SetupContent = styled.div`
   }
 `;
 
-const SetupIcon = styled.div`
+const IconWrap = styled.div`
   flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  background-color: #fef3c7;
-  border-radius: 50%;
-  border: 2px solid #f59e0b;
 `;
 
-const SetupText = styled.div`
+const TextWrap = styled.div`
   flex: 1;
 `;
 
-const SetupTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: #92400e;
+const Title = styled.h3`
+  font-size: 16px;
+  font-weight: 700;
+  color: #18181B;
   margin: 0 0 4px 0;
 `;
 
-const SetupDescription = styled.p`
+const Description = styled.p`
   font-size: 14px;
-  color: #92400e;
+  color: #71717A;
   margin: 0;
   line-height: 1.5;
 `;
 
-const SetupButton = styled.a`
-  display: flex;
+const Btn = styled.a`
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #f59e0b;
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
   color: white;
   padding: 12px 20px;
-  border-radius: 8px;
+  border-radius: 10px;
   text-decoration: none;
   font-weight: 600;
   font-size: 14px;
-  transition: all 0.2s ease;
   flex-shrink: 0;
+  transition: opacity 0.2s ease;
 
-  &:hover {
-    background-color: #d97706;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-  }
-
-  &:hover svg {
-    transform: translateX(2px);
-  }
-
-  svg {
-    transition: transform 0.2s ease;
-  }
+  &:hover { opacity: 0.9; }
 
   @media (max-width: 640px) {
     width: 100%;
@@ -89,60 +71,29 @@ const SetupButton = styled.a`
   }
 `;
 
-const SetupReminder = () => {
-  return (
-    <SetupReminderContainer>
-      <SetupContent>
-        <SetupIcon>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"
-              fill="#F59E0B"
-            />
-            <path
-              d="M19 15L19.74 17.74L22.5 18.5L19.74 19.26L19 22L18.26 19.26L15.5 18.5L18.26 17.74L19 15Z"
-              fill="#F59E0B"
-            />
-            <path
-              d="M5 6L5.37 7.37L6.74 7.74L5.37 8.11L5 9.5L4.63 8.11L3.26 7.74L4.63 7.37L5 6Z"
-              fill="#F59E0B"
-            />
-          </svg>
-        </SetupIcon>
-        <SetupText>
-          <SetupTitle>Complete Your Account Setup</SetupTitle>
-          <SetupDescription>
-            To start receiving payments for your wishes, you need to
-            complete your Stripe account setup.
-          </SetupDescription>
-        </SetupText>
-        <SetupButton href="/account">
-          <span>Complete Setup</span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M7 17L17 7M17 7H7M17 7V17"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </SetupButton>
-      </SetupContent>
-    </SetupReminderContainer>
-  );
-};
+const SetupReminder = () => (
+  <Wrap>
+    <Inner>
+      <IconWrap>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </IconWrap>
+      <TextWrap>
+        <Title>Complete Your Account Setup</Title>
+        <Description>
+          To start receiving payments for your wishes, you need to complete your Stripe account setup.
+        </Description>
+      </TextWrap>
+      <Btn href="/account">
+        Complete Setup
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </Btn>
+    </Inner>
+  </Wrap>
+);
 
 export default SetupReminder;

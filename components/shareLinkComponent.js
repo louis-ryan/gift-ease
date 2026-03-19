@@ -1,9 +1,155 @@
 import React, { useState } from 'react';
+import styled from 'styled-components';
+
+const ShareWrap = styled.div`
+  background: linear-gradient(135deg, rgba(139,92,246,0.03) 0%, rgba(236,72,153,0.03) 100%);
+  border: 1px solid rgba(139,92,246,0.18);
+  border-radius: 16px;
+  padding: 28px;
+`;
+
+const Row = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+`;
+
+const QRWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+`;
+
+const QRBox = styled.div`
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: white;
+  border: 1px solid #E4E4E7;
+`;
+
+const QRImg = styled.img`
+  width: 100%;
+  height: 100%;
+`;
+
+const QRLabel = styled.span`
+  font-size: 12px;
+  color: #71717A;
+  font-weight: 500;
+`;
+
+const ShareMain = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const ShareTitle = styled.p`
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #18181B;
+  margin: 0;
+`;
+
+const ShareSub = styled.p`
+  font-size: 13px;
+  color: #71717A;
+  margin: -8px 0 0 0;
+  line-height: 1.5;
+`;
+
+const LinkRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #FAFAFA;
+  border: 1px solid #E4E4E7;
+  border-radius: 10px;
+`;
+
+const LinkIcon = styled.svg`
+  flex-shrink: 0;
+  color: #8B5CF6;
+`;
+
+const LinkText = styled.span`
+  flex: 1;
+  font-size: 13px;
+  color: #3F3F46;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const CopyBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: ${props => props.$copied ? '#10B981' : '#18181B'};
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+`;
+
+const ActionsRow = styled.div`
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+`;
+
+const ActionBtn = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+
+  &:hover { opacity: 0.85; }
+
+  ${props => props.$variant === 'whatsapp' && `
+    background: #22C55E;
+    color: white;
+  `}
+  ${props => props.$variant === 'email' && `
+    background: #3B82F6;
+    color: white;
+  `}
+  ${props => props.$variant === 'sms' && `
+    background: #8B5CF6;
+    color: white;
+  `}
+`;
 
 const ShareLink = ({ currentEvent }) => {
   const [copied, setCopied] = useState(false);
-  const link = `the-registry-web.site/for/${currentEvent.uri}`;
-  const fullLink = `https://${link}`;
+  const link = `gifteasy.com/for/${currentEvent.uri}`;
+  const fullLink = `https://the-registry-web.site/for/${currentEvent.uri}`;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(fullLink)}`;
 
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(fullLink);
@@ -11,250 +157,69 @@ const ShareLink = ({ currentEvent }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Generate QR code URL using a QR code service
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(fullLink)}`;
-
   return (
-    <div className="share-container">
-      <div className="share-header">
-        <div className="share-icon">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 5.12548 15.0077 5.24917 15.0227 5.37061L8.08273 9.26727C7.54303 8.48822 6.61601 8 5.5 8C3.567 8 2 9.567 2 11.5C2 13.433 3.567 15 5.5 15C6.61601 15 7.54303 14.5118 8.08273 13.7327L15.0227 17.6294C15.0077 17.7508 15 17.8745 15 18C15 19.6569 16.3431 21 18 21C19.6569 21 21 19.6569 21 18C21 16.3431 19.6569 15 18 15C16.3431 15 15 16.3431 15 18C15 18.1255 15.0077 18.2492 15.0227 18.3706L8.08273 14.4739C7.54303 15.253 6.61601 15.7412 5.5 15.7412C3.567 15.7412 2 14.1742 2 12.2412C2 10.3082 3.567 8.74121 5.5 8.74121C6.61601 8.74121 7.54303 9.22941 8.08273 10.0085L15.0227 6.11177C15.0077 5.99033 15 5.86664 15 5.74121C15 4.08436 16.3431 2.74121 18 2.74121C19.6569 2.74121 21 4.08436 21 5.74121C21 7.39806 19.6569 8.74121 18 8.74121Z"
-              fill="#3B82F6"
-            />
-          </svg>
-        </div>
-        <h3 className="share-title">Share this event</h3>
-      </div>
+    <ShareWrap>
+      <Row>
+        <QRWrap>
+          <QRBox>
+            <QRImg src={qrCodeUrl} alt="QR code" />
+          </QRBox>
+          <QRLabel>Scan to open</QRLabel>
+        </QRWrap>
 
-      <div className="share-content">
-        <div className="qr-section">
-          <div className="qr-code">
-            <img
-              src={qrCodeUrl}
-              alt="QR Code for event link"
-              className="qr-image"
-            />
-            <div className="qr-label">Scan to visit</div>
-          </div>
-        </div>
+        <ShareMain>
+          <ShareTitle>Share your wishlist</ShareTitle>
+          <ShareSub>Send the link to friends and family so they can contribute to your wishes</ShareSub>
 
-        <div className="link-section">
-          <div className="link-container">
-            <a
-              href={fullLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="event-link"
-            >
-              {link}
-            </a>
-
-            <button
-              onClick={copyToClipboard}
-              className={`copy-button ${copied ? 'copied' : ''}`}
-            >
+          <LinkRow>
+            <LinkIcon width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </LinkIcon>
+            <LinkText>{link}</LinkText>
+            <CopyBtn $copied={copied} onClick={copyToClipboard}>
               {copied ? (
                 <>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M9 12L11 14L15 10"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span>Copied!</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Copied!
                 </>
               ) : (
                 <>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8 4V2C8 1.44772 8.44772 1 9 1H19C19.5523 1 20 1.44772 20 2V16C20 16.5523 19.5523 17 19 17H17M8 4H6C5.44772 4 5 4.44772 5 5V19C5 19.5523 5.44772 20 6 20H16C16.5523 20 17 19.5523 17 19V17M8 4C8 4.55228 8.44772 5 9 5H17"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span>Copy Link</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  Copy
                 </>
               )}
-            </button>
-          </div>
+            </CopyBtn>
+          </LinkRow>
 
-          <div className="share-description">
-            Share this link with friends and family so they can contribute to
-            your wishes
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        .share-container {
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .share-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 20px;
-        }
-
-        .share-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          background-color: #eff6ff;
-          border-radius: 50%;
-        }
-
-        .share-title {
-          font-size: 18px;
-          font-weight: 600;
-          color: #1f2937;
-          margin: 0;
-        }
-
-        .share-content {
-          display: flex;
-          gap: 24px;
-          align-items: flex-start;
-        }
-
-        .qr-section {
-          flex-shrink: 0;
-        }
-
-        .qr-code {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .qr-image {
-          width: 120px;
-          height: 120px;
-          border-radius: 8px;
-          border: 1px solid #e5e7eb;
-        }
-
-        .qr-label {
-          font-size: 12px;
-          color: #6b7280;
-          font-weight: 500;
-        }
-
-        .link-section {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .link-container {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px 16px;
-          background-color: #f9fafb;
-          border: 1px solid #e5e7eb;
-          border-radius: 8px;
-        }
-
-        .event-link {
-          flex: 1;
-          color: #3b82f6;
-          text-decoration: none;
-          font-family: monospace;
-          font-size: 14px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-
-        .event-link:hover {
-          text-decoration: underline;
-        }
-
-        .copy-button {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 16px;
-          border: none;
-          border-radius: 6px;
-          background-color: #3b82f6;
-          color: white;
-          font-weight: 500;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          white-space: nowrap;
-        }
-
-        .copy-button:hover:not(.copied) {
-          background-color: #2563eb;
-          transform: translateY(-1px);
-        }
-
-        .copy-button.copied {
-          background-color: #10b981;
-        }
-
-        .share-description {
-          font-size: 14px;
-          color: #6b7280;
-          line-height: 1.5;
-        }
-
-        @media (max-width: 640px) {
-          .share-content {
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-          }
-
-          .link-container {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 8px;
-          }
-
-          .copy-button {
-            justify-content: center;
-          }
-        }
-      `}</style>
-    </div>
+          <ActionsRow>
+            <ActionBtn
+              $variant="whatsapp"
+              href={`https://wa.me/?text=Check out my wishlist! ${encodeURIComponent(fullLink)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              WhatsApp
+            </ActionBtn>
+            <ActionBtn
+              $variant="email"
+              href={`mailto:?subject=My Wishlist&body=Check out my wishlist! ${encodeURIComponent(fullLink)}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              Email
+            </ActionBtn>
+            <ActionBtn
+              $variant="sms"
+              href={`sms:?body=Check out my wishlist! ${encodeURIComponent(fullLink)}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              SMS
+            </ActionBtn>
+          </ActionsRow>
+        </ShareMain>
+      </Row>
+    </ShareWrap>
   );
 };
 

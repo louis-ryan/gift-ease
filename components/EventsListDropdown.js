@@ -57,7 +57,7 @@ const EventsListDropdown = ({
           color: '#426073',
         }}
       >
-        {events.map((event) => (
+        {(events || []).map((event) => (
           <option key={event._id} value={event._id} href="#">
             {event.name}
           </option>

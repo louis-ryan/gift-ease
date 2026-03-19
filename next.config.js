@@ -9,20 +9,4 @@ module.exports = {
     formats: ['image/webp'],
   },
   reactStrictMode: true,
-  webpack(config) {
-    config.module.rules.push({
-      test: /\.(png|jpg|gif|svg|ico)$/i,
-      use: [
-        {
-          loader: 'file-loader',
-          options: {
-            publicPath: '/_next',
-            name: 'static/media/[name].[hash].[ext]',
-          },
-        },
-      ],
-    });
-
-    return config;
-  },
 };
