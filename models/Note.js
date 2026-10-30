@@ -19,7 +19,7 @@ const NoteSchema = new mongoose.Schema({
   description: {
     type: String,
     required: true,
-    maxlength: [200, 'Description cannot be more than 200 characters'],
+    maxlength: [1000, 'Description cannot be more than 1000 characters'],
   },
   noteUrl: String,
   imageUrl: {

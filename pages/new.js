@@ -561,14 +561,32 @@ const NewNote = (props) => {
 
   const createNote = async () => {
     try {
-      await fetch('/api/notes', {
+      const event = form.event || props.currentEvent?._id;
+      if (!event) throw new Error('No event selected. Please refresh the page and try again.');
+
+      // Note.price is required and holds the USD amount that senders are charged
+      const convertRes = await fetch('/api/convertToUsd', {
         method: 'POST',
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ amount: form.amount, currency: form.currency }),
       });
+      if (!convertRes.ok) throw new Error('Currency conversion failed');
+      const { usdAmount } = await convertRes.json();
+
+      const noteRes = await fetch('/api/notes', {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form, event, price: usdAmount.toString() }),
+      });
+      if (!noteRes.ok) {
+        const { error } = await noteRes.json();
+        throw new Error(error || 'Failed to save wish');
+      }
       router.push('/');
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      alert(error.message);
+      setIsSubmitting(false);
     }
   };
 
@@ -585,6 +603,7 @@ const NewNote = (props) => {
     if (!form.title) errors.title = 'Title is required';
     if (!form.amount) errors.amount = 'Amount is required';
     if (!form.description) errors.description = 'Description is required';
+    else if (form.description.length > 1000) errors.description = 'Description cannot be more than 1000 characters';
     return errors;
   };
 
@@ -834,7 +853,7 @@ const NewNote = (props) => {
                     value={form.description}
                     rows={3}
                   />
-                  <CharCount>{form.description.length}/200 characters</CharCount>
+                  <CharCount>{form.description.length}/1000 characters</CharCount>
                   {errors.description && <ErrorMsg>{errors.description}</ErrorMsg>}
                 </FormGroup>
               </Card>
