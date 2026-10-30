@@ -169,6 +169,12 @@ const TransferAmount = styled.p`
   margin: 0 0 3px 0;
 `;
 
+const TransferBreakdown = styled.p`
+  font-size: 11px;
+  color: #A1A1AA;
+  margin: 0 0 4px 0;
+`;
+
 const StatusBadge = styled.span`
   font-size: 11px;
   font-weight: 600;
@@ -280,17 +286,34 @@ const InfoValue = styled.span`
 const BalanceDashboard = ({ data }) => {
   const formatCurrency = (amount, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
-      style: 'currency', currency: currency.toUpperCase(), minimumFractionDigits: 2,
+      // Intl picks the right decimals per currency (2 for EUR/USD, 0 for JPY)
+      style: 'currency', currency: currency.toUpperCase(),
     }).format(amount);
   };
 
-  const formatDate = (timestamp) => {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  // Payments can arrive in different currencies, so totals are kept per currency
+  // and shown side by side (e.g. "€50.00 + $20.00") rather than summed together.
+  // `field` picks the gross gift (amount), the fees (totalFee) or what the giftee gets (netAmount)
+  const formatTotals = (list, field = 'amount') => {
+    const totals = list.reduce((acc, p) => {
+      const cur = (p.currency || 'usd').toUpperCase();
+      acc[cur] = (acc[cur] || 0) + (p[field] ?? 0);
+      return acc;
+    }, {});
+    const entries = Object.entries(totals);
+    if (entries.length === 0) return formatCurrency(0);
+    return entries.map(([cur, amount]) => formatCurrency(amount, cur)).join(' + ');
   };
 
   const payments = Array.isArray(data) ? data : [];
-  const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
-  const pendingCount = payments.filter(p => p.status !== 'succeeded').length;
+  const totalNet = formatTotals(payments, 'netAmount');
+  const totalGross = formatTotals(payments, 'amount');
+  const totalFees = formatTotals(payments, 'totalFee');
+  const currenciesReceived = [...new Set(payments.map(p => (p.currency || 'usd').toUpperCase()))];
   const lifetimeCount = payments.length;
 
   return (
@@ -299,18 +322,18 @@ const BalanceDashboard = ({ data }) => {
       <StatsRow>
         <BalanceCard>
           <BalanceLabel>Available Balance</BalanceLabel>
-          <BalanceValue>{formatCurrency(totalPaid)}</BalanceValue>
-          <BalanceSub>USD · Ready to pay out</BalanceSub>
+          <BalanceValue>{totalNet}</BalanceValue>
+          <BalanceSub>After fees · Ready to pay out</BalanceSub>
         </BalanceCard>
         <StatCard>
-          <StatLabel>Pending</StatLabel>
-          <StatValue>{formatCurrency(payments.filter(p => p.status !== 'succeeded').reduce((s, p) => s + p.amount, 0))}</StatValue>
-          <StatSub>{pendingCount} transaction{pendingCount !== 1 ? 's' : ''}</StatSub>
+          <StatLabel>Gifts Received</StatLabel>
+          <StatValue>{totalGross}</StatValue>
+          <StatSub>{lifetimeCount} gift{lifetimeCount !== 1 ? 's' : ''} · before fees</StatSub>
         </StatCard>
         <StatCard>
-          <StatLabel>Lifetime Received</StatLabel>
-          <StatValue>{formatCurrency(totalPaid)}</StatValue>
-          <StatSub>{lifetimeCount} total payment{lifetimeCount !== 1 ? 's' : ''}</StatSub>
+          <StatLabel>Fees</StatLabel>
+          <StatValue>{totalFees}</StatValue>
+          <StatSub>2% platform + payment processing</StatSub>
         </StatCard>
       </StatsRow>
 
@@ -325,15 +348,20 @@ const BalanceDashboard = ({ data }) => {
             <TransferItem key={payment.id}>
               <TransferLeft>
                 <TransferAvatar>
-                  {payment.id ? payment.id.charAt(3).toUpperCase() : '?'}
+                  {payment.senderName ? payment.senderName.charAt(0).toUpperCase() : '?'}
                 </TransferAvatar>
                 <TransferInfo>
-                  <TransferName>{payment.id ? payment.id.substring(0, 14) + '…' : 'Payment'}</TransferName>
+                  <TransferName>{payment.senderName || 'Anonymous'}</TransferName>
                   <TransferDate>{payment.date ? formatDate(payment.date) : ''}</TransferDate>
                 </TransferInfo>
               </TransferLeft>
               <TransferRight>
-                <TransferAmount>+{formatCurrency(payment.amount)}</TransferAmount>
+                <TransferAmount>+{formatCurrency(payment.netAmount ?? payment.amount, payment.currency)}</TransferAmount>
+                {payment.totalFee > 0 && (
+                  <TransferBreakdown>
+                    {formatCurrency(payment.amount, payment.currency)} gift · −{formatCurrency(payment.totalFee, payment.currency)} fees
+                  </TransferBreakdown>
+                )}
                 <StatusBadge $success={payment.status === 'succeeded'}>
                   {payment.status === 'succeeded' ? 'Paid' : 'Pending'}
                 </StatusBadge>
@@ -349,7 +377,7 @@ const BalanceDashboard = ({ data }) => {
           <PayoutCard>
             <PayoutLabel>Ready to withdraw</PayoutLabel>
             <PayoutNote>Available in your linked bank account</PayoutNote>
-            <PayoutAmount>{formatCurrency(totalPaid)}</PayoutAmount>
+            <PayoutAmount>{totalNet}</PayoutAmount>
             <RequestPayoutBtn>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -363,7 +391,11 @@ const BalanceDashboard = ({ data }) => {
             <SectionTitle style={{ marginBottom: 12 }}>Account Info</SectionTitle>
             <InfoRow>
               <InfoLabel>Currency</InfoLabel>
-              <InfoValue>USD</InfoValue>
+              <InfoValue>{currenciesReceived.length ? currenciesReceived.join(', ') : 'USD'}</InfoValue>
+            </InfoRow>
+            <InfoRow>
+              <InfoLabel>Fees per gift</InfoLabel>
+              <InfoValue>2% + payment processing</InfoValue>
             </InfoRow>
             <InfoRow>
               <InfoLabel>Min. payout</InfoLabel>

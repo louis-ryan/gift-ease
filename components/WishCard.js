@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
+import { wishGoal, wishCurrency } from '../utils/wishGoal';
 
 const Card = styled.div`
   background: white;
@@ -112,10 +113,10 @@ const ContributeBtn = styled.button`
 const WishCard = ({ note }) => {
   const router = useRouter();
 
-  const paid = note.paid || 0;
-  const total = note.amount || note.price || 0;
+  const paid = Math.round((note.paid || 0) * 100) / 100;
+  const total = wishGoal(note);
   const progress = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
-  const cur = note.currency || 'USD';
+  const cur = wishCurrency(note);
   const senderCount = note.senders?.length || 0;
 
   return (

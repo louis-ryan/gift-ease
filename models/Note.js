@@ -28,4 +28,6 @@ const NoteSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.models.Note || mongoose.model('Note', NoteSchema);
+// Drop any model cached by hot reload so schema changes take effect without a restart
+delete mongoose.models.Note;
+module.exports = mongoose.model('Note', NoteSchema);

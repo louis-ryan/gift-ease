@@ -17,7 +17,6 @@ export default async function handler(req, res) {
       await dbConnect();
 
       const payments = await Payment.find({ recipientId: accountId }).lean();
-      const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
 
       const paymentsWithCards = await Promise.all(
         payments.map(async (p) => {
@@ -25,6 +24,13 @@ export default async function handler(req, res) {
           return {
             id: p.paymentIntentId,
             amount: p.amount,
+            currency: p.currency || 'usd',
+            // Older payments have no wishAmount; they were charged in the wish's currency
+            wishAmount: p.wishAmount ?? p.amount,
+            platformFee: p.platformFee || 0,
+            processingFee: p.processingFee || 0,
+            totalFee: p.totalFee || 0,
+            netAmount: Math.round((p.amount - (p.totalFee || 0)) * 100) / 100,
             date: p.createdAt,
             giftId: p.giftId,
             eventId: p.eventId,
@@ -36,7 +42,7 @@ export default async function handler(req, res) {
         })
       );
 
-      res.status(200).json({ payments: paymentsWithCards, totalPaid });
+      res.status(200).json({ payments: paymentsWithCards });
     } catch (err) {
       console.error('Error fetching payments:', err);
       res.status(500).json({ error: 'Failed to fetch payments' });

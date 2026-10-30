@@ -17,7 +17,8 @@ export default async function handler(req, res) {
       await dbConnect();
 
       const payments = await Payment.find({ giftId }).lean();
-      const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+      // Every payment for one gift is counted in that gift's currency
+      const totalPaid = payments.reduce((sum, p) => sum + (p.wishAmount ?? p.amount), 0);
 
       const paymentsWithCards = await Promise.all(
         payments.map(async (p) => {
@@ -25,6 +26,9 @@ export default async function handler(req, res) {
           return {
             id: p.paymentIntentId,
             amount: p.amount,
+            currency: p.currency || 'usd',
+            // Older payments have no wishAmount; they were charged in the wish's currency
+            wishAmount: p.wishAmount ?? p.amount,
             date: p.createdAt,
             giftId: p.giftId,
             eventId: p.eventId,

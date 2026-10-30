@@ -518,9 +518,8 @@ const NewNote = (props) => {
   const [form, setForm] = useState({
     event: props.currentEvent._id,
     title: '',
-    currency: props.selectedCurrency,
+    currency: props.selectedCurrency || 'USD',
     amount: '',
-    price: '',
     description: '',
     noteUrl: '',
   });
@@ -564,19 +563,11 @@ const NewNote = (props) => {
       const event = form.event || props.currentEvent?._id;
       if (!event) throw new Error('No event selected. Please refresh the page and try again.');
 
-      // Note.price is required and holds the USD amount that senders are charged
-      const convertRes = await fetch('/api/convertToUsd', {
-        method: 'POST',
-        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: form.amount, currency: form.currency }),
-      });
-      if (!convertRes.ok) throw new Error('Currency conversion failed');
-      const { usdAmount } = await convertRes.json();
-
       const noteRes = await fetch('/api/notes', {
         method: 'POST',
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, event, price: usdAmount.toString() }),
+        // The server fills in the USD price from amount + currency
+        body: JSON.stringify({ ...form, event }),
       });
       if (!noteRes.ok) {
         const { error } = await noteRes.json();
@@ -601,7 +592,7 @@ const NewNote = (props) => {
   const validate = (form) => {
     const errors = {};
     if (!form.title) errors.title = 'Title is required';
-    if (!form.amount) errors.amount = 'Amount is required';
+    if (!(parseFloat(form.amount) > 0)) errors.amount = 'Amount is required';
     if (!form.description) errors.description = 'Description is required';
     else if (form.description.length > 1000) errors.description = 'Description cannot be more than 1000 characters';
     return errors;

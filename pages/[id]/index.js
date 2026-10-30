@@ -4,6 +4,9 @@ import { useRouter } from 'next/router';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import Link from 'next/link';
 import styled from 'styled-components';
+import { wishGoal, wishCurrency } from '../../utils/wishGoal';
+
+const roundMoney = (value) => Math.round(value * 100) / 100;
 
 // ── Layout ────────────────────────────────────────────────────────────────
 const Page = styled.div`
@@ -452,7 +455,7 @@ const Note = () => {
   const [data, setData] = useState([]);
   const [contributors, setContributors] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ title: '', description: '', price: '', noteUrl: '' });
+  const [editForm, setEditForm] = useState({ title: '', description: '', amount: '', noteUrl: '' });
 
   const router = useRouter();
   const noteId = router.query.id;
@@ -469,20 +472,23 @@ const Note = () => {
       const res = await fetch(`/api/notes/${noteId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        // Older wishes have no currency; their goal was in USD, so save it as such
+        body: JSON.stringify({ ...editForm, currency: wishCurrency(note) }),
       });
-      if (res.ok) {
-        const updatedNote = await res.json();
-        setNote(updatedNote.data);
-        setIsEditing(false);
-        getPaymentsData(noteId, updatedNote.data);
-      }
-    } catch (error) { console.error('Error updating note:', error); }
+      const updatedNote = await res.json();
+      if (!res.ok) throw new Error(updatedNote.error || 'Failed to save changes');
+      setNote(updatedNote.data);
+      setIsEditing(false);
+      getPaymentsData(noteId, updatedNote.data);
+    } catch (error) {
+      console.error('Error updating note:', error);
+      alert(error.message);
+    }
   };
 
   const handleEditClick = () => {
     if (note) {
-      setEditForm({ title: note.title || '', description: note.description || '', price: note.price || '', noteUrl: note.noteUrl || '' });
+      setEditForm({ title: note.title || '', description: note.description || '', amount: String(wishGoal(note) || ''), noteUrl: note.noteUrl || '' });
       setIsEditing(true);
     }
   };
@@ -497,16 +503,17 @@ const Note = () => {
       const COLORS = ['#8B5CF6', '#EC4899', '#14B8A6', '#F59E0B', '#3B82F6', '#EF4444'];
       const paymentSlices = resJSON.payments.map((payment, i) => ({
         name: payment.senderName,
-        value: payment.amount,
+        // In the wish's currency, so slices add up against the goal
+        value: roundMoney(payment.wishAmount),
         color: COLORS[i % COLORS.length],
         details: payment.description,
         cardHTML: payment.cardHTML,
         date: payment.date,
       }));
       setContributors(paymentSlices);
-      const totalGoal = parseFloat(note.price);
+      const totalGoal = wishGoal(note);
       const totalPaid = resJSON.totalPaid;
-      const remaining = Math.max(0, totalGoal - totalPaid);
+      const remaining = roundMoney(Math.max(0, totalGoal - totalPaid));
       setData([
         ...paymentSlices,
         { name: 'Remaining', value: remaining, color: '#E4E4E7' },
@@ -552,10 +559,10 @@ const Note = () => {
     );
   }
 
-  const totalPaid = data.filter(d => d.name !== 'Remaining').reduce((s, d) => s + d.value, 0);
-  const totalGoal = parseFloat(note.price) || 0;
+  const totalPaid = roundMoney(data.filter(d => d.name !== 'Remaining').reduce((s, d) => s + d.value, 0));
+  const totalGoal = wishGoal(note);
   const progress = totalGoal > 0 ? Math.min(100, Math.round((totalPaid / totalGoal) * 100)) : 0;
-  const cur = note.currency || 'USD';
+  const cur = wishCurrency(note);
 
   return (
     <Page>
@@ -612,7 +619,7 @@ const Note = () => {
               <WishDesc>{note.description}</WishDesc>
               <WishGoalRow>
                 <WishGoalLabel>Goal</WishGoalLabel>
-                <WishGoalVal>${note.price}</WishGoalVal>
+                <WishGoalVal>{totalGoal} {cur}</WishGoalVal>
               </WishGoalRow>
               <ProgressBar>
                 <ProgressFill style={{ width: `${progress}%` }} />
@@ -636,8 +643,8 @@ const Note = () => {
                 <Textarea value={editForm.description} onChange={(e) => setEditForm(p => ({ ...p, description: e.target.value }))} rows={3} />
               </FormGroup>
               <FormGroup>
-                <Label>Price</Label>
-                <Input type="number" step="0.01" value={editForm.price} onChange={(e) => setEditForm(p => ({ ...p, price: e.target.value }))} />
+                <Label>Goal ({cur})</Label>
+                <Input type="number" step="0.01" min="0" value={editForm.amount} onChange={(e) => setEditForm(p => ({ ...p, amount: e.target.value }))} />
               </FormGroup>
               <FormGroup>
                 <Label>Image URL</Label>
@@ -703,7 +710,7 @@ const Note = () => {
                       <LegendDot $color="#E4E4E7" />
                       <LegendName style={{ color: '#A1A1AA' }}>Remaining</LegendName>
                     </LegendLeft>
-                    <LegendVal style={{ color: '#A1A1AA' }}>{Math.max(0, totalGoal - totalPaid)} {cur}</LegendVal>
+                    <LegendVal style={{ color: '#A1A1AA' }}>{roundMoney(Math.max(0, totalGoal - totalPaid))} {cur}</LegendVal>
                   </LegendItem>
                 </LegendList>
               </>
@@ -720,7 +727,7 @@ const Note = () => {
                   <ContributorAvatar>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</ContributorAvatar>
                   <ContributorInfo>
                     <ContributorName>{item.name}</ContributorName>
-                    <ContributorDate>{item.date ? new Date(item.date * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</ContributorDate>
+                    <ContributorDate>{item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</ContributorDate>
                   </ContributorInfo>
                 </ContributorLeft>
                 <ContributorAmount>+{item.value} {cur}</ContributorAmount>

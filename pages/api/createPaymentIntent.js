@@ -2,6 +2,13 @@ import Stripe from 'stripe';
 import { corsMiddleware, runMiddleware } from '../../utils/cors';
 import dbConnect from '../../utils/dbConnect';
 import Card from '../../models/Card';
+import Note from '../../models/Note';
+import Event from '../../models/Event';
+import Account from '../../models/Account';
+import { convertCurrency } from '../../utils/exchangeRates';
+import { wishCurrency } from '../../utils/wishGoal';
+import { SUPPORTED_CURRENCIES, toMinorUnits } from '../../utils/currency';
+import { calculateFees, MIN_GIFT } from '../../utils/fees';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -19,32 +26,62 @@ export default async function handler(req, res) {
     }
 
     const {
-      amount,
-      recipientId,
+      amount: rawAmount,
       giftId,
-      eventId,
       senderName,
       description,
       cardHTML,
       cardText,
       backgroundImage,
       overlayImages,
+      currency = 'usd',
     } = req.body;
 
+    const chargeCurrency = currency.toLowerCase();
+    if (!SUPPORTED_CURRENCIES.includes(chargeCurrency)) {
+      return res.status(400).json({ error: `Unsupported currency: ${currency}` });
+    }
+
+    const amount = parseFloat(rawAmount);
+    if (!(amount >= MIN_GIFT[chargeCurrency])) {
+      return res.status(400).json({
+        error: `The minimum gift is ${MIN_GIFT[chargeCurrency]} ${chargeCurrency.toUpperCase()}`,
+      });
+    }
+
     try {
-      // Calculate fees
-      const platformFeePercent = 0.01; // 1%
-      const platformFee = Math.round(amount * platformFeePercent * 100); // Convert to cents
-      const amountInCents = Math.round(amount * 100);
+      await dbConnect();
+
+      // Work out who gets paid from the wish itself, never from the client:
+      // wish -> event -> giftee's account -> their Stripe connected account
+      const note = await Note.findById(giftId).lean();
+      if (!note) return res.status(404).json({ error: 'This wish no longer exists' });
+      const event = await Event.findById(note.event).lean();
+      if (!event) return res.status(404).json({ error: 'This wishlist no longer exists' });
+      const account = await Account.findOne({ user: event.user }).lean();
+      if (!account?.stripeAccountId) {
+        return res.status(400).json({ error: "This wishlist can't receive payments yet" });
+      }
+      const recipientId = account.stripeAccountId;
+      const eventId = String(event._id);
+
+      // Record what this contribution is worth in the wish's own currency, at today's
+      // rate, so progress towards the goal adds up whatever currency senders pay in
+      const goalCurrency = wishCurrency(note);
+      const wishAmount = await convertCurrency(amount, chargeCurrency, goalCurrency);
+
+      // The sender pays exactly `amount`. Our 2% and the estimated Stripe fee come out of
+      // the giftee's share as the application fee (see utils/fees.js)
+      const { platformFee, processingFee, totalFee } = calculateFees(amount, chargeCurrency);
 
       const idempotencyKey = req.headers['idempotency-key'];
 
-      // Create a PaymentIntent
+      // Create a PaymentIntent, charged in the currency the sender chose
       const paymentIntent = await stripe.paymentIntents.create(
         {
-          amount: amountInCents,
-          currency: 'usd',
-          application_fee_amount: platformFee,
+          amount: toMinorUnits(amount, chargeCurrency),
+          currency: chargeCurrency,
+          application_fee_amount: toMinorUnits(totalFee, chargeCurrency),
           transfer_data: {
             destination: recipientId,
           },
@@ -53,12 +90,16 @@ export default async function handler(req, res) {
           },
           metadata: {
             giftAmount: amount,
-            platformFee: platformFee / 100,
+            platformFee: platformFee,
+            processingFee: processingFee,
             recipientId: recipientId,
             giftId: giftId,
             eventId: eventId,
             senderName: senderName,
-            description: description,
+            // Stripe caps metadata values at 500 characters
+            description: (description || '').slice(0, 500),
+            wishAmount: wishAmount,
+            wishCurrency: goalCurrency.toLowerCase(),
           },
         },
         idempotencyKey ? { idempotencyKey } : undefined
@@ -66,7 +107,6 @@ export default async function handler(req, res) {
 
       // Save card data to database if provided
       if (cardHTML) {
-        await dbConnect();
         const cardData = new Card({
           paymentIntentId: paymentIntent.id,
           giftId,
@@ -85,6 +125,13 @@ export default async function handler(req, res) {
       });
     } catch (err) {
       console.error('Error creating payment intent:', err);
+      if (err.name === 'CastError') {
+        return res.status(404).json({ error: 'This wish no longer exists' });
+      }
+      // Stripe's validation messages are safe and useful to show (e.g. amount below the minimum)
+      if (err.type === 'StripeInvalidRequestError') {
+        return res.status(400).json({ error: err.message });
+      }
       res.status(500).json({ error: 'Failed to create payment intent' });
     }
   } catch (error) {

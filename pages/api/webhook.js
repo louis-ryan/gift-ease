@@ -3,6 +3,7 @@ import { buffer } from 'micro';
 import dbConnect from '../../utils/dbConnect';
 import User from '../../models/Account';
 import Payment from '../../models/Payment';
+import { fromMinorUnits } from '../../utils/currency';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -63,7 +64,16 @@ export default async function handler(req, res) {
           recipientId: intent.metadata.recipientId,
           senderName: intent.metadata.senderName,
           description: intent.metadata.description,
-          amount: intent.amount / 100,
+          amount: fromMinorUnits(intent.amount, intent.currency),
+          currency: intent.currency,
+          // Contribution in the wish's currency, worked out when the payment was created
+          wishAmount: intent.metadata.wishAmount ? parseFloat(intent.metadata.wishAmount) : undefined,
+          wishCurrency: intent.metadata.wishCurrency,
+          // Fees deducted from the giftee's share. The application fee is the authoritative
+          // total; metadata says how it splits between our cut and the Stripe estimate
+          platformFee: intent.metadata.platformFee ? parseFloat(intent.metadata.platformFee) : undefined,
+          processingFee: intent.metadata.processingFee ? parseFloat(intent.metadata.processingFee) : undefined,
+          totalFee: fromMinorUnits(intent.application_fee_amount || 0, intent.currency),
         },
         { upsert: true }
       );

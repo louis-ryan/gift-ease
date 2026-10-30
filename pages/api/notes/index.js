@@ -1,5 +1,6 @@
 import dbConnect from '../../../utils/dbConnect';
 import Note from '../../../models/Note';
+import { withUsdPrice } from '../../../utils/wishPrice';
 
 dbConnect();
 
@@ -18,7 +19,7 @@ export default async (req, res) => {
       break;
     case 'POST':
       try {
-        const note = await Note.create(req.body);
+        const note = await Note.create(await withUsdPrice(req.body));
 
         res.status(201).json({ success: true, data: note });
       } catch (error) {
