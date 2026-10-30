@@ -231,6 +231,7 @@ const StatusMsg = styled.div`
 
   &.success { background: #D1FAE5; color: #065F46; }
   &.error   { background: #FEE2E2; color: #991B1B; }
+  &.warning { background: #FEF3C7; color: #92400E; }
 `;
 
 // ── Image upload ──────────────────────────────────────────────────────────
@@ -529,6 +530,7 @@ const NewNote = (props) => {
   const [preview, setPreview] = useState('');
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success'); // 'success' | 'warning' | 'error'
   const [dragActive, setDragActive] = useState(false);
   const [productUrl, setProductUrl] = useState('');
   const [fetchingDetails, setFetchingDetails] = useState(false);
@@ -678,32 +680,46 @@ const NewNote = (props) => {
   };
 
   const fetchProductDetails = async () => {
-    if (!productUrl.trim()) { setMessage('Please enter a product URL'); return; }
+    if (!productUrl.trim()) { setMessage('Please enter a product URL'); setMessageType('error'); return; }
     setFetchingDetails(true); setMessage('');
     try {
       const response = await fetch('/api/fetchProductDetails', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: productUrl.trim() }),
+        body: JSON.stringify({ url: productUrl.trim(), targetCurrency: form.currency }),
       });
-      const data = await response.json();
-      if (data.success) {
-        const { title, price, imageUrl, description } = data.data;
-        setForm((prev) => ({
-          ...prev,
-          title: title || prev.title,
-          amount: price || prev.amount,
-          noteUrl: imageUrl || prev.noteUrl,
-          description: description || prev.description,
-        }));
-        if (imageUrl) setPreview(imageUrl);
-        setMessage('Product details fetched successfully!');
-        setProductUrl('');
-      } else {
+      const data = await response.json().catch(() => ({}));
+      if (!data.success) {
         setMessage(data.error || 'Failed to fetch product details');
+        setMessageType('error');
+        return;
       }
+
+      const { title, price, currency, imageUrl, description, missing = [], originalPrice, originalCurrency } = data.data;
+      // Use the product's own currency when the wish form supports it (the server converts the rest)
+      const supported = currency && currencies.some((c) => c.code === currency);
+      setForm((prev) => ({
+        ...prev,
+        title: title || prev.title,
+        amount: price ? String(price) : prev.amount,
+        currency: price && supported ? currency : prev.currency,
+        noteUrl: imageUrl || prev.noteUrl,
+        description: description || prev.description,
+      }));
+      if (imageUrl) setPreview(imageUrl);
+      setProductUrl('');
+
+      // Say exactly what was filled in and what still needs adding
+      const labels = { title: 'name', price: 'price', imageUrl: 'image' };
+      const notes = [];
+      if (originalPrice && price) notes.push(`Converted from ${originalPrice} ${originalCurrency}.`);
+      if (originalPrice && !price) notes.push(`The price is in ${originalCurrency}, which we couldn't convert.`);
+      if (missing.length) notes.push(`Couldn't find the ${missing.map((f) => labels[f] || f).join(' or ')} — please add ${missing.length > 1 ? 'them' : 'it'}.`);
+      setMessage(['Product details filled in. Please check them before saving.', ...notes].join(' '));
+      setMessageType(missing.length ? 'warning' : 'success');
     } catch (error) {
       setMessage('Failed to fetch product details. Please try again.');
+      setMessageType('error');
     } finally {
       setFetchingDetails(false);
     }
@@ -786,7 +802,7 @@ const NewNote = (props) => {
                     </FetchBtn>
                   </FetchRow>
                   {message && (
-                    <StatusMsg className={message.includes('successfully') ? 'success' : 'error'}>
+                    <StatusMsg className={messageType}>
                       {message}
                     </StatusMsg>
                   )}

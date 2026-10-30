@@ -2,7 +2,7 @@
 
 See [../CLAUDE.md](../CLAUDE.md) first for how this repo relates to `gift-easy-sender`.
 
-Next.js 13 (pages router) app branded **GiftEasy**. This is the giftee-facing UI **and** the backend for the whole product — `gift-easy-sender` has no database or real API of its own and calls into this repo's `pages/api/*` for everything.
+Next.js 13 (pages router) app branded **Wishlistagogo** (formerly GiftEasy; the old name still shows in some UI — see ../remaining_issues.md). This is the giftee-facing UI **and** the backend for the whole product — `gift-easy-sender` has no database or real API of its own and calls into this repo's `pages/api/*` for everything.
 
 ## Stack
 
@@ -23,7 +23,7 @@ Next.js 13 (pages router) app branded **GiftEasy**. This is the giftee-facing UI
   - **Wishes (Notes)**: `notes/index.js`, `notes/[id].js`, `getWishesForThisEvent/[id].js`, `getNotesBy/[eventId].js`, `addUrlToEvent.js`
   - **Stripe Connect (giftee payouts)**: `createConnectAccount.js` (Express account), `stripeCustomOnboarding.js` (Custom account + `countryBankFormats.js` for country-specific bank fields), `checkOnboardingStatus.js`, `createPayoutLink.js`, `deleteStripeAccount.js`, `setAccountId.js`, `setPaymentSetupComplete.js`
   - **Payments (sender contributions)**: `createPaymentIntent.js`, `webhook.js`, `getStripePaymentsForAccount.js` / `ForEvent.js` / `ForGift.js`, `saveCardData.js`, `getCardData.js`
-  - **Misc**: `convertToUsd.js` (display-only currency conversion), `fetchProductDetails.js` (scraping), `uploadToAWS.js`, `setAccountCurrency.js`
+  - **Misc**: `convertToUsd.js` (display-only currency conversion), `fetchProductDetails.js` (product-link lookup, see below), `uploadToAWS.js`, `setAccountCurrency.js`
 - `pages/` (giftee UI) — `index.js` (dashboard/wishlist), `[id]/index.js` (single wish detail + contribution chart), `[id]/edit.js` (looks stale/unused — hits a hardcoded `localhost:3000` URL, likely dead code from before the API routes were finalized), `new.js` (create a wish, with URL-scrape autofill and drag-drop image upload), `account.js` (Stripe onboarding + balance dashboard), `login.js`, `onboarding/success.js` + `onboarding/refresh.js` (Stripe Connect return URLs).
 - `requests/` — client-side fetch wrappers called from pages (`getOrCreateNewAccount`, `postNewEvent`, `deleteThisEvent`, `setThisEventToCurrent`, etc.). One-to-one with specific API routes; not shared with gift-easy-sender despite similar filenames.
 - `utils/dbConnect.js` — cached Mongoose connection. `utils/cors.js` — explicit CORS allowlist for cross-origin calls from gift-easy-sender.
@@ -36,4 +36,4 @@ Next.js 13 (pages router) app branded **GiftEasy**. This is the giftee-facing UI
 - **`webhook.js` always returns 200**, even on internal processing errors (only signature-verification failures return 400). This is intentional (avoids Stripe retry storms) but means processing failures are silent unless you're watching logs — check server logs, not webhook delivery status, when a payment doesn't show up.
 - **`user` string encoding**: several routes split a combined string on `||` (e.g. `getAccountForThisUser/[user].js` does `user.split('||')` to get `[auth0Sub, email]`). This is a homemade composite key, not a real serialization format — if either half of the Auth0 sub or email ever contains `||`, this breaks.
 - **CORS allowlist in `utils/cors.js` is hardcoded** to three origins including `the-registry-web.site` — if you rename the sender deployment or add a preview URL, cross-origin calls from gift-easy-sender will silently fail (browser CORS error, not a clear API error) until this list is updated.
-- **The product-URL scraper (`fetchProductDetails.js`) is fragile by nature** — it's CSS-selector scraping of third-party sites (Amazon, Target, Walmart, + a generic fallback strategy). Expect it to break silently when a retailer changes their markup; there's no test coverage or alerting for selector drift.
+- **The product-URL scraper lives in `utils/productScraper/`** (`pages/api/fetchProductDetails.js` is a thin, login-protected wrapper with a 24h MongoDB cache in `models/ProductLookup.js`). Order: JSON-LD → microdata → Amazon rules → meta tags → heuristics (only on pages already identified as products), plus Shopify's `/products/<handle>.js` for missing prices, then the paid Zyte API fallback if `ZYTE_API_KEY` is set. All page fetches go through `safeFetch.js` (SSRF protection). Never fetch user URLs with plain axios. When a shop breaks it, add a fixture to `utils/productScraper/__tests__/fixtures.mjs` and run `npm test`.
