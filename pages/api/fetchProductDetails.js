@@ -118,7 +118,9 @@ export default async function handler(req, res) {
         'DNT': '1',
         'Connection': 'keep-alive',
       },
-      timeout: 20000,
+      // Must stay under Vercel's 10s function limit, otherwise the platform
+      // kills the function with a 504 before our own timeout handling runs.
+      timeout: 8000,
       maxRedirects: 5,
       validateStatus: function (status) {
         return status >= 200 && status < 400; // Accept redirects
@@ -127,6 +129,20 @@ export default async function handler(req, res) {
 
     const html = response.data;
     const $ = cheerio.load(html);
+
+    // Bot-check / captcha pages come back as 200 but contain no product
+    const pageTitle = $('title').text().toLowerCase();
+    if (
+      /robot or human|captcha|access denied|are you a robot|verify you are human/.test(
+        pageTitle
+      ) ||
+      $('form[action*="validateCaptcha"]').length > 0
+    ) {
+      return res.status(422).json({
+        error:
+          "This store blocked automatic lookup. Please enter the product details manually.",
+      });
+    }
 
     let productData = {
       title: '',
@@ -262,7 +278,18 @@ export default async function handler(req, res) {
         });
     }
 
-    if (error.code === 'ECONNABORTED') {
+    // The retailer responded with an error status (usually 403 bot-blocking or 404)
+    if (error.response) {
+      const status = error.response.status;
+      return res.status(422).json({
+        error:
+          status === 404
+            ? 'That product page could not be found. Please check the URL.'
+            : "This store blocked automatic lookup. Please enter the product details manually.",
+      });
+    }
+
+    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
       return res
         .status(400)
         .json({ error: 'Request timed out. Please try again.' });
