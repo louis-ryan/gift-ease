@@ -27,6 +27,11 @@ const EventSchema = new mongoose.Schema({
   },
   current: Boolean,
   imageUrl: String,
+  // The giftee's thank-you message for senders, saved so they can come back to it
+  thankYouMessage: {
+    type: String,
+    maxlength: [1000, 'Thank-you message cannot be more than 1000 characters'],
+  },
 });
 
 module.exports = mongoose.models.Event || mongoose.model('Event', EventSchema);

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { senderLink, SENDER_HOST } from '../utils/senderUrl';
 
 const ShareWrap = styled.div`
-  background: linear-gradient(135deg, rgba(139,92,246,0.03) 0%, rgba(236,72,153,0.03) 100%);
-  border: 1px solid rgba(139,92,246,0.18);
+  background: linear-gradient(135deg, rgba(180,83,42,0.03) 0%, rgba(233,196,106,0.03) 100%);
+  border: 1px solid rgba(180,83,42,0.18);
   border-radius: 16px;
   padding: 28px;
 `;
@@ -34,7 +35,7 @@ const QRBox = styled.div`
   border-radius: 12px;
   overflow: hidden;
   background: white;
-  border: 1px solid #E4E4E7;
+  border: 1px solid var(--border);
 `;
 
 const QRImg = styled.img`
@@ -44,7 +45,7 @@ const QRImg = styled.img`
 
 const QRLabel = styled.span`
   font-size: 12px;
-  color: #71717A;
+  color: var(--text-secondary);
   font-weight: 500;
 `;
 
@@ -56,16 +57,16 @@ const ShareMain = styled.div`
 `;
 
 const ShareTitle = styled.p`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const ShareSub = styled.p`
   font-size: 13px;
-  color: #71717A;
+  color: var(--text-secondary);
   margin: -8px 0 0 0;
   line-height: 1.5;
 `;
@@ -75,20 +76,20 @@ const LinkRow = styled.div`
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  background: #FAFAFA;
-  border: 1px solid #E4E4E7;
+  background: var(--bg);
+  border: 1px solid var(--border);
   border-radius: 10px;
 `;
 
 const LinkIcon = styled.svg`
   flex-shrink: 0;
-  color: #8B5CF6;
+  color: var(--accent);
 `;
 
 const LinkText = styled.span`
   flex: 1;
   font-size: 13px;
-  color: #3F3F46;
+  color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -99,7 +100,7 @@ const CopyBtn = styled.button`
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: ${props => props.$copied ? '#10B981' : '#18181B'};
+  background: ${props => props.$copied ? 'var(--success)' : 'var(--text-primary)'};
   color: white;
   border: none;
   border-radius: 8px;
@@ -132,23 +133,23 @@ const ActionBtn = styled.a`
   &:hover { opacity: 0.85; }
 
   ${props => props.$variant === 'whatsapp' && `
-    background: #22C55E;
+    background: #25A35A;
     color: white;
   `}
   ${props => props.$variant === 'email' && `
-    background: #3B82F6;
+    background: var(--accent);
     color: white;
   `}
   ${props => props.$variant === 'sms' && `
-    background: #8B5CF6;
+    background: var(--accent);
     color: white;
   `}
 `;
 
 const ShareLink = ({ currentEvent }) => {
   const [copied, setCopied] = useState(false);
-  const link = `gifteasy.com/for/${currentEvent.uri}`;
-  const fullLink = `https://the-registry-web.site/for/${currentEvent.uri}`;
+  const fullLink = senderLink(currentEvent.uri);
+  const link = `${SENDER_HOST}/for/${currentEvent.uri}`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(fullLink)}`;
 
   const copyToClipboard = async () => {

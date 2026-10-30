@@ -3,6 +3,8 @@ import { useUser } from '@auth0/nextjs-auth0/client';
 import styled from 'styled-components';
 import NewEventModal from './NewEventModal';
 import EventsListDropdown from './EventsListDropdown';
+import CurrencyMenu from './CurrencyMenu';
+import Logo from './Logo';
 
 const Nav = styled.nav`
   position: absolute;
@@ -13,33 +15,12 @@ const Nav = styled.nav`
   align-items: center;
   height: 64px;
   padding: 0 32px;
+  gap: 12px;
   box-sizing: border-box;
-`;
 
-const LogoMark = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  cursor: pointer;
-`;
-
-const LogoIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-`;
-
-const LogoText = styled.span`
-  font-size: 16px;
-  font-weight: 700;
-  color: white;
-  letter-spacing: -0.02em;
+  @media (max-width: 640px) {
+    padding: 0 16px;
+  }
 `;
 
 const NavRight = styled.div`
@@ -48,32 +29,12 @@ const NavRight = styled.div`
   gap: 12px;
 `;
 
-const NavEventPill = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 20px;
-  padding: 6px 14px;
-`;
-
-const NavEventText = styled.span`
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
-
 const AvatarButton = styled(Link)`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--wood);
+  border: 2px solid rgba(255,255,255,0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,19 +92,7 @@ const Navbar = ({
         />
       )}
       <Nav>
-        {/* Logo */}
-        <LogoMark>
-          <LogoIcon>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M20 12V22H4V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M22 7H2V12H22V7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 22V7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H7.5C6.83696 7 6.20107 6.73661 5.73223 6.26777C5.26339 5.79893 5 5.16304 5 4.5C5 3.83696 5.26339 3.20107 5.73223 2.73223C6.20107 2.26339 6.83696 2 7.5 2C11 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H16.5C17.163 7 17.7989 6.73661 18.2678 6.26777C18.7366 5.79893 19 5.16304 19 4.5C19 3.83696 18.7366 3.20107 18.2678 2.73223C17.7989 2.26339 17.163 2 16.5 2C13 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </LogoIcon>
-          <LogoText>GiftEasy</LogoText>
-        </LogoMark>
+        <Logo light />
 
         {/* Center: Event selector */}
         <EventsListDropdown
@@ -156,8 +105,9 @@ const Navbar = ({
           setNotes={setNotes}
         />
 
-        {/* Right: Avatar */}
+        {/* Right: default currency + account */}
         <NavRight>
+          <CurrencyMenu light selectedCurrency={selectedCurrency} setSelectedCurrency={setSelectedCurrency} />
           <AvatarButton href="/account">
             {user && user.picture ? (
               <AvatarImage

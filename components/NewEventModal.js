@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import postNewEvent from '../requests/postNewEvent';
+import { SENDER_HOST } from '../utils/senderUrl';
 
 const NewEventModal = ({
   events,
@@ -156,7 +157,7 @@ const NewEventModal = ({
                   Custom URL
                 </label>
                 <div className="url-input-container">
-                  <span className="url-prefix">the-registry-web.site/for/</span>
+                  <span className="url-prefix">{SENDER_HOST}/for/</span>
                   <input
                     type="text"
                     id="uri"
@@ -227,7 +228,7 @@ const NewEventModal = ({
           left: 0;
           height: 100vh;
           width: 100vw;
-          background-color: rgba(0, 0, 0, 0.6);
+          background-color: rgba(0,0,0, 0.6);
           z-index: 1000;
           backdrop-filter: blur(4px);
         }
@@ -248,7 +249,7 @@ const NewEventModal = ({
         .modal-container {
           background-color: white;
           border-radius: 16px;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 20px 60px rgba(0,0,0, 0.3);
           width: 100%;
           max-width: 500px;
           max-height: 90vh;
@@ -272,14 +273,14 @@ const NewEventModal = ({
           justify-content: space-between;
           align-items: center;
           padding: 24px 24px 0 24px;
-          border-bottom: 1px solid #f0f0f0;
+          border-bottom: 1px solid var(--surface);
           margin-bottom: 24px;
         }
 
         .modal-title {
           font-size: 24px;
           font-weight: 600;
-          color: #1a1a1a;
+          color: var(--text-primary);
           margin: 0;
         }
 
@@ -287,7 +288,7 @@ const NewEventModal = ({
           background: none;
           border: none;
           font-size: 24px;
-          color: #666;
+          color: var(--text-secondary);
           cursor: pointer;
           padding: 8px;
           border-radius: 50%;
@@ -300,7 +301,7 @@ const NewEventModal = ({
         }
 
         .modal-close-btn:hover {
-          background-color: #f5f5f5;
+          background-color: var(--bg);
           color: #333;
         }
 
@@ -325,13 +326,13 @@ const NewEventModal = ({
 
         .input-label {
           font-weight: 600;
-          color: #374151;
+          color: var(--text-primary);
           font-size: 14px;
         }
 
         .modal-input {
           padding: 12px 16px;
-          border: 2px solid #e5e7eb;
+          border: 2px solid var(--border);
           border-radius: 8px;
           font-size: 16px;
           transition: all 0.2s ease;
@@ -340,34 +341,34 @@ const NewEventModal = ({
 
         .modal-input:focus {
           outline: none;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(180,83,42, 0.1);
         }
 
         .modal-input.input-error {
-          border-color: #ef4444;
+          border-color: var(--error);
         }
 
         .url-input-container {
           display: flex;
           align-items: center;
-          border: 2px solid #e5e7eb;
+          border: 2px solid var(--border);
           border-radius: 8px;
           overflow: hidden;
           transition: all 0.2s ease;
         }
 
         .url-input-container:focus-within {
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(180,83,42, 0.1);
         }
 
         .url-prefix {
           padding: 12px 16px;
-          background-color: #f9fafb;
-          color: #6b7280;
+          background-color: var(--bg);
+          color: var(--text-secondary);
           font-size: 14px;
-          border-right: 1px solid #e5e7eb;
+          border-right: 1px solid var(--border);
           white-space: nowrap;
         }
 
@@ -382,19 +383,19 @@ const NewEventModal = ({
         }
 
         .error-message {
-          color: #ef4444;
+          color: var(--error);
           font-size: 14px;
           margin-top: 4px;
         }
 
         .url-hint {
-          color: #6b7280;
+          color: var(--text-secondary);
           font-size: 14px;
           margin-top: 4px;
         }
 
         .date-hint {
-          color: #6b7280;
+          color: var(--text-secondary);
           font-size: 14px;
           margin-top: 4px;
         }
@@ -423,23 +424,23 @@ const NewEventModal = ({
         }
 
         .btn-primary {
-          background-color: #3b82f6;
+          background-color: var(--accent);
           color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
-          background-color: #2563eb;
+          background-color: var(--accent-hover);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+          box-shadow: 0 4px 12px rgba(180,83,42, 0.3);
         }
 
         .btn-secondary {
-          background-color: #f3f4f6;
-          color: #374151;
+          background-color: var(--surface);
+          color: var(--text-primary);
         }
 
         .btn-secondary:hover:not(:disabled) {
-          background-color: #e5e7eb;
+          background-color: var(--border);
         }
 
         @media (max-width: 640px) {

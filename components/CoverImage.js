@@ -31,7 +31,7 @@ const UploadingOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0,0,0, 0.6);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -69,7 +69,7 @@ const EventInfoOverlay = styled.div`
 `;
 
 const EventTitle = styled.h1`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   margin: 0 0 4px 0;
   font-size: 36px;
   font-weight: 800;
@@ -118,7 +118,7 @@ const Modal = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0,0,0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -131,7 +131,7 @@ const ModalContent = styled.div`
   padding: 28px;
   width: 90%;
   max-width: 460px;
-  box-shadow: 0 24px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 24px 40px rgba(91,58,33,0.15);
   position: relative;
 `;
 
@@ -139,28 +139,28 @@ const ModalTitle = styled.h3`
   margin: 0 0 20px 0;
   font-size: 18px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
 `;
 
 const OptionButton = styled.button`
   width: 100%;
   padding: 14px;
   margin-bottom: 10px;
-  border: 1.5px solid #E4E4E7;
+  border: 1.5px solid var(--border);
   border-radius: 10px;
   background: white;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  color: #3F3F46;
+  color: var(--text-primary);
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   gap: 10px;
 
   &:hover {
-    border-color: #8B5CF6;
-    background: #FAFAFA;
+    border-color: var(--accent);
+    background: var(--bg);
   }
 
   &:last-of-type {
@@ -175,7 +175,7 @@ const UrlInputContainer = styled.div`
 const UrlInput = styled.input`
   width: 100%;
   padding: 11px 14px;
-  border: 1.5px solid #E4E4E7;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
   margin-bottom: 14px;
@@ -184,11 +184,11 @@ const UrlInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: #8B5CF6;
+    border-color: var(--accent);
   }
 
   &::placeholder {
-    color: #A1A1AA;
+    color: var(--text-tertiary);
   }
 `;
 
@@ -207,15 +207,15 @@ const Btn = styled.button`
   transition: all 0.2s ease;
 
   ${props => props.$primary ? `
-    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+    background: var(--accent);
     color: white;
     border: none;
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   ` : `
     background: white;
-    color: #3F3F46;
-    border: 1.5px solid #E4E4E7;
-    &:hover { border-color: #D1D5DB; }
+    color: var(--text-primary);
+    border: 1.5px solid var(--border);
+    &:hover { border-color: var(--border-strong); }
   `}
 `;
 
@@ -227,7 +227,7 @@ const CloseButton = styled.button`
   border: none;
   font-size: 22px;
   cursor: pointer;
-  color: #71717A;
+  color: var(--text-secondary);
   width: 28px;
   height: 28px;
   display: flex;
@@ -237,8 +237,8 @@ const CloseButton = styled.button`
   line-height: 1;
 
   &:hover {
-    background: #F4F4F5;
-    color: #18181B;
+    background: var(--surface);
+    color: var(--text-primary);
   }
 `;
 

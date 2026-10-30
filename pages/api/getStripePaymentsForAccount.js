@@ -1,54 +1,52 @@
-import { corsMiddleware, runMiddleware } from '../../utils/cors';
-import dbConnect from '../../utils/dbConnect';
+import { withApiAuthRequired } from '@auth0/nextjs-auth0';
 import Payment from '../../models/Payment';
-import Card from '../../models/Card';
+import { getGifteeAccount } from '../../utils/gifteeAccount';
 
-export default async function handler(req, res) {
+// The logged-in giftee's payments, with fees, messages and senders' contact details.
+// This is the only route that returns those; the event and gift routes are public.
+async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
-    await runMiddleware(req, res, corsMiddleware);
+    const account = await getGifteeAccount(req, res);
+    if (!account?.stripeAccountId) return res.status(200).json({ payments: [] });
 
-    if (req.method !== 'GET') {
-      return res.status(405).json({ error: 'Method not allowed' });
-    }
+    const filter = { recipientId: account.stripeAccountId };
+    if (req.query.eventId) filter.eventId = String(req.query.eventId);
+    if (req.query.giftId) filter.giftId = String(req.query.giftId);
+    const payments = await Payment.find(filter).sort({ createdAt: -1 }).lean();
 
-    const { accountId } = req.query;
-
-    try {
-      await dbConnect();
-
-      const payments = await Payment.find({ recipientId: accountId }).lean();
-
-      const paymentsWithCards = await Promise.all(
-        payments.map(async (p) => {
-          const cardData = await Card.findOne({ paymentIntentId: p.paymentIntentId });
-          return {
-            id: p.paymentIntentId,
-            amount: p.amount,
-            currency: p.currency || 'usd',
-            // Older payments have no wishAmount; they were charged in the wish's currency
-            wishAmount: p.wishAmount ?? p.amount,
-            platformFee: p.platformFee || 0,
-            processingFee: p.processingFee || 0,
-            totalFee: p.totalFee || 0,
-            netAmount: Math.round((p.amount - (p.totalFee || 0)) * 100) / 100,
-            date: p.createdAt,
-            giftId: p.giftId,
-            eventId: p.eventId,
-            status: 'succeeded',
-            senderName: p.senderName,
-            description: p.description,
-            cardHTML: cardData ? cardData.cardHTML : null,
-          };
-        })
-      );
-
-      res.status(200).json({ payments: paymentsWithCards });
-    } catch (err) {
-      console.error('Error fetching payments:', err);
-      res.status(500).json({ error: 'Failed to fetch payments' });
-    }
-  } catch (error) {
-    console.error('API Error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(200).json({
+      payments: payments.map((p) => ({
+        id: p.paymentIntentId,
+        amount: p.amount,
+        currency: p.currency || 'usd',
+        // Older payments have no wishAmount; they were charged in the wish's currency
+        wishAmount: p.wishAmount ?? p.amount,
+        platformFee: p.platformFee || 0,
+        processingFee: p.processingFee || 0,
+        totalFee: p.totalFee || 0,
+        netAmount: Math.round((p.amount - (p.totalFee || 0)) * 100) / 100,
+        date: p.createdAt,
+        giftId: p.giftId,
+        eventId: p.eventId,
+        status: 'succeeded',
+        senderName: p.senderName,
+        // Older payments stored the message as `description`
+        message: p.message || p.description || '',
+        photoUrls: p.photoUrls || [],
+        gifUrl: p.gifUrl || '',
+        contactMethod: p.contactMethod || null,
+        contactValue: p.contactValue || null,
+        thankedAt: p.thankedAt || null,
+      })),
+    });
+  } catch (err) {
+    console.error('Error fetching payments:', err);
+    res.status(500).json({ error: 'Failed to fetch payments' });
   }
 }
+
+export default withApiAuthRequired(handler);

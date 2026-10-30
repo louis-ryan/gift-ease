@@ -1,0 +1,40 @@
+/* Wishlistagogo colour tokens: a cosy, autumn-inspired palette on a light base.
+   Change a colour here, not in components (they all use these variables). */
+:root {
+  --bg: #FBF6EE;             /* linen */
+  --card: #FFFFFF;
+  --card-warm: #FFFDF9;
+  --surface: #F3EADD;        /* oat: chips, subtle buttons */
+  --surface-soft: #F8F1E6;
+  --border: #E8DCC8;         /* light wicker */
+  --border-strong: #D9C7AC;
+  --accent: #B4532A;         /* exposed brick: primary buttons, links */
+  --accent-hover: #A84B26;
+  --accent-soft: rgba(180, 83, 42, 0.08);
+  --accent-line: rgba(180, 83, 42, 0.2);
+  --honey: #E9C46A;          /* wicker / honey: highlights */
+  --honey-soft: rgba(233, 196, 106, 0.18);
+  --wood: #A9744F;           /* oak: avatars, illustrations (not body text) */
+  --text-primary: #3B2A20;   /* espresso */
+  --text-secondary: #7A6352; /* walnut */
+  --text-tertiary: #9C8574;  /* driftwood: large/decorative text only */
+  --text-muted: #C9B8A6;
+  --success: #5E7A4E;        /* moss */
+  --success-soft: #E7EEDF;
+  --success-dark: #3F5634;
+  --error: #C0392B;
+  --error-soft: #FBEAE7;
+  --error-line: #F1C4BD;
+  --error-dark: #8E2A20;
+  --warning-dark: #8A5A12;
+  --gradient-accent: linear-gradient(135deg, #B4532A 0%, #C9733F 100%);
+  --shadow-card: 0 2px 10px rgba(91, 58, 33, 0.07);
+  --shadow-raised: 0 8px 28px rgba(91, 58, 33, 0.12);
+  --shadow-btn: 0 4px 14px rgba(180, 83, 42, 0.25);
+  --font-heading: 'Fraunces', 'Playfair Display', Georgia, serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+}

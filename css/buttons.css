@@ -1,5 +1,5 @@
 button {
-  background-color: #050d18;
+  background-color: var(--accent);
   color: #fff;
   font-weight: 800;
   border: none;

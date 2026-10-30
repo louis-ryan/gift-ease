@@ -5,6 +5,10 @@ const corsMiddleware = cors({
     'http://localhost:3001',
     'https://gift-easy-sender.vercel.app',
     'https://the-registry-web.site',
+    'https://wishlistagogo.com',
+    'https://www.wishlistagogo.com',
+    // Extra sender origins (e.g. preview deployments), comma-separated
+    ...(process.env.SENDER_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean),
   ],
   methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Origin', 'Accept', 'Authorization', 'Idempotency-Key'],

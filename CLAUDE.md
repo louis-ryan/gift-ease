@@ -12,19 +12,22 @@ Next.js 13 (pages router) app branded **Wishlistagogo** (formerly GiftEasy; the 
 - Stripe (Connect + PaymentIntents) for money movement
 - AWS S3 (`@aws-sdk/client-s3`) for image uploads
 - `cheerio` + `axios` for product-URL scraping (auto-fill a wish from a store link)
+- Colours, shadows and the heading font are CSS variables in `css/theme.css` (autumn palette); use `var(--accent)` etc., never new hex values. SVG `stroke`/`fill` attributes can't use variables, so those keep the palette's hex values.
+- Logged-in API routes use `withApiAuthRequired` + `utils/gifteeAccount.js` (`getGifteeAccount`, `getOwnEvent`) to find the account from the session; never trust an account/Stripe ID from the client. Many older routes still don't do this.
+- Money display: `utils/money.js` (`formatMoney`, `formatGoal`), `components/Money.js` (amount in its own currency plus "≈ default" when different), `hooks/useRates.js`.
 - styled-components for newer pages (`account.js`, `[id]/index.js`, `new.js`), plain CSS files for older pages (`index.js`, `Navbar.js`) — the codebase is mid-migration between the two styling approaches, expect both.
 
 ## Directory map
 
-- `models/` — Mongoose schemas: `Account`, `Event`, `Note` (a wish), `Payment`, `Card`. See top-level CLAUDE.md for the shared data model table.
+- `models/` — Mongoose schemas: `Account`, `Event`, `Note` (a wish), `Payment`, `PendingGiftMessage`, `ProductLookup`. See top-level CLAUDE.md for the shared data model table.
 - `pages/api/` — 32 routes, the entire backend. Notable groups:
   - **Account/auth**: `auth/[...auth0].js`, `getAccountForThisUser/[user].js` (get-or-create — the entry point every session hits after login)
   - **Events**: `postNewEventForUser/[user].js`, `getEventsFor/[user].js`, `getEventBy/[uri].js`, `getEventUris.js`, `setCurrentToTrueForEvent/[id].js`, `deleteEvent/[id].js`
   - **Wishes (Notes)**: `notes/index.js`, `notes/[id].js`, `getWishesForThisEvent/[id].js`, `getNotesBy/[eventId].js`, `addUrlToEvent.js`
   - **Stripe Connect (giftee payouts)**: `createConnectAccount.js` (Express account), `stripeCustomOnboarding.js` (Custom account + `countryBankFormats.js` for country-specific bank fields), `checkOnboardingStatus.js`, `createPayoutLink.js`, `deleteStripeAccount.js`, `setAccountId.js`, `setPaymentSetupComplete.js`
-  - **Payments (sender contributions)**: `createPaymentIntent.js`, `webhook.js`, `getStripePaymentsForAccount.js` / `ForEvent.js` / `ForGift.js`, `saveCardData.js`, `getCardData.js`
-  - **Misc**: `convertToUsd.js` (display-only currency conversion), `fetchProductDetails.js` (product-link lookup, see below), `uploadToAWS.js`, `setAccountCurrency.js`
-- `pages/` (giftee UI) — `index.js` (dashboard/wishlist), `[id]/index.js` (single wish detail + contribution chart), `[id]/edit.js` (looks stale/unused — hits a hardcoded `localhost:3000` URL, likely dead code from before the API routes were finalized), `new.js` (create a wish, with URL-scrape autofill and drag-drop image upload), `account.js` (Stripe onboarding + balance dashboard), `login.js`, `onboarding/success.js` + `onboarding/refresh.js` (Stripe Connect return URLs).
+  - **Payments (sender contributions)**: `createPaymentIntent.js`, `webhook.js`, `confirmPayment.js` (sender success page; records a succeeded payment without waiting for the webhook), `getStripePaymentsForAccount.js` (giftee-only, login required) / `ForEvent.js` / `ForGift.js` (public), `thankYou.js`, `payoutStatus.js`
+  - **Misc**: `convertToUsd.js` (display-only currency conversion), `fetchProductDetails.js` (product-link lookup, see below), `uploadToAWS.js` (images only, 10 MB), `setAccountCurrency.js` (login required), `rates.js` (public ECB rates), `giphySearch.js` (needs `GIPHY_API_KEY`)
+- `pages/` (giftee UI) — `index.js` (dashboard/wishlist), `[id]/index.js` (single wish detail + contribution chart), `[id]/edit.js` (looks stale/unused — hits a hardcoded `localhost:3000` URL, likely dead code from before the API routes were finalized), `new.js` (create a wish, with URL-scrape autofill and drag-drop image upload), `account.js` (Stripe onboarding + balance dashboard, automatic-payout status), `thanks.js` (send thank-yous via WhatsApp/email links), `login.js`, `onboarding/success.js` + `onboarding/refresh.js` (Stripe Connect return URLs).
 - `requests/` — client-side fetch wrappers called from pages (`getOrCreateNewAccount`, `postNewEvent`, `deleteThisEvent`, `setThisEventToCurrent`, etc.). One-to-one with specific API routes; not shared with gift-easy-sender despite similar filenames.
 - `utils/dbConnect.js` — cached Mongoose connection. `utils/cors.js` — explicit CORS allowlist for cross-origin calls from gift-easy-sender.
 - `countryBankFormats.js` — large per-country config (bank field names/formats, `createExternalAccount()` builders) used only by the Custom Connect onboarding flow.

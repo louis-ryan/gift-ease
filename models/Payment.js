@@ -15,6 +15,15 @@ const PaymentSchema = new mongoose.Schema({
   platformFee: { type: Number },
   processingFee: { type: Number }, // estimated Stripe fee, see utils/fees.js
   totalFee: { type: Number, default: 0 },
+  // The sender's personal touch (see models/PendingGiftMessage.js). `message` is plain text
+  // with **bold** / _italic_ markers, rendered by utils/giftMessage.js, never as HTML
+  message: { type: String },
+  photoUrls: { type: [String], default: undefined },
+  gifUrl: { type: String },
+  // How the giftee can say thank you. Only returned to the giftee, never on public routes
+  contactMethod: { type: String, enum: ['whatsapp', 'email'] },
+  contactValue: { type: String },
+  thankedAt: { type: Date },
   createdAt: { type: Date, default: Date.now },
 });
 

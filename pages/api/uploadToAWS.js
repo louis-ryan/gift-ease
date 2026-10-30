@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { randomUUID } from 'crypto';
 import formidable from 'formidable';
 import fs from 'fs';
 
@@ -8,26 +9,54 @@ export const config = {
   },
 };
 
+// Images only. Both apps resize photos in the browser before uploading, so 10 MB is generous
+const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED_TYPES = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+};
+
 export default async function uploadToS3(req, res) {
-  // Set CORS headers to allow cross-origin requests
+  // Open to any origin: the public sender app uploads gift photos here
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-  // Check if environment variables are set
   if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
     console.error('AWS credentials not found in environment variables');
     return res.status(500).json({ error: 'AWS configuration error' });
   }
 
+  let file;
   try {
-    // Initialize S3 client
+    const form = formidable({ maxFiles: 1, maxFileSize: MAX_BYTES });
+    const [, files] = await form.parse(req);
+    file = files.file?.[0];
+  } catch (error) {
+    const tooBig = /maxFileSize|maxTotalFileSize/i.test(error.message);
+    return res.status(tooBig ? 413 : 400).json({ error: tooBig ? 'That image is too large (10 MB max)' : 'Upload failed' });
+  }
+
+  if (!file) return res.status(400).json({ error: 'No file provided' });
+  const extension = ALLOWED_TYPES[file.mimetype];
+  if (!extension) {
+    fs.unlink(file.filepath, () => {});
+    return res.status(415).json({ error: 'Please upload a JPG, PNG, WebP, GIF or HEIC image' });
+  }
+
+  try {
     const s3Client = new S3Client({
       region: process.env.AWS_REGION || 'us-east-1',
       credentials: {
@@ -36,51 +65,25 @@ export default async function uploadToS3(req, res) {
       },
     });
 
-    // Create formidable instance (corrected syntax)
-    const form = formidable();
-
-    // Parse form data
-    const [fields, files] = await new Promise((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        resolve([fields, files]);
-      });
-    });
-
-    // Get the file (handle new formidable file structure)
-    const fileArray = files.file;
-    if (!fileArray || !fileArray[0]) {
-      return res.status(400).json({ error: 'No file provided' });
-    }
-
-    const file = fileArray[0];
-
-    const fileBuffer = fs.readFileSync(file.filepath);
-
-    const params = {
-      Bucket: process.env.AMAZON_BUCKET,
-      Key: `uploads/${Date.now()}-${file.originalFilename || 'untitled'}`,
-      Body: fileBuffer,
-      ContentType: file.mimetype || 'application/octet-stream',
-    };
-
-    // Upload to S3
-    const command = new PutObjectCommand(params);
-    const result = await s3Client.send(command);
-
-    // Clean up temp file
-    fs.unlinkSync(file.filepath);
+    // Random key: never use the uploaded filename in the URL
+    const key = `uploads/${Date.now()}-${randomUUID()}.${extension}`;
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: process.env.AMAZON_BUCKET,
+        Key: key,
+        Body: fs.readFileSync(file.filepath),
+        ContentType: file.mimetype,
+      })
+    );
 
     return res.status(200).json({
       message: 'Upload successful',
-      url: `https://${process.env.AMAZON_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${params.Key}`,
+      url: `https://${process.env.AMAZON_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`,
     });
   } catch (error) {
     console.error('Upload error:', error);
-    return res.status(500).json({
-      error: 'Upload failed',
-      details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-    });
+    return res.status(500).json({ error: 'Upload failed' });
+  } finally {
+    fs.unlink(file.filepath, () => {});
   }
 }

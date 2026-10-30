@@ -9,7 +9,7 @@ export default function AccountStatus({ user }) {
     container: {
       marginTop: '20px',
       padding: '20px',
-      backgroundColor: '#f9fafb',
+      backgroundColor: 'var(--bg)',
       borderRadius: '8px',
     },
     title: {
@@ -34,10 +34,10 @@ export default function AccountStatus({ user }) {
       marginRight: '10px',
     },
     statusSuccess: {
-      backgroundColor: '#22c55e',
+      backgroundColor: '#25A35A',
     },
     statusError: {
-      backgroundColor: '#ef4444',
+      backgroundColor: 'var(--error)',
     },
   };
 

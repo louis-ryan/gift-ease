@@ -8,7 +8,7 @@ const ModalOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0,0,0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,26 +16,26 @@ const ModalOverlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background-color: #1f2937;
+  background-color: var(--text-primary);
   border-radius: 16px;
   padding: 32px;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0, 0.25);
 `;
 
 const ModalHeader = styled.div`
   margin-bottom: 24px;
   
   h3 {
-    color: #f9fafb;
+    color: var(--bg);
     font-size: 24px;
     margin-bottom: 10px;
     font-weight: 700;
   }
   
   p {
-    color: #d1d5db;
+    color: var(--border-strong);
     font-size: 16px;
     line-height: 1.5;
     margin-bottom: 20px;
@@ -50,18 +50,18 @@ const ModalBody = styled.div`
 
 const ConfirmationInput = styled.input`
   padding: 12px 16px;
-  border: 1px solid #4b5563;
+  border: 1px solid var(--text-secondary);
   border-radius: 10px;
-  background-color: #263238;
-  color: #f9fafb;
+  background-color: var(--text-primary);
+  color: var(--bg);
   font-size: 16px;
   font-weight: 500;
   transition: border-color 0.2s ease;
   
   &:focus {
-    border-color: #60a5fa;
+    border-color: var(--accent);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+    box-shadow: 0 0 0 3px rgba(180,83,42, 0.2);
   }
 `;
 
@@ -84,11 +84,11 @@ const CancelButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #4b5563;
-  color: #f9fafb;
+  background-color: var(--text-secondary);
+  color: var(--bg);
   
   &:hover {
-    background-color: #374151;
+    background-color: var(--text-primary);
   }
 `;
 
@@ -105,16 +105,16 @@ const ConfirmDeleteButton = styled.button`
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: #ef4444;
+  background-color: var(--error);
   color: white;
   
   &:hover {
-    background-color: #dc2626;
+    background-color: var(--error);
   }
   
   &:disabled {
-    background-color: #f3dede;
-    color: #9ca3af;
+    background-color: var(--error-soft);
+    color: var(--text-tertiary);
     cursor: not-allowed;
   }
 `;

@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { corsMiddleware, runMiddleware } from '../../utils/cors';
 import dbConnect from '../../utils/dbConnect';
-import Card from '../../models/Card';
+import PendingGiftMessage from '../../models/PendingGiftMessage';
 import Note from '../../models/Note';
 import Event from '../../models/Event';
 import Account from '../../models/Account';
@@ -9,6 +9,7 @@ import { convertCurrency } from '../../utils/exchangeRates';
 import { wishCurrency } from '../../utils/wishGoal';
 import { SUPPORTED_CURRENCIES, toMinorUnits } from '../../utils/currency';
 import { calculateFees, MIN_GIFT } from '../../utils/fees';
+import { cleanMessage, cleanPhotoUrls, cleanGifUrl, cleanContact } from '../../utils/giftMessage';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -29,13 +30,25 @@ export default async function handler(req, res) {
       amount: rawAmount,
       giftId,
       senderName,
-      description,
-      cardHTML,
-      cardText,
-      backgroundImage,
-      overlayImages,
+      message: rawMessage,
+      description, // older sender versions sent the message as `description`
+      photoUrls: rawPhotoUrls,
+      gifUrl: rawGifUrl,
+      contactMethod,
+      contactValue,
       currency = 'usd',
     } = req.body;
+
+    const message = cleanMessage(rawMessage ?? description);
+    const photoUrls = cleanPhotoUrls(rawPhotoUrls);
+    const gifUrl = cleanGifUrl(rawGifUrl);
+    // Contact details are optional, but if given they must be valid
+    const contact = contactMethod ? cleanContact(contactMethod, contactValue) : null;
+    if (contactMethod && !contact) {
+      return res.status(400).json({
+        error: contactMethod === 'whatsapp' ? 'Please check the WhatsApp number' : 'Please check the email address',
+      });
+    }
 
     const chargeCurrency = currency.toLowerCase();
     if (!SUPPORTED_CURRENCIES.includes(chargeCurrency)) {
@@ -95,9 +108,8 @@ export default async function handler(req, res) {
             recipientId: recipientId,
             giftId: giftId,
             eventId: eventId,
-            senderName: senderName,
             // Stripe caps metadata values at 500 characters
-            description: (description || '').slice(0, 500),
+            senderName: String(senderName || '').slice(0, 100),
             wishAmount: wishAmount,
             wishCurrency: goalCurrency.toLowerCase(),
           },
@@ -105,19 +117,20 @@ export default async function handler(req, res) {
         idempotencyKey ? { idempotencyKey } : undefined
       );
 
-      // Save card data to database if provided
-      if (cardHTML) {
-        const cardData = new Card({
-          paymentIntentId: paymentIntent.id,
-          giftId,
-          eventId,
-          senderName,
-          cardHTML,
-          cardText: cardText || '',
-          backgroundImage: backgroundImage || '',
-          overlayImages: overlayImages || [],
-        });
-        await cardData.save();
+      // The webhook moves these onto the Payment once it succeeds. Upsert, because an
+      // idempotent retry returns the same PaymentIntent
+      if (message || photoUrls.length || gifUrl || contact) {
+        await PendingGiftMessage.findOneAndUpdate(
+          { paymentIntentId: paymentIntent.id },
+          {
+            paymentIntentId: paymentIntent.id,
+            message,
+            photoUrls,
+            gifUrl,
+            ...(contact || {}),
+          },
+          { upsert: true }
+        );
       }
 
       res.status(200).json({

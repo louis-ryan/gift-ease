@@ -145,7 +145,7 @@ const SimpleImageUpload = ({ currEvent, setCurrentEvent, setUploading }) => {
           zIndex: '4',
           right: '24px',
           bottom: '20px',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          backgroundColor: 'rgba(255,255,255, 0.9)',
           padding: '8px',
           cursor: 'pointer',
           borderRadius: '50%',
@@ -154,9 +154,9 @@ const SimpleImageUpload = ({ currEvent, setCurrentEvent, setUploading }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+          boxShadow: '0 2px 8px rgba(0,0,0, 0.3)',
           backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.5)',
+          border: '1px solid rgba(255,255,255, 0.5)',
         }}
       >
         <img

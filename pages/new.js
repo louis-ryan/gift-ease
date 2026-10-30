@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
 import Link from 'next/link';
 import fetch from 'isomorphic-unfetch';
 import { useRouter } from 'next/router';
 import currencies from '../utils/currencyList';
+import { formatGoal } from '../utils/money';
 import styled from 'styled-components';
+import Logo from '../components/Logo';
 
 // ── Layout ────────────────────────────────────────────────────────────────
 const Page = styled.div`
   min-height: 100vh;
-  background: #F9FAFB;
+  background: var(--bg);
 `;
 
 const TopBar = styled.div`
@@ -18,7 +20,7 @@ const TopBar = styled.div`
   top: 0;
   z-index: 10;
   background: white;
-  border-bottom: 1px solid #F4F4F5;
+  border-bottom: 1px solid var(--surface);
   height: 64px;
   display: flex;
   align-items: center;
@@ -26,43 +28,20 @@ const TopBar = styled.div`
   padding: 0 32px;
 `;
 
-const LogoMark = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const LogoIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const LogoText = styled.span`
-  font-size: 16px;
-  font-weight: 700;
-  color: #18181B;
-  letter-spacing: -0.02em;
-`;
-
 const BackBtn = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #F4F4F5;
+  background: var(--surface);
   border-radius: 8px;
   padding: 7px 14px;
   font-size: 13px;
   font-weight: 500;
-  color: #3F3F46;
+  color: var(--text-primary);
   text-decoration: none;
   transition: background 0.2s ease;
 
-  &:hover { background: #E4E4E7; }
+  &:hover { background: var(--border); }
 `;
 
 const Body = styled.div`
@@ -89,16 +68,16 @@ const FormPanel = styled.div`
 `;
 
 const PageTitle = styled.h1`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 32px;
   font-weight: 800;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 `;
 
 const PageSub = styled.p`
   font-size: 14px;
-  color: #71717A;
+  color: var(--text-secondary);
   margin: 0;
 `;
 
@@ -106,7 +85,7 @@ const Card = styled.div`
   background: white;
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid #F4F4F5;
+  border: 1px solid var(--surface);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -115,7 +94,7 @@ const Card = styled.div`
 const CardTitle = styled.h3`
   font-size: 14px;
   font-weight: 600;
-  color: #71717A;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0;
@@ -130,30 +109,30 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 13px;
   font-weight: 600;
-  color: #3F3F46;
+  color: var(--text-primary);
 `;
 
 const Input = styled.input`
   padding: 10px 14px;
-  border: 1.5px solid #E4E4E7;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
-  color: #18181B;
+  color: var(--text-primary);
   background: white;
   transition: border-color 0.2s ease;
   outline: none;
 
-  &:focus { border-color: #8B5CF6; }
-  &.error { border-color: #EF4444; }
-  &::placeholder { color: #A1A1AA; }
+  &:focus { border-color: var(--accent); }
+  &.error { border-color: var(--error); }
+  &::placeholder { color: var(--text-tertiary); }
 `;
 
 const Textarea = styled.textarea`
   padding: 10px 14px;
-  border: 1.5px solid #E4E4E7;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
-  color: #18181B;
+  color: var(--text-primary);
   background: white;
   resize: vertical;
   min-height: 90px;
@@ -161,20 +140,20 @@ const Textarea = styled.textarea`
   outline: none;
   font-family: inherit;
 
-  &:focus { border-color: #8B5CF6; }
-  &.error { border-color: #EF4444; }
-  &::placeholder { color: #A1A1AA; }
+  &:focus { border-color: var(--accent); }
+  &.error { border-color: var(--error); }
+  &::placeholder { color: var(--text-tertiary); }
 `;
 
 const ErrorMsg = styled.span`
-  color: #EF4444;
+  color: var(--error);
   font-size: 12px;
   font-weight: 500;
 `;
 
 const CharCount = styled.div`
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
   text-align: right;
 `;
 
@@ -185,16 +164,16 @@ const PriceRow = styled.div`
 
 const CurrencySelect = styled.select`
   padding: 10px 12px;
-  border: 1.5px solid #E4E4E7;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
   background: white;
-  color: #18181B;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
   min-width: 90px;
 
-  &:focus { border-color: #8B5CF6; }
+  &:focus { border-color: var(--accent); }
 `;
 
 const PriceInput = styled(Input)`
@@ -209,7 +188,7 @@ const FetchRow = styled.div`
 
 const FetchBtn = styled.button`
   padding: 10px 16px;
-  background: #18181B;
+  background: var(--text-primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -229,22 +208,22 @@ const StatusMsg = styled.div`
   font-size: 13px;
   font-weight: 500;
 
-  &.success { background: #D1FAE5; color: #065F46; }
-  &.error   { background: #FEE2E2; color: #991B1B; }
-  &.warning { background: #FEF3C7; color: #92400E; }
+  &.success { background: var(--success-soft); color: var(--success-dark); }
+  &.error   { background: var(--error-soft); color: var(--error-dark); }
+  &.warning { background: var(--honey-soft); color: var(--warning-dark); }
 `;
 
 // ── Image upload ──────────────────────────────────────────────────────────
 const UploadArea = styled.div`
-  border: 1.5px dashed #D4D4D8;
+  border: 1.5px dashed var(--border-strong);
   border-radius: 12px;
   padding: 32px 20px;
   text-align: center;
   cursor: pointer;
-  background: #FAFAFA;
+  background: var(--bg);
   transition: all 0.2s ease;
 
-  &:hover, &.drag-active { border-color: #8B5CF6; background: rgba(139,92,246,0.03); }
+  &:hover, &.drag-active { border-color: var(--accent); background: rgba(180,83,42,0.03); }
   &.has-preview { padding: 0; border: none; background: transparent; }
 `;
 
@@ -253,24 +232,24 @@ const UploadPlaceholder = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  color: #71717A;
+  color: var(--text-secondary);
 `;
 
 const UploadText = styled.p`
   font-size: 14px;
-  color: #3F3F46;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const UploadLink = styled.span`
-  color: #8B5CF6;
+  color: var(--accent);
   text-decoration: underline;
   cursor: pointer;
 `;
 
 const UploadHint = styled.p`
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
@@ -285,8 +264,8 @@ const UploadLoading = styled.div`
 const Spinner = styled.div`
   width: 32px;
   height: 32px;
-  border: 3px solid #E4E4E7;
-  border-top: 3px solid #8B5CF6;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -324,7 +303,7 @@ const Divider = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
   font-size: 13px;
   margin: 4px 0;
 
@@ -332,7 +311,7 @@ const Divider = styled.div`
     content: '';
     flex: 1;
     height: 1px;
-    background: #E4E4E7;
+    background: var(--border);
   }
 `;
 
@@ -343,12 +322,12 @@ const UrlRow = styled.div`
 
 const UrlInput = styled(Input)`
   flex: 1;
-  &:disabled { background: #F9FAFB; color: #71717A; cursor: not-allowed; }
+  &:disabled { background: var(--bg); color: var(--text-secondary); cursor: not-allowed; }
 `;
 
 const UrlBtn = styled.button`
   padding: 10px 16px;
-  background: #3B82F6;
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -364,7 +343,7 @@ const UrlBtn = styled.button`
 // ── Submit ────────────────────────────────────────────────────────────────
 const SubmitBtn = styled.button`
   padding: 14px 28px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 12px;
@@ -399,14 +378,14 @@ const PreviewCard = styled.div`
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #F4F4F5;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border: 1px solid var(--surface);
+  box-shadow: 0 4px 16px rgba(91,58,33,0.08);
 `;
 
 const PreviewImgBox = styled.div`
   width: 100%;
   height: 180px;
-  background: #F4F4F5;
+  background: var(--surface);
   overflow: hidden;
 `;
 
@@ -423,13 +402,13 @@ const PreviewBody = styled.div`
 const PreviewTitle = styled.p`
   font-size: 15px;
   font-weight: 600;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
 `;
 
 const PreviewDesc = styled.p`
   font-size: 13px;
-  color: #71717A;
+  color: var(--text-secondary);
   margin: 0 0 12px 0;
   line-height: 1.5;
   overflow: hidden;
@@ -448,18 +427,18 @@ const PreviewPrice = styled.div`
 const PreviewPriceVal = styled.span`
   font-size: 22px;
   font-weight: 700;
-  color: #8B5CF6;
+  color: var(--accent);
 `;
 
 const PreviewPriceCur = styled.span`
   font-size: 13px;
-  color: #71717A;
+  color: var(--text-secondary);
 `;
 
 const PreviewProgressBar = styled.div`
   width: 100%;
   height: 6px;
-  background: #F4F4F5;
+  background: var(--surface);
   border-radius: 999px;
   margin-bottom: 6px;
   overflow: hidden;
@@ -468,20 +447,20 @@ const PreviewProgressBar = styled.div`
 const PreviewProgressFill = styled.div`
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #8B5CF6 0%, #EC4899 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 100%);
   border-radius: 999px;
 `;
 
 const PreviewMeta = styled.p`
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
   margin: 0 0 14px 0;
 `;
 
 const PreviewCTA = styled.div`
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   color: white;
   border-radius: 10px;
   font-size: 14px;
@@ -491,7 +470,7 @@ const PreviewCTA = styled.div`
 
 const PreviewHint = styled.p`
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
   text-align: center;
   margin: 10px 0 0 0;
   display: flex;
@@ -506,10 +485,10 @@ const EventWarning = styled.div`
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
+  background: var(--honey-soft);
+  border: 1px solid var(--honey);
   border-radius: 10px;
-  color: #92400E;
+  color: var(--warning-dark);
   font-size: 13px;
   font-weight: 500;
 `;
@@ -555,9 +534,14 @@ const NewNote = (props) => {
     );
   }, [user]);
 
-  // Default the wish's currency to the account's saved currency once it loads
+  // Start the wish in the account's default currency once it loads, unless the giftee (or
+  // a product lookup) has already picked one for this wish. Changing it here never
+  // changes the default; that's the currency menu in the top bar
+  const currencyChosen = useRef(false);
   useEffect(() => {
-    if (props.selectedCurrency) setForm((prev) => ({ ...prev, currency: props.selectedCurrency }));
+    if (props.selectedCurrency && !currencyChosen.current) {
+      setForm((prev) => ({ ...prev, currency: props.selectedCurrency }));
+    }
   }, [props.selectedCurrency]);
 
   const createNote = async () => {
@@ -706,6 +690,7 @@ const NewNote = (props) => {
         noteUrl: imageUrl || prev.noteUrl,
         description: description || prev.description,
       }));
+      if (price && supported) currencyChosen.current = true;
       if (imageUrl) setPreview(imageUrl);
       setProductUrl('');
 
@@ -725,36 +710,12 @@ const NewNote = (props) => {
     }
   };
 
-  const setAccountCurrency = async (e) => {
-    const newCurrency = e.target.value;
-    props.setSelectedCurrency(newCurrency);
-    if (!props.stripeUserId) return;
-    try {
-      await fetch(`/api/setAccountCurrency?id=${props.stripeUserId}`, {
-        method: 'PUT',
-        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currency: newCurrency }),
-      });
-    } catch (error) { console.log(error); }
-  };
-
   const displayImage = preview || form.noteUrl;
 
   return (
     <Page>
       <TopBar>
-        <LogoMark>
-          <LogoIcon>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M20 12V22H4V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M22 7H2V12H22V7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 22V7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H7.5C6.84 7 6.2 6.74 5.73 6.27C5.26 5.8 5 5.16 5 4.5C5 3.84 5.26 3.2 5.73 2.73C6.2 2.26 6.84 2 7.5 2C11 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H16.5C17.16 7 17.8 6.74 18.27 6.27C18.74 5.8 19 5.16 19 4.5C19 3.84 18.74 3.2 18.27 2.73C17.8 2.26 17.16 2 16.5 2C13 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </LogoIcon>
-          <LogoText>GiftEasy</LogoText>
-        </LogoMark>
+        <Logo />
 
         <BackBtn href="/">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -782,7 +743,7 @@ const NewNote = (props) => {
           {isSubmitting ? (
             <Card style={{ alignItems: 'center', padding: '48px' }}>
               <Spinner />
-              <p style={{ margin: 0, color: '#71717A', fontSize: 14 }}>Creating your wish…</p>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>Creating your wish…</p>
             </Card>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -806,7 +767,7 @@ const NewNote = (props) => {
                       {message}
                     </StatusMsg>
                   )}
-                  <span style={{ fontSize: 12, color: '#A1A1AA' }}>Works with Amazon, Target, Walmart and any online store</span>
+                  <span style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>Works with Amazon, Target, Walmart and any online store</span>
                 </FormGroup>
               </Card>
 
@@ -833,7 +794,7 @@ const NewNote = (props) => {
                     <CurrencySelect
                       name="currency"
                       value={form.currency}
-                      onChange={(e) => { handleChange(e); setAccountCurrency(e); }}
+                      onChange={(e) => { currencyChosen.current = true; handleChange(e); }}
                     >
                       {currencies.map((currency) => (
                         <option key={currency.code} value={currency.code}>{currency.code}</option>
@@ -878,7 +839,7 @@ const NewNote = (props) => {
                   {uploading ? (
                     <UploadLoading>
                       <Spinner />
-                      <p style={{ margin: 0, fontSize: 13, color: '#71717A' }}>Uploading image…</p>
+                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>Uploading image…</p>
                     </UploadLoading>
                   ) : displayImage ? (
                     <ImgPreview>
@@ -890,7 +851,7 @@ const NewNote = (props) => {
                   ) : (
                     <UploadPlaceholder onClick={() => document.getElementById('fileInput').click()}>
                       <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#D9C7AC" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                       <UploadText>
                         Drag and drop, or <UploadLink>browse</UploadLink>
@@ -929,7 +890,7 @@ const NewNote = (props) => {
 
         {/* Preview panel */}
         <PreviewPanel>
-          <p style={{ margin: '0 0 12px 0', fontSize: 13, fontWeight: 600, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Preview</p>
+          <p style={{ margin: '0 0 12px 0', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Preview</p>
           <PreviewCard>
             <PreviewImgBox>
               {displayImage ? (
@@ -937,9 +898,9 @@ const NewNote = (props) => {
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D1D5DB" strokeWidth="1.5"/>
-                    <circle cx="8.5" cy="8.5" r="1.5" fill="#D1D5DB"/>
-                    <path d="M21 15l-5-5-4 4" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round"/>
+                    <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D9C7AC" strokeWidth="1.5"/>
+                    <circle cx="8.5" cy="8.5" r="1.5" fill="#D9C7AC"/>
+                    <path d="M21 15l-5-5-4 4" stroke="#D9C7AC" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </div>
               )}
@@ -948,11 +909,11 @@ const NewNote = (props) => {
               <PreviewTitle>{form.title || 'Wish title'}</PreviewTitle>
               <PreviewDesc>{form.description || 'Wish description will appear here…'}</PreviewDesc>
               <PreviewPrice>
-                <PreviewPriceVal>${form.amount || '0'}</PreviewPriceVal>
-                <PreviewPriceCur>{form.currency || 'USD'} · goal</PreviewPriceCur>
+                <PreviewPriceVal>{formatGoal(form.amount, form.currency)}</PreviewPriceVal>
+                <PreviewPriceCur>goal</PreviewPriceCur>
               </PreviewPrice>
               <PreviewProgressBar><PreviewProgressFill /></PreviewProgressBar>
-              <PreviewMeta>$0 raised · 0 contributors</PreviewMeta>
+              <PreviewMeta>{formatGoal(0, form.currency)} raised · 0 contributors</PreviewMeta>
               <PreviewCTA>Contribute →</PreviewCTA>
             </PreviewBody>
           </PreviewCard>

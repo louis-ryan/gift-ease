@@ -4,6 +4,10 @@ import { useRouter } from 'next/router';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import Link from 'next/link';
 import styled from 'styled-components';
+import Logo from '../../components/Logo';
+import Money from '../../components/Money';
+import GiftMessageText from '../../components/GiftMessageText';
+import { formatMoney, formatGoal } from '../../utils/money';
 import { wishGoal, wishCurrency } from '../../utils/wishGoal';
 
 const roundMoney = (value) => Math.round(value * 100) / 100;
@@ -11,7 +15,7 @@ const roundMoney = (value) => Math.round(value * 100) / 100;
 // ── Layout ────────────────────────────────────────────────────────────────
 const Page = styled.div`
   min-height: 100vh;
-  background: #F5F5F5;
+  background: var(--bg);
 `;
 
 const TopBar = styled.div`
@@ -19,51 +23,28 @@ const TopBar = styled.div`
   top: 0;
   z-index: 10;
   background: white;
-  border-bottom: 1px solid #F4F4F5;
+  border-bottom: 1px solid var(--surface);
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-`;
-
-const LogoMark = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const LogoIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const LogoText = styled.span`
-  font-size: 16px;
-  font-weight: 700;
-  color: #18181B;
-  letter-spacing: -0.02em;
+  box-shadow: 0 1px 4px rgba(91,58,33,0.06);
 `;
 
 const NavBackBtn = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #F4F4F5;
+  background: var(--surface);
   border-radius: 8px;
   padding: 7px 14px;
   font-size: 13px;
   font-weight: 500;
-  color: #3F3F46;
+  color: var(--text-primary);
   text-decoration: none;
   transition: background 0.2s ease;
-  &:hover { background: #E4E4E7; }
+  &:hover { background: var(--border); }
 `;
 
 const NavActions = styled.div`
@@ -85,8 +66,8 @@ const NavBtn = styled.button`
   transition: opacity 0.2s ease;
   &:hover { opacity: 0.85; }
 
-  ${props => props.$variant === 'edit' && `background: #F4F4F5; color: #3F3F46;`}
-  ${props => props.$variant === 'delete' && `background: #FEE2E2; color: #EF4444;`}
+  ${props => props.$variant === 'edit' && `background: var(--surface); color: var(--text-primary);`}
+  ${props => props.$variant === 'delete' && `background: var(--error-soft); color: var(--error);`}
 `;
 
 // ── Body ──────────────────────────────────────────────────────────────────
@@ -121,7 +102,7 @@ const WishCard = styled.div`
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  border: 1px solid #F4F4F5;
+  border: 1px solid var(--surface);
 `;
 
 const WishImg = styled.img`
@@ -134,7 +115,7 @@ const WishImg = styled.img`
 const WishImgPlaceholder = styled.div`
   width: 100%;
   height: 240px;
-  background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,16 +126,16 @@ const WishCardBody = styled.div`
 `;
 
 const WishTitle = styled.h1`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 800;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 8px 0;
 `;
 
 const WishDesc = styled.p`
   font-size: 14px;
-  color: #71717A;
+  color: var(--text-secondary);
   margin: 0 0 16px 0;
   line-height: 1.6;
 `;
@@ -168,19 +149,19 @@ const WishGoalRow = styled.div`
 
 const WishGoalLabel = styled.span`
   font-size: 13px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
 `;
 
 const WishGoalVal = styled.span`
   font-size: 22px;
   font-weight: 700;
-  color: #8B5CF6;
+  color: var(--accent);
 `;
 
 const ProgressBar = styled.div`
   width: 100%;
   height: 8px;
-  background: #F4F4F5;
+  background: var(--surface);
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 6px;
@@ -188,7 +169,7 @@ const ProgressBar = styled.div`
 
 const ProgressFill = styled.div`
   height: 100%;
-  background: linear-gradient(90deg, #8B5CF6 0%, #EC4899 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 100%);
   border-radius: 999px;
 `;
 
@@ -196,7 +177,7 @@ const ProgressMeta = styled.div`
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
 `;
 
 // ── Edit form ─────────────────────────────────────────────────────────────
@@ -204,7 +185,7 @@ const EditCard = styled.div`
   background: white;
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid #F4F4F5;
+  border: 1px solid var(--surface);
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -213,7 +194,7 @@ const EditCard = styled.div`
 const EditTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0;
 `;
 
@@ -226,34 +207,34 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 12px;
   font-weight: 600;
-  color: #71717A;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 `;
 
 const Input = styled.input`
   padding: 10px 14px;
-  border: 1.5px solid #E4E4E7;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
-  color: #18181B;
+  color: var(--text-primary);
   outline: none;
   transition: border-color 0.2s ease;
-  &:focus { border-color: #8B5CF6; }
+  &:focus { border-color: var(--accent); }
 `;
 
 const Textarea = styled.textarea`
   padding: 10px 14px;
-  border: 1.5px solid #E4E4E7;
+  border: 1.5px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
-  color: #18181B;
+  color: var(--text-primary);
   resize: vertical;
   min-height: 80px;
   outline: none;
   font-family: inherit;
   transition: border-color 0.2s ease;
-  &:focus { border-color: #8B5CF6; }
+  &:focus { border-color: var(--accent); }
 `;
 
 const EditBtnRow = styled.div`
@@ -264,7 +245,7 @@ const EditBtnRow = styled.div`
 
 const SaveBtn = styled.button`
   padding: 9px 18px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 8px;
@@ -277,15 +258,15 @@ const SaveBtn = styled.button`
 
 const CancelBtn = styled.button`
   padding: 9px 18px;
-  background: #F4F4F5;
-  color: #3F3F46;
+  background: var(--surface);
+  color: var(--text-primary);
   border: none;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease;
-  &:hover { background: #E4E4E7; }
+  &:hover { background: var(--border); }
 `;
 
 // ── Right col ─────────────────────────────────────────────────────────────
@@ -300,14 +281,14 @@ const ChartCard = styled.div`
   background: white;
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid #F4F4F5;
+  border: 1px solid var(--surface);
 `;
 
 const ChartCardTitle = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 20px 0;
 `;
 
@@ -345,12 +326,12 @@ const LegendDot = styled.div`
 `;
 
 const LegendName = styled.span`
-  color: #3F3F46;
+  color: var(--text-primary);
 `;
 
 const LegendVal = styled.span`
   font-weight: 600;
-  color: #18181B;
+  color: var(--text-primary);
 `;
 
 // ── Contributors ──────────────────────────────────────────────────────────
@@ -358,23 +339,20 @@ const ContributorsCard = styled.div`
   background: white;
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid #F4F4F5;
+  border: 1px solid var(--surface);
 `;
 
 const ContributorsTitle = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 18px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 16px 0;
 `;
 
 const ContributorItem = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid #F4F4F5;
+  border-bottom: 1px solid var(--surface);
 
   &:last-child { border-bottom: none; }
 `;
@@ -389,7 +367,7 @@ const ContributorAvatar = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -399,29 +377,72 @@ const ContributorAvatar = styled.div`
   flex-shrink: 0;
 `;
 
-const ContributorInfo = styled.div``;
+const ContributorInfo = styled.div`
+  min-width: 0;
+`;
+
+const ContributorMain = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const ContributorMessage = styled.div`
+  margin: 10px 0 0 48px;
+  padding: 12px 14px;
+  background: var(--surface-soft);
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-word;
+`;
+
+const MessageMedia = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: ${(p) => (p.$spaced ? '10px' : '0')};
+
+  a, img {
+    display: block;
+  }
+  img {
+    width: 88px;
+    height: 88px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: var(--surface);
+  }
+  img.gif {
+    width: auto;
+    max-width: 200px;
+    height: 120px;
+  }
+`;
 
 const ContributorName = styled.p`
   font-size: 14px;
   font-weight: 600;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 2px 0;
 `;
 
 const ContributorDate = styled.p`
   font-size: 12px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
   margin: 0;
 `;
 
 const ContributorAmount = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #8B5CF6;
+  color: var(--accent);
 `;
 
 const EmptyContributors = styled.p`
-  color: #A1A1AA;
+  color: var(--text-tertiary);
   font-size: 14px;
   text-align: center;
   padding: 24px 0;
@@ -434,21 +455,21 @@ const CenterWrap = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F5F5F5;
+  background: var(--bg);
 `;
 
 const Spinner = styled.div`
   width: 36px;
   height: 36px;
-  border: 3px solid #E4E4E7;
-  border-top: 3px solid #8B5CF6;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   @keyframes spin { 100% { transform: rotate(360deg); } }
 `;
 
 // ── Component ─────────────────────────────────────────────────────────────
-const Note = () => {
+const Note = ({ selectedCurrency }) => {
   const [note, setNote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(null);
@@ -500,14 +521,26 @@ const Note = () => {
       });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const resJSON = await res.json();
-      const COLORS = ['#8B5CF6', '#EC4899', '#14B8A6', '#F59E0B', '#3B82F6', '#EF4444'];
+      // Messages, photos and GIFs come from the giftee-only route (the gift route is public)
+      const privateRes = await fetch(`/api/getStripePaymentsForAccount?giftId=${noteId}`).catch(() => null);
+      const privateById = {};
+      if (privateRes?.ok) {
+        const { payments } = await privateRes.json();
+        payments.forEach((p) => { privateById[p.id] = p; });
+      }
+      const COLORS = ['#B4532A', '#E9C46A', '#5E7A4E', '#A9744F', '#7A9CA8', '#C98A6B'];
       const paymentSlices = resJSON.payments.map((payment, i) => ({
-        name: payment.senderName,
+        id: payment.id,
+        name: payment.senderName || 'Anonymous',
         // In the wish's currency, so slices add up against the goal
         value: roundMoney(payment.wishAmount),
+        // What they actually sent, in the currency they sent it in
+        sentAmount: payment.amount,
+        sentCurrency: payment.currency,
         color: COLORS[i % COLORS.length],
-        details: payment.description,
-        cardHTML: payment.cardHTML,
+        message: privateById[payment.id]?.message || '',
+        photoUrls: privateById[payment.id]?.photoUrls || [],
+        gifUrl: privateById[payment.id]?.gifUrl || '',
         date: payment.date,
       }));
       setContributors(paymentSlices);
@@ -516,7 +549,7 @@ const Note = () => {
       const remaining = roundMoney(Math.max(0, totalGoal - totalPaid));
       setData([
         ...paymentSlices,
-        { name: 'Remaining', value: remaining, color: '#E4E4E7' },
+        { name: 'Remaining', value: remaining, color: '#EFE4D3' },
       ]);
     } catch (error) { console.error('Error fetching payments:', error); }
   };
@@ -552,8 +585,8 @@ const Note = () => {
     return (
       <CenterWrap>
         <div style={{ textAlign: 'center' }}>
-          <p style={{ color: '#3F3F46', marginBottom: 16 }}>Note not found.</p>
-          <Link href="/" style={{ color: '#8B5CF6', fontWeight: 600 }}>Back to Dashboard</Link>
+          <p style={{ color: 'var(--text-primary)', marginBottom: 16 }}>Note not found.</p>
+          <Link href="/" style={{ color: 'var(--accent)', fontWeight: 600 }}>Back to Dashboard</Link>
         </div>
       </CenterWrap>
     );
@@ -567,18 +600,7 @@ const Note = () => {
   return (
     <Page>
       <TopBar>
-        <LogoMark>
-          <LogoIcon>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M20 12V22H4V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M22 7H2V12H22V7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 22V7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H7.5C6.84 7 6.2 6.74 5.73 6.27C5.26 5.8 5 5.16 5 4.5C5 3.84 5.26 3.2 5.73 2.73C6.2 2.26 6.84 2 7.5 2C11 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H16.5C17.16 7 17.8 6.74 18.27 6.27C18.74 5.8 19 5.16 19 4.5C19 3.84 18.74 3.2 18.27 2.73C17.8 2.26 17.16 2 16.5 2C13 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </LogoIcon>
-          <LogoText>GiftEasy</LogoText>
-        </LogoMark>
+        <Logo />
 
         <NavBackBtn href="/">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -608,9 +630,9 @@ const Note = () => {
             ) : (
               <WishImgPlaceholder>
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D1D5DB" strokeWidth="1.5"/>
-                  <circle cx="8.5" cy="8.5" r="1.5" fill="#D1D5DB"/>
-                  <path d="M21 15l-5-5-4 4" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D9C7AC" strokeWidth="1.5"/>
+                  <circle cx="8.5" cy="8.5" r="1.5" fill="#D9C7AC"/>
+                  <path d="M21 15l-5-5-4 4" stroke="#D9C7AC" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </WishImgPlaceholder>
             )}
@@ -619,13 +641,13 @@ const Note = () => {
               <WishDesc>{note.description}</WishDesc>
               <WishGoalRow>
                 <WishGoalLabel>Goal</WishGoalLabel>
-                <WishGoalVal>{totalGoal} {cur}</WishGoalVal>
+                <WishGoalVal><Money amount={totalGoal} currency={cur} defaultCurrency={selectedCurrency} format={formatGoal} /></WishGoalVal>
               </WishGoalRow>
               <ProgressBar>
                 <ProgressFill style={{ width: `${progress}%` }} />
               </ProgressBar>
               <ProgressMeta>
-                <span>{totalPaid} {cur} raised · {contributors.length} contributors</span>
+                <span>{formatMoney(totalPaid, cur)} raised · {contributors.length} contributor{contributors.length === 1 ? '' : 's'}</span>
                 <span>{progress}% funded</span>
               </ProgressMeta>
             </WishCardBody>
@@ -679,58 +701,77 @@ const Note = () => {
                         paddingAngle={2}
                       >
                         {data.map((entry, index) => (
-                          <Cell key={entry.name} fill={entry.color} opacity={activeIndex === index ? 0.8 : 1} />
+                          <Cell key={entry.id || entry.name} fill={entry.color} opacity={activeIndex === index ? 0.8 : 1} />
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value, name) => [`${value} ${cur}`, name]}
-                        contentStyle={{ borderRadius: 10, border: '1px solid #F4F4F5', fontSize: 13 }}
+                        formatter={(value, name) => [formatMoney(value, cur), name]}
+                        contentStyle={{ borderRadius: 10, border: '1px solid var(--surface)', fontSize: 13 }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
                   {/* Center label */}
                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                    <div style={{ fontSize: 28, fontWeight: 800, color: '#18181B', lineHeight: 1 }}>{progress}%</div>
-                    <div style={{ fontSize: 12, color: '#A1A1AA', marginTop: 2 }}>funded</div>
+                    <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>{progress}%</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>funded</div>
                   </div>
                 </ChartWrap>
 
                 <LegendList>
-                  {data.filter(d => d.name !== 'Remaining').map((item) => (
-                    <LegendItem key={item.name}>
+                  {data.filter(d => d.name !== 'Remaining').map((item, i) => (
+                    <LegendItem key={item.id || i}>
                       <LegendLeft>
                         <LegendDot $color={item.color} />
                         <LegendName>{item.name}</LegendName>
                       </LegendLeft>
-                      <LegendVal>+{item.value} {cur}</LegendVal>
+                      <LegendVal>+{formatMoney(item.value, cur)}</LegendVal>
                     </LegendItem>
                   ))}
                   <LegendItem>
                     <LegendLeft>
-                      <LegendDot $color="#E4E4E7" />
-                      <LegendName style={{ color: '#A1A1AA' }}>Remaining</LegendName>
+                      <LegendDot $color="var(--border)" />
+                      <LegendName style={{ color: 'var(--text-tertiary)' }}>Remaining</LegendName>
                     </LegendLeft>
-                    <LegendVal style={{ color: '#A1A1AA' }}>{roundMoney(Math.max(0, totalGoal - totalPaid))} {cur}</LegendVal>
+                    <LegendVal style={{ color: 'var(--text-tertiary)' }}>{formatMoney(roundMoney(Math.max(0, totalGoal - totalPaid)), cur)}</LegendVal>
                   </LegendItem>
                 </LegendList>
               </>
             ) : (
-              <p style={{ color: '#A1A1AA', textAlign: 'center', padding: '32px 0', margin: 0 }}>No contributions yet</p>
+              <p style={{ color: 'var(--text-tertiary)', textAlign: 'center', padding: '32px 0', margin: 0 }}>No contributions yet</p>
             )}
           </ChartCard>
 
           <ContributorsCard>
             <ContributorsTitle>Contributors</ContributorsTitle>
             {contributors.length > 0 ? contributors.map((item, i) => (
-              <ContributorItem key={i}>
-                <ContributorLeft>
-                  <ContributorAvatar>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</ContributorAvatar>
-                  <ContributorInfo>
-                    <ContributorName>{item.name}</ContributorName>
-                    <ContributorDate>{item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</ContributorDate>
-                  </ContributorInfo>
-                </ContributorLeft>
-                <ContributorAmount>+{item.value} {cur}</ContributorAmount>
+              <ContributorItem key={item.id || i}>
+                <ContributorMain>
+                  <ContributorLeft>
+                    <ContributorAvatar>{item.name ? item.name.charAt(0).toUpperCase() : '?'}</ContributorAvatar>
+                    <ContributorInfo>
+                      <ContributorName>{item.name}</ContributorName>
+                      <ContributorDate>{item.date ? new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</ContributorDate>
+                    </ContributorInfo>
+                  </ContributorLeft>
+                  <ContributorAmount>
+                    <Money prefix="+" amount={item.sentAmount} currency={item.sentCurrency} defaultCurrency={selectedCurrency} />
+                  </ContributorAmount>
+                </ContributorMain>
+                {(item.message || item.photoUrls.length > 0 || item.gifUrl) && (
+                  <ContributorMessage>
+                    <GiftMessageText text={item.message} />
+                    {(item.photoUrls.length > 0 || item.gifUrl) && (
+                      <MessageMedia $spaced={Boolean(item.message)}>
+                        {item.photoUrls.map((url) => (
+                          <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                            <img src={url} alt={`Photo from ${item.name}`} loading="lazy" />
+                          </a>
+                        ))}
+                        {item.gifUrl && <img className="gif" src={item.gifUrl} alt={`GIF from ${item.name}`} loading="lazy" />}
+                      </MessageMedia>
+                    )}
+                  </ContributorMessage>
+                )}
               </ContributorItem>
             )) : (
               <EmptyContributors>No contributors yet — share your wishlist to get started!</EmptyContributors>

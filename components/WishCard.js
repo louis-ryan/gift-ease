@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
+import { formatMoney, formatGoal } from '../utils/money';
 import { wishGoal, wishCurrency } from '../utils/wishGoal';
 
 const Card = styled.div`
@@ -9,19 +10,19 @@ const Card = styled.div`
   overflow: hidden;
   cursor: pointer;
   transition: all 0.25s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border: 1px solid #F4F4F5;
+  box-shadow: 0 2px 8px rgba(91,58,33,0.08);
+  border: 1px solid var(--surface);
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+    box-shadow: 0 12px 28px rgba(91,58,33,0.12);
   }
 `;
 
 const CardImage = styled.div`
   width: 100%;
   height: 180px;
-  background: #F4F4F5;
+  background: var(--surface);
   position: relative;
   overflow: hidden;
 `;
@@ -35,7 +36,7 @@ const CardImg = styled.img`
 const CardImagePlaceholder = styled.div`
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+  background: linear-gradient(135deg, var(--surface) 0%, var(--border) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -46,10 +47,10 @@ const CardBody = styled.div`
 `;
 
 const CardTitle = styled.p`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 10px 0;
   white-space: nowrap;
   overflow: hidden;
@@ -63,7 +64,7 @@ const ProgressWrap = styled.div`
 const ProgressBar = styled.div`
   width: 100%;
   height: 6px;
-  background: #F4F4F5;
+  background: var(--surface);
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 6px;
@@ -72,7 +73,7 @@ const ProgressBar = styled.div`
 const ProgressFill = styled.div`
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #8B5CF6 0%, #EC4899 100%);
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent) 100%);
   transition: width 0.4s ease;
 `;
 
@@ -84,19 +85,19 @@ const ProgressMeta = styled.div`
 
 const ProgressPaid = styled.span`
   font-size: 12px;
-  color: #8B5CF6;
+  color: var(--accent);
   font-weight: 600;
 `;
 
 const ProgressSenders = styled.span`
   font-size: 12px;
-  color: #71717A;
+  color: var(--text-secondary);
 `;
 
 const ContributeBtn = styled.button`
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   color: white;
   border: none;
   border-radius: 10px;
@@ -127,10 +128,10 @@ const WishCard = ({ note }) => {
         ) : (
           <CardImagePlaceholder>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D1D5DB" strokeWidth="1.5"/>
-              <circle cx="8.5" cy="8.5" r="1.5" fill="#D1D5DB"/>
-              <path d="M21 15L16 10L11 15" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round"/>
-              <path d="M3 19L8 14" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round"/>
+              <rect x="3" y="3" width="18" height="18" rx="3" stroke="#D9C7AC" strokeWidth="1.5"/>
+              <circle cx="8.5" cy="8.5" r="1.5" fill="#D9C7AC"/>
+              <path d="M21 15L16 10L11 15" stroke="#D9C7AC" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M3 19L8 14" stroke="#D9C7AC" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </CardImagePlaceholder>
         )}
@@ -144,7 +145,7 @@ const WishCard = ({ note }) => {
             <ProgressFill style={{ width: `${progress}%` }} />
           </ProgressBar>
           <ProgressMeta>
-            <ProgressPaid>{paid} {cur} of {total} {cur}</ProgressPaid>
+            <ProgressPaid>{formatMoney(paid, cur)} of {formatGoal(total, cur)}</ProgressPaid>
             <ProgressSenders>{senderCount} {senderCount === 1 ? 'contributor' : 'contributors'}</ProgressSenders>
           </ProgressMeta>
         </ProgressWrap>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import styled from 'styled-components';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
 import deleteThisEvent from '../requests/deleteThisEvent';
@@ -16,7 +17,7 @@ import SetupReminder from '../components/SetupReminder';
 // ── Layout ──────────────────────────────────────────────────────────────
 const Page = styled.div`
   min-height: 100vh;
-  background: #FAFAFA;
+  background: var(--bg);
 `;
 
 const HeroSpacer = styled.div`
@@ -40,16 +41,16 @@ const SectionHeader = styled.div`
 `;
 
 const SectionTitle = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0;
 `;
 
 const SectionMeta = styled.span`
   font-size: 13px;
-  color: #71717A;
+  color: var(--text-secondary);
   font-weight: 500;
 `;
 
@@ -68,7 +69,7 @@ const CardsGrid = styled.div`
 const AddWishCard = styled.div`
   background: white;
   border-radius: 16px;
-  border: 1.5px dashed #D4D4D8;
+  border: 1.5px dashed var(--border-strong);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -77,12 +78,12 @@ const AddWishCard = styled.div`
   cursor: pointer;
   transition: all 0.2s ease;
   gap: 10px;
-  color: #A1A1AA;
+  color: var(--text-tertiary);
 
   &:hover {
-    border-color: #8B5CF6;
-    color: #8B5CF6;
-    background: rgba(139,92,246,0.02);
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(180,83,42,0.02);
   }
 `;
 
@@ -103,11 +104,46 @@ const AddWishLabel = styled.span`
   font-weight: 600;
 `;
 
+// ── Thank-you link ──────────────────────────────────────────────────────
+const ThanksCard = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  text-decoration: none;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease;
+
+  &:hover { border-color: var(--accent-line); }
+`;
+
+const ThanksIcon = styled.div`
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--honey-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+`;
+
+const ThanksText = styled.div`
+  flex: 1;
+  p { margin: 0; }
+  p:first-child { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+  p:last-child { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+`;
+
 // ── Delete button ────────────────────────────────────────────────────────
 const DeleteButton = styled.button`
   background: white;
-  color: #EF4444;
-  border: 1.5px solid #FEE2E2;
+  color: var(--error);
+  border: 1.5px solid var(--error-soft);
   padding: 10px 20px;
   border-radius: 10px;
   font-size: 14px;
@@ -120,8 +156,8 @@ const DeleteButton = styled.button`
   align-self: flex-start;
 
   &:hover {
-    background: #FEF2F2;
-    border-color: #FECACA;
+    background: var(--error-soft);
+    border-color: var(--error-line);
   }
 
   &:disabled {
@@ -138,7 +174,7 @@ const LoadingCard = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #71717A;
+  color: var(--text-secondary);
   font-size: 15px;
 `;
 
@@ -192,7 +228,7 @@ const Index = (props) => {
     return (
       <>
         <Page>
-          <HeroSpacer style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%)' }} />
+          <HeroSpacer style={{ background: 'var(--accent)' }} />
           <Navbar
             selectedCurrency={props.selectedCurrency}
             setSelectedCurrency={props.setSelectedCurrency}
@@ -282,7 +318,19 @@ const Index = (props) => {
 
         {/* Share / Setup reminder */}
         {props.accountSetupComplete ? (
-          <ShareLink currentEvent={props.currentEvent} />
+          <>
+            <ShareLink currentEvent={props.currentEvent} />
+            <ThanksCard href="/thanks">
+              <ThanksIcon aria-hidden="true">💌</ThanksIcon>
+              <ThanksText>
+                <p>Say thank you</p>
+                <p>Send everyone who gave a thank-you on WhatsApp or by email</p>
+              </ThanksText>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: 'var(--text-tertiary)' }}>
+                <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </ThanksCard>
+          </>
         ) : (
           <SetupReminder />
         )}

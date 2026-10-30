@@ -20,7 +20,7 @@ const PhoneInput = ({ country, value, onChange }) => {
           left: '8px',
           top: '50%',
           transform: 'translateY(-50%)',
-          color: '#666',
+          color: 'var(--text-secondary)',
         }}
       >
         {prefix}

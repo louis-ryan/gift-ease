@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter } from 'next/router';
 import styled from 'styled-components';
+import Logo from '../components/Logo';
+import CurrencyMenu from '../components/CurrencyMenu';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
 import { COUNTRY_BANK_FORMATS } from '../countryBankFormats';
 import CreatePayoutLink from '../components/CreatePayoutLink';
@@ -12,7 +14,7 @@ import BalanceDashboard from '../components/BalanceDashboard';
 // ── Layout ────────────────────────────────────────────────────────────────
 const Page = styled.div`
   min-height: 100vh;
-  background: #F9FAFB;
+  background: var(--bg);
 `;
 
 const TopBar = styled.div`
@@ -20,51 +22,28 @@ const TopBar = styled.div`
   top: 0;
   z-index: 10;
   background: white;
-  border-bottom: 1px solid #F4F4F5;
+  border-bottom: 1px solid var(--surface);
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 32px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-`;
-
-const LogoMark = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-`;
-
-const LogoIcon = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const LogoText = styled.span`
-  font-size: 16px;
-  font-weight: 700;
-  color: #18181B;
-  letter-spacing: -0.02em;
+  box-shadow: 0 1px 4px rgba(91,58,33,0.06);
 `;
 
 const BackBtn = styled(Link)`
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #F4F4F5;
+  background: var(--surface);
   border-radius: 8px;
   padding: 7px 14px;
   font-size: 13px;
   font-weight: 500;
-  color: #3F3F46;
+  color: var(--text-primary);
   text-decoration: none;
   transition: background 0.2s ease;
-  &:hover { background: #E4E4E7; }
+  &:hover { background: var(--border); }
 `;
 
 const NavRight = styled.div`
@@ -77,8 +56,8 @@ const VerifiedBadge = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #D1FAE5;
-  color: #065F46;
+  background: var(--success-soft);
+  color: var(--success-dark);
   border-radius: 999px;
   padding: 5px 12px;
   font-size: 13px;
@@ -89,7 +68,7 @@ const AvatarCircle = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,16 +105,16 @@ const DashHeader = styled.div`
 `;
 
 const DashTitle = styled.h1`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 32px;
   font-weight: 800;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 `;
 
 const DashSub = styled.p`
   font-size: 14px;
-  color: #71717A;
+  color: var(--text-secondary);
   margin: 0;
 `;
 
@@ -143,8 +122,8 @@ const VerifiedTag = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #D1FAE5;
-  color: #065F46;
+  background: var(--success-soft);
+  color: var(--success-dark);
   border-radius: 10px;
   padding: 8px 14px;
   font-size: 13px;
@@ -160,23 +139,23 @@ const SetupWrap = styled.div`
 const SetupStepLabel = styled.p`
   font-size: 13px;
   font-weight: 600;
-  color: #8B5CF6;
+  color: var(--accent);
   text-transform: uppercase;
   letter-spacing: 0.06em;
   margin: 0 0 6px 0;
 `;
 
 const SetupTitle = styled.h1`
-  font-family: 'Playfair Display', serif;
+  font-family: var(--font-heading);
   font-size: 32px;
   font-weight: 800;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 6px 0;
 `;
 
 const SetupSub = styled.p`
   font-size: 14px;
-  color: #71717A;
+  color: var(--text-secondary);
   margin: 0 0 32px 0;
   line-height: 1.6;
 `;
@@ -185,14 +164,14 @@ const FormCard = styled.div`
   background: white;
   border-radius: 16px;
   padding: 28px;
-  border: 1px solid #F4F4F5;
+  border: 1px solid var(--surface);
   margin-bottom: 16px;
 `;
 
 const ErrorMsg = styled.div`
-  background: #FEF2F2;
-  border: 1px solid #FECACA;
-  color: #DC2626;
+  background: var(--error-soft);
+  border: 1px solid var(--error-line);
+  color: var(--error);
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 16px;
@@ -203,8 +182,8 @@ const SecurityNote = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
+  background: var(--success-soft);
+  border: 1px solid var(--success-soft);
   border-radius: 10px;
   padding: 14px 16px;
   margin-top: 8px;
@@ -212,7 +191,7 @@ const SecurityNote = styled.div`
 
 const SecurityText = styled.p`
   font-size: 13px;
-  color: #166534;
+  color: var(--success-dark);
   margin: 0;
   line-height: 1.5;
 `;
@@ -241,11 +220,10 @@ const StripeRegistration = (props) => {
     return `${prefix}${cleanPhone}`;
   };
 
-  const getTransactionData = async (accountId) => {
+  const getTransactionData = async () => {
     try {
-      const res = await fetch(`/api/getStripePaymentsForAccount?accountId=${accountId}`, {
-        method: 'GET', credentials: 'include', headers: { 'Content-Type': 'application/json' },
-      });
+      // The server works out the account from the login; no ID is sent
+      const res = await fetch('/api/getStripePaymentsForAccount', { credentials: 'include' });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const { payments } = await res.json();
       setTransactionData(payments);
@@ -341,7 +319,7 @@ const StripeRegistration = (props) => {
   useEffect(() => {
     if (!props.accountId) return;
     checkOnboardingStatus(props.accountId);
-    getTransactionData(props.accountId);
+    getTransactionData();
   }, [props.accountId]);
 
   if (!props.currentEvent || !user) return null;
@@ -354,18 +332,7 @@ const StripeRegistration = (props) => {
   return (
     <Page>
       <TopBar>
-        <LogoMark>
-          <LogoIcon>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M20 12V22H4V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M22 7H2V12H22V7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 22V7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H7.5C6.84 7 6.2 6.74 5.73 6.27C5.26 5.8 5 5.16 5 4.5C5 3.84 5.26 3.2 5.73 2.73C6.2 2.26 6.84 2 7.5 2C11 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M12 7H16.5C17.16 7 17.8 6.74 18.27 6.27C18.74 5.8 19 5.16 19 4.5C19 3.84 18.74 3.2 18.27 2.73C17.8 2.26 17.16 2 16.5 2C13 2 12 7 12 7Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </LogoIcon>
-          <LogoText>GiftEasy</LogoText>
-        </LogoMark>
+        <Logo />
 
         <BackBtn href="/">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -375,6 +342,7 @@ const StripeRegistration = (props) => {
         </BackBtn>
 
         <NavRight>
+          <CurrencyMenu selectedCurrency={props.selectedCurrency} setSelectedCurrency={props.setSelectedCurrency} />
           {props.accountSetupComplete && (
             <VerifiedBadge>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
@@ -409,7 +377,7 @@ const StripeRegistration = (props) => {
                 Identity Verified
               </VerifiedTag>
             </DashHeader>
-            <BalanceDashboard data={transactionData} />
+            <BalanceDashboard data={transactionData} defaultCurrency={props.selectedCurrency} />
           </>
         ) : (
           /* ── Unverified: Setup Form ── */
@@ -432,8 +400,8 @@ const StripeRegistration = (props) => {
 
                 <SecurityNote>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-                    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M9 12l2 2 4-4" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#5E7A4E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M9 12l2 2 4-4" stroke="#5E7A4E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   <SecurityText>
                     <strong>Bank-level security</strong> — Your data is encrypted and protected by Stripe's enterprise-grade security infrastructure.

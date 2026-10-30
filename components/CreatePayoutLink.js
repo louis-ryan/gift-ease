@@ -45,15 +45,15 @@ const CreatePayoutLink = ({ accountId }) => {
           >
             <path
               d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z"
-              fill="#10B981"
+              fill="#5E7A4E"
             />
             <path
               d="M19 15L19.74 17.74L22.5 18.5L19.74 19.26L19 22L18.26 19.26L15.5 18.5L18.26 17.74L19 15Z"
-              fill="#10B981"
+              fill="#5E7A4E"
             />
             <path
               d="M5 6L5.37 7.37L6.74 7.74L5.37 8.11L5 9.5L4.63 8.11L3.26 7.74L4.63 7.37L5 6Z"
-              fill="#10B981"
+              fill="#5E7A4E"
             />
           </svg>
         </div>
@@ -79,21 +79,21 @@ const CreatePayoutLink = ({ accountId }) => {
               >
                 <path
                   d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z"
-                  stroke="#EF4444"
+                  stroke="#C0392B"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M12 8V12"
-                  stroke="#EF4444"
+                  stroke="#C0392B"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M12 16H12.01"
-                  stroke="#EF4444"
+                  stroke="#C0392B"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -203,8 +203,8 @@ const CreatePayoutLink = ({ accountId }) => {
 
       <style jsx>{`
         .payout-setup {
-          background: #f0fdf4;
-          border: 1px solid #bbf7d0;
+          background: var(--success-soft);
+          border: 1px solid var(--success-soft);
           border-radius: 12px;
           padding: 24px;
           margin-top: 24px;
@@ -222,9 +222,9 @@ const CreatePayoutLink = ({ accountId }) => {
           justify-content: center;
           width: 48px;
           height: 48px;
-          background-color: #dcfce7;
+          background-color: var(--success-soft);
           border-radius: 50%;
-          border: 2px solid #10b981;
+          border: 2px solid var(--success);
         }
 
         .payout-info {
@@ -234,13 +234,13 @@ const CreatePayoutLink = ({ accountId }) => {
         .payout-title {
           font-size: 18px;
           font-weight: 600;
-          color: #166534;
+          color: var(--success-dark);
           margin: 0 0 8px 0;
         }
 
         .payout-description {
           font-size: 14px;
-          color: #166534;
+          color: var(--success-dark);
           line-height: 1.6;
           margin: 0;
         }
@@ -249,9 +249,9 @@ const CreatePayoutLink = ({ accountId }) => {
           display: flex;
           align-items: center;
           gap: 8px;
-          background: #fef2f2;
-          border: 1px solid #fecaca;
-          color: #dc2626;
+          background: var(--error-soft);
+          border: 1px solid var(--error-line);
+          color: var(--error);
           padding: 12px 16px;
           border-radius: 8px;
           font-size: 14px;
@@ -266,7 +266,7 @@ const CreatePayoutLink = ({ accountId }) => {
           align-items: center;
           justify-content: center;
           gap: 8px;
-          background: #10b981;
+          background: var(--success);
           color: white;
           border: none;
           border-radius: 8px;
@@ -279,9 +279,9 @@ const CreatePayoutLink = ({ accountId }) => {
         }
 
         .payout-button:hover:not(:disabled) {
-          background: #059669;
+          background: var(--success-dark);
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+          box-shadow: 0 4px 12px rgba(94,122,78, 0.3);
         }
 
         .payout-button:disabled {

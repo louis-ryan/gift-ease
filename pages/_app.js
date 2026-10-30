@@ -12,6 +12,7 @@ import '../css/inputs.css';
 import '../css/modal.css';
 import '../css/navbar.css';
 import '../css/utils.css';
+import '../css/theme.css';
 
 function AuthWrapper({ children }) {
   const { user, isLoading } = useUser();
@@ -34,6 +35,20 @@ function AuthWrapper({ children }) {
   return children;
 }
 
+// Loads the giftee's default currency on whichever page they land on (the dashboard,
+// new-wish and account pages also load the full account themselves)
+function AccountCurrencyLoader({ setSelectedCurrency }) {
+  const { user } = useUser();
+  useEffect(() => {
+    if (!user) return;
+    fetch(`/api/getAccountForThisUser/${user.sub}||${user.email}`)
+      .then((r) => r.json())
+      .then((res) => { if (res.success && res.data?.currency) setSelectedCurrency(res.data.currency); })
+      .catch(() => {});
+  }, [user]);
+  return null;
+}
+
 function MyApp({ Component, pageProps }) {
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [events, setEvents] = useState([]);
@@ -53,11 +68,13 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <meta name="theme-color" content="#000000" />
+        <title>Wishlistagogo</title>
+        <meta name="description" content="Make a wishlist, share it, and let friends and family chip in." />
+        <meta name="theme-color" content="#FBF6EE" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -73,6 +90,7 @@ function MyApp({ Component, pageProps }) {
         />
       </Head>
       <UserProvider>
+        <AccountCurrencyLoader setSelectedCurrency={setSelectedCurrency} />
         <AuthWrapper>
           <Component
             selectedCurrency={selectedCurrency}

@@ -2,8 +2,7 @@ import Stripe from 'stripe';
 import { buffer } from 'micro';
 import dbConnect from '../../utils/dbConnect';
 import User from '../../models/Account';
-import Payment from '../../models/Payment';
-import { fromMinorUnits } from '../../utils/currency';
+import { recordPayment } from '../../utils/recordPayment';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -54,29 +53,7 @@ export default async function handler(req, res) {
     }
 
     if (event.type === 'payment_intent.succeeded') {
-      const intent = event.data.object;
-      await Payment.findOneAndUpdate(
-        { paymentIntentId: intent.id },
-        {
-          paymentIntentId: intent.id,
-          giftId: intent.metadata.giftId,
-          eventId: intent.metadata.eventId,
-          recipientId: intent.metadata.recipientId,
-          senderName: intent.metadata.senderName,
-          description: intent.metadata.description,
-          amount: fromMinorUnits(intent.amount, intent.currency),
-          currency: intent.currency,
-          // Contribution in the wish's currency, worked out when the payment was created
-          wishAmount: intent.metadata.wishAmount ? parseFloat(intent.metadata.wishAmount) : undefined,
-          wishCurrency: intent.metadata.wishCurrency,
-          // Fees deducted from the giftee's share. The application fee is the authoritative
-          // total; metadata says how it splits between our cut and the Stripe estimate
-          platformFee: intent.metadata.platformFee ? parseFloat(intent.metadata.platformFee) : undefined,
-          processingFee: intent.metadata.processingFee ? parseFloat(intent.metadata.processingFee) : undefined,
-          totalFee: fromMinorUnits(intent.application_fee_amount || 0, intent.currency),
-        },
-        { upsert: true }
-      );
+      await recordPayment(event.data.object);
     }
 
     res.json({ received: true });

@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 const Wrap = styled.div`
-  background: linear-gradient(135deg, rgba(139,92,246,0.04) 0%, rgba(236,72,153,0.04) 100%);
-  border: 1px solid rgba(139,92,246,0.2);
+  background: linear-gradient(135deg, rgba(180,83,42,0.04) 0%, rgba(233,196,106,0.04) 100%);
+  border: 1px solid rgba(180,83,42,0.2);
   border-radius: 16px;
   padding: 24px;
 `;
@@ -25,7 +25,7 @@ const IconWrap = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -38,13 +38,13 @@ const TextWrap = styled.div`
 const Title = styled.h3`
   font-size: 16px;
   font-weight: 700;
-  color: #18181B;
+  color: var(--text-primary);
   margin: 0 0 4px 0;
 `;
 
 const Description = styled.p`
   font-size: 14px;
-  color: #71717A;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
 `;
@@ -53,7 +53,7 @@ const Btn = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  background: var(--accent);
   color: white;
   padding: 12px 20px;
   border-radius: 10px;
