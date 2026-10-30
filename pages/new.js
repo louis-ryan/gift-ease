@@ -550,9 +550,14 @@ const NewNote = (props) => {
     getOrCreateNewAccount(
       user.sub, user.email,
       props.setCurrentEvent, props.setAccountId, props.setStripeUserId,
-      props.setModalOpen, props.setNotes, props.setAccount,
+      props.setModalOpen, props.setNotes, props.setAccountSetupComplete, props.setSelectedCurrency,
     );
   }, [user]);
+
+  // Default the wish's currency to the account's saved currency once it loads
+  useEffect(() => {
+    if (props.selectedCurrency) setForm((prev) => ({ ...prev, currency: props.selectedCurrency }));
+  }, [props.selectedCurrency]);
 
   const createNote = async () => {
     try {
@@ -695,11 +700,14 @@ const NewNote = (props) => {
   };
 
   const setAccountCurrency = async (e) => {
+    const newCurrency = e.target.value;
+    props.setSelectedCurrency(newCurrency);
+    if (!props.stripeUserId) return;
     try {
-      await fetch('/api/account', {
-        method: 'PATCH',
+      await fetch(`/api/setAccountCurrency?id=${props.stripeUserId}`, {
+        method: 'PUT',
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currency: e.target.value }),
+        body: JSON.stringify({ currency: newCurrency }),
       });
     } catch (error) { console.log(error); }
   };
@@ -798,7 +806,7 @@ const NewNote = (props) => {
                   <PriceRow>
                     <CurrencySelect
                       name="currency"
-                      value={props.selectedCurrency}
+                      value={form.currency}
                       onChange={(e) => { handleChange(e); setAccountCurrency(e); }}
                     >
                       {currencies.map((currency) => (
@@ -915,7 +923,7 @@ const NewNote = (props) => {
               <PreviewDesc>{form.description || 'Wish description will appear here…'}</PreviewDesc>
               <PreviewPrice>
                 <PreviewPriceVal>${form.amount || '0'}</PreviewPriceVal>
-                <PreviewPriceCur>{props.selectedCurrency || 'USD'} · goal</PreviewPriceCur>
+                <PreviewPriceCur>{form.currency || 'USD'} · goal</PreviewPriceCur>
               </PreviewPrice>
               <PreviewProgressBar><PreviewProgressFill /></PreviewProgressBar>
               <PreviewMeta>$0 raised · 0 contributors</PreviewMeta>
