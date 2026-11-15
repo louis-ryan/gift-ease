@@ -774,7 +774,7 @@ const Note = ({ selectedCurrency }) => {
                 )}
               </ContributorItem>
             )) : (
-              <EmptyContributors>No contributors yet — share your wishlist to get started!</EmptyContributors>
+              <EmptyContributors>No gifts towards this yet. Guests see it below your invitation.</EmptyContributors>
             )}
           </ContributorsCard>
         </RightCol>

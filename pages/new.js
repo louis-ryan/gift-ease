@@ -730,8 +730,8 @@ const NewNote = (props) => {
       <Body>
         <FormPanel>
           <div>
-            <PageTitle>Add a New Wish</PageTitle>
-            <PageSub>Tell your friends and family what you'd love to receive</PageSub>
+            <PageTitle>Add a gift to your registry</PageTitle>
+            <PageSub>Something you'd love, or a fund guests can chip in to, like a honeymoon or a new home</PageSub>
           </div>
 
           {!form.event && (
@@ -743,7 +743,7 @@ const NewNote = (props) => {
           {isSubmitting ? (
             <Card style={{ alignItems: 'center', padding: '48px' }}>
               <Spinner />
-              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>Creating your wish…</p>
+              <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14 }}>Adding your gift…</p>
             </Card>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -906,8 +906,8 @@ const NewNote = (props) => {
               )}
             </PreviewImgBox>
             <PreviewBody>
-              <PreviewTitle>{form.title || 'Wish title'}</PreviewTitle>
-              <PreviewDesc>{form.description || 'Wish description will appear here…'}</PreviewDesc>
+              <PreviewTitle>{form.title || 'Gift title'}</PreviewTitle>
+              <PreviewDesc>{form.description || 'Description will appear here…'}</PreviewDesc>
               <PreviewPrice>
                 <PreviewPriceVal>{formatGoal(form.amount, form.currency)}</PreviewPriceVal>
                 <PreviewPriceCur>goal</PreviewPriceCur>

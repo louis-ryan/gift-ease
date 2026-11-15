@@ -11,7 +11,7 @@ const postNewEvent = async (
   setNotes
 ) => {
   try {
-    const res = await fetch(`api/postNewEventForUser/${user.sub}`, {
+    const res = await fetch(`/api/postNewEventForUser/${user.sub}`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -25,8 +25,9 @@ const postNewEvent = async (
       getEventsForThisUser(user.sub, setEvents);
       getWishesForThisEvent(resJSON.data._id, setNotes);
       setModalOpen(false);
+      return resJSON.data;
     } else {
-      setErrors(resJSON.error.errors);
+      setErrors(resJSON.error?.errors || { name: { message: 'Could not create the invitation' } });
     }
   } catch (error) {
     console.log('issue sending new event to server: ', error);

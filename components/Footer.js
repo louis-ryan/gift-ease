@@ -72,7 +72,7 @@ const Footer = () => (
         <p>
           <strong>Stripe Integration:</strong> Wishlistagogo uses Stripe Connect. Stripe handles
           payment processing, identity verification, fraud protection and transfers;
-          Wishlistagogo provides the wishlist itself.
+          Wishlistagogo provides the invitation and gift registry.
         </p>
         <p>
           <strong>Privacy:</strong> Personal information is used only to make gift-giving work

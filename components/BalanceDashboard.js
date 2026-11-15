@@ -445,7 +445,7 @@ const BalanceDashboard = ({ data, defaultCurrency = 'USD' }) => {
               </TransferRight>
             </TransferItem>
           )) : (
-            <EmptyTransfers>No gifts yet. Share your wishlist to start receiving them!</EmptyTransfers>
+            <EmptyTransfers>No gifts yet. Guests can give from the registry below your invitation.</EmptyTransfers>
           )}
         </TransfersCard>
 

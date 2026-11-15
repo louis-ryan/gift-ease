@@ -6,7 +6,8 @@ const deleteThisEvent = async (
   id,
   setCurrentEvent,
   setEvents,
-  setNotes
+  setNotes,
+  setModalOpen
 ) => {
   try {
     const res = await fetch(`/api/deleteEvent/${id}`, {
@@ -15,6 +16,14 @@ const deleteThisEvent = async (
     const resJSON = await res.json();
 
     getEventsForThisUser(sub, setEvents);
+    if (!resJSON.success) throw new Error(resJSON.error);
+    if (!resJSON.data) {
+      // That was their only event: start a new invitation
+      setCurrentEvent({});
+      setNotes([]);
+      if (setModalOpen) setModalOpen(true);
+      return;
+    }
     setCurrentEvent(resJSON.data);
     getWishesForThisEvent(resJSON.data._id, setNotes);
   } catch (error) {

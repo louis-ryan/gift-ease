@@ -1,7 +1,31 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { useRouter } from 'next/router';
 import postNewEvent from '../requests/postNewEvent';
 import { SENDER_HOST } from '../utils/senderUrl';
+import { EVENT_TYPES, typeCopy } from '../utils/invitationDesign';
 
+const slugify = (v) =>
+  v
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[']/g, '')
+    .replace(/[^a-z0-9-\s]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+
+// "Sam & Alex" + wedding → "Sam & Alex's Wedding"
+const titleFor = (names, type) => {
+  const n = names.trim();
+  const suffix = typeCopy(type).title;
+  if (!n) return '';
+  return suffix ? `${n}${/s$/i.test(n) ? "'" : "'s"} ${suffix}` : n;
+};
+
+// Step one of a new invitation: what, whose, when and the link. Everything else is
+// filled in on /invitation, where this sends them next.
 const NewEventModal = ({
   events,
   setEvents,
@@ -10,18 +34,19 @@ const NewEventModal = ({
   setCurrentEvent,
   setNotes,
 }) => {
+  const router = useRouter();
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const uriEdited = useRef(false);
   const [formData, setFormData] = useState({
-    user: user.sub,
-    name: '',
+    eventType: 'wedding',
+    hostNames: '',
     uri: '',
-    date: new Date().toISOString().split('T')[0], // Set today's date as default
-    description: '',
-    current: true,
+    date: '',
   });
 
   const handleModal = () => {
-    if (events.length === 0) return;
+    if (!events || events.length === 0) return; // their first invitation: nothing to go back to
     setModalOpen(false);
   };
 
@@ -32,11 +57,10 @@ const NewEventModal = ({
       return !existingUris.includes(uri);
     } catch (error) {
       console.error('Error checking URI uniqueness:', error);
-      return false;
+      return true; // the server checks again when creating
     }
   };
 
-  // Debounced URI check
   const debouncedUriCheck = useCallback(
     (() => {
       let timeoutId;
@@ -47,73 +71,50 @@ const NewEventModal = ({
             const isUnique = await checkUriUniqueness(uri);
             setErrors((prev) => ({
               ...prev,
-              uri: isUnique
-                ? undefined
-                : { message: 'This URL is already taken' },
+              uri: isUnique ? undefined : { message: 'This link is already taken' },
             }));
           }
-        }, 300); // 300ms delay
+        }, 300);
       };
     })(),
     []
   );
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    let newData = {
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value,
-    };
-
-    if (name === 'name') {
-      const newUri = value
-        .toLowerCase()
-        .replace(/[']/g, '')
-        .replace(/[^a-z0-9-\s]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .trim()
-        .replace(/^-+|-+$/g, '');
-
-      newData.uri = newUri;
-
-      // Clear URI error when name changes
-      setErrors((prev) => ({
-        ...prev,
-        uri: undefined,
-      }));
-
-      // Debounced URI check
-      debouncedUriCheck(newUri);
+  const update = (patch) => {
+    const next = { ...formData, ...patch };
+    if (('hostNames' in patch || 'eventType' in patch) && !uriEdited.current) {
+      const typeSlug = next.eventType === 'wedding' ? '' : slugify(typeCopy(next.eventType).title);
+      next.uri = slugify([next.hostNames, typeSlug].filter(Boolean).join(' '));
+      setErrors((prev) => ({ ...prev, uri: undefined }));
+      debouncedUriCheck(next.uri);
     }
-
-    if (name === 'uri') {
-      // Clear URI error when manually editing URI
-      setErrors((prev) => ({
-        ...prev,
-        uri: undefined,
-      }));
-
-      // Debounced URI check
-      debouncedUriCheck(value);
+    if ('uri' in patch) {
+      uriEdited.current = true;
+      next.uri = slugify(patch.uri);
+      setErrors((prev) => ({ ...prev, uri: undefined }));
+      debouncedUriCheck(next.uri);
     }
-
-    setFormData(newData);
+    setFormData(next);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    postNewEvent(
+    setSubmitting(true);
+    const created = await postNewEvent(
       user,
-      formData,
+      { ...formData, name: titleFor(formData.hostNames, formData.eventType), theme: 'classic' },
       setModalOpen,
       setErrors,
       setEvents,
       setCurrentEvent,
       setNotes
     );
+    setSubmitting(false);
+    if (created) router.push('/invitation');
   };
+
+  const today = new Date().toISOString().split('T')[0];
+  const first = !events || events.length === 0;
 
   return (
     <>
@@ -121,100 +122,100 @@ const NewEventModal = ({
       <div className="modal-backdrop" onClick={handleModal}>
         <div className="modal-container" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
-            <h2 className="modal-title">Create New Event</h2>
-            <button
-              className="modal-close-btn"
-              onClick={handleModal}
-              aria-label="Close modal"
-            >
-              ×
-            </button>
+            <div>
+              <h2 className="modal-title">{first ? 'Create your invitation' : 'New invitation'}</h2>
+              <p className="modal-sub">Free to make and send. You can add a gift registry later if you like.</p>
+            </div>
+            {!first && (
+              <button className="modal-close-btn" onClick={handleModal} aria-label="Close">
+                ×
+              </button>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="modal-form">
             <div className="form-content">
               <div className="input-group">
-                <label htmlFor="name" className="input-label">
-                  Event Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`modal-input ${errors.name ? 'input-error' : ''}`}
-                  placeholder="e.g., Sarah's Wedding, John's Birthday"
-                  required
-                />
-                {errors.name && (
-                  <div className="error-message">{errors.name.message}</div>
-                )}
+                <span className="input-label">What are you celebrating?</span>
+                <div className="type-chips" role="radiogroup" aria-label="Event type">
+                  {Object.entries(EVENT_TYPES).map(([id, t]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      role="radio"
+                      aria-checked={formData.eventType === id}
+                      className={`type-chip${formData.eventType === id ? ' selected' : ''}`}
+                      onClick={() => update({ eventType: id })}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div className="input-group">
-                <label htmlFor="uri" className="input-label">
-                  Custom URL
+                <label htmlFor="hostNames" className="input-label">
+                  {formData.eventType === 'wedding' || formData.eventType === 'engagement' ? 'Your names' : 'Whose celebration is it?'}
                 </label>
+                <input
+                  type="text"
+                  id="hostNames"
+                  value={formData.hostNames}
+                  onChange={(e) => update({ hostNames: e.target.value })}
+                  className={`modal-input ${errors.name ? 'input-error' : ''}`}
+                  placeholder={formData.eventType === 'wedding' || formData.eventType === 'engagement' ? 'Sam & Alex' : 'Sam'}
+                  maxLength={80}
+                  required
+                  autoFocus
+                />
+                {errors.name && <div className="error-message">{errors.name.message}</div>}
+              </div>
+
+              <div className="input-group">
+                <label htmlFor="date" className="input-label">Date</label>
+                <input
+                  type="date"
+                  id="date"
+                  value={formData.date}
+                  min={today}
+                  onChange={(e) => update({ date: e.target.value })}
+                  className="modal-input"
+                  required
+                />
+                <div className="date-hint">Not sure yet? Pick your best guess, you can change it later.</div>
+              </div>
+
+              <div className="input-group">
+                <label htmlFor="uri" className="input-label">Your invitation link</label>
                 <div className="url-input-container">
                   <span className="url-prefix">{SENDER_HOST}/for/</span>
                   <input
                     type="text"
                     id="uri"
-                    name="uri"
                     value={formData.uri}
-                    onChange={handleChange}
+                    onChange={(e) => update({ uri: e.target.value })}
                     className={`modal-input url-input ${errors.uri ? 'input-error' : ''}`}
-                    placeholder="sarah-wedding"
+                    placeholder="sam-and-alex"
                     required
                   />
                 </div>
-                {errors.uri && (
-                  <div className="error-message">{errors.uri.message}</div>
-                )}
-                <div className="url-hint">
-                  This will be the unique link for your event
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label htmlFor="date" className="input-label">
-                  Event Date
-                </label>
-                <input
-                  type="date"
-                  id="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  className="modal-input"
-                  required
-                />
-                <div className="date-hint">
-                  Choose a future date for your event
-                </div>
+                {errors.uri && <div className="error-message">{errors.uri.message}</div>}
+                <div className="url-hint">This can't be changed once guests have it.</div>
               </div>
             </div>
 
             <div className="modal-actions">
-              <button
-                type="button"
-                onClick={handleModal}
-                className="btn btn-secondary"
-              >
-                Cancel
-              </button>
+              {!first && (
+                <button type="button" onClick={handleModal} className="btn btn-secondary">
+                  Cancel
+                </button>
+              )}
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={
-                  !formData.name ||
-                  !formData.uri ||
-                  !formData.date ||
-                  errors.uri
-                }
+                disabled={submitting || !formData.hostNames.trim() || !formData.uri || !formData.date || !!errors.uri}
               >
-                Create Event
+                {submitting ? 'Creating…' : 'Create invitation'}
               </button>
             </div>
           </form>
@@ -271,7 +272,7 @@ const NewEventModal = ({
         .modal-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-start;
           padding: 24px 24px 0 24px;
           border-bottom: 1px solid var(--surface);
           margin-bottom: 24px;
@@ -282,6 +283,38 @@ const NewEventModal = ({
           font-weight: 600;
           color: var(--text-primary);
           margin: 0;
+        }
+
+        .modal-sub {
+          margin: 6px 0 20px;
+          font-size: 14px;
+          color: var(--text-secondary);
+          line-height: 1.5;
+        }
+
+        .type-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .type-chip {
+          padding: 9px 14px;
+          border-radius: 100px;
+          border: 1.5px solid var(--border);
+          background: white;
+          color: var(--text-primary);
+          font-size: 14px;
+          font-weight: 500;
+          text-transform: none;
+          cursor: pointer;
+        }
+
+        .type-chip.selected {
+          border-color: var(--accent);
+          background: var(--accent-soft);
+          color: var(--accent);
+          font-weight: 600;
         }
 
         .modal-close-btn {
@@ -402,7 +435,7 @@ const NewEventModal = ({
 
         .modal-actions {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-end;
           gap: 12px;
           margin-top: 32px;
         }

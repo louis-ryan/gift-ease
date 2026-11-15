@@ -7,6 +7,10 @@ const ShareWrap = styled.div`
   border: 1px solid rgba(180,83,42,0.18);
   border-radius: 16px;
   padding: 28px;
+
+  @media (max-width: 640px) {
+    padding: 20px 16px;
+  }
 `;
 
 const Row = styled.div`
@@ -16,7 +20,7 @@ const Row = styled.div`
 
   @media (max-width: 640px) {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 20px;
   }
 `;
@@ -27,6 +31,7 @@ const QRWrap = styled.div`
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  align-self: center;
 `;
 
 const QRBox = styled.div`
@@ -51,6 +56,8 @@ const QRLabel = styled.span`
 
 const ShareMain = styled.div`
   flex: 1;
+  min-width: 0;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -88,6 +95,7 @@ const LinkIcon = styled.svg`
 
 const LinkText = styled.span`
   flex: 1;
+  min-width: 0;
   font-size: 13px;
   color: var(--text-primary);
   overflow: hidden;
@@ -150,6 +158,8 @@ const ShareLink = ({ currentEvent }) => {
   const [copied, setCopied] = useState(false);
   const fullLink = senderLink(currentEvent.uri);
   const link = `${SENDER_HOST}/for/${currentEvent.uri}`;
+  // "You're invited to Sam & Alex's Wedding: <link>"
+  const shareText = encodeURIComponent(`You're invited${currentEvent.name ? ` to ${currentEvent.name}` : ''}! `) + encodeURIComponent(fullLink);
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(fullLink)}`;
 
   const copyToClipboard = async () => {
@@ -169,8 +179,8 @@ const ShareLink = ({ currentEvent }) => {
         </QRWrap>
 
         <ShareMain>
-          <ShareTitle>Share your wishlist</ShareTitle>
-          <ShareSub>Send the link to friends and family so they can contribute to your wishes</ShareSub>
+          <ShareTitle>Send your invitation</ShareTitle>
+          <ShareSub>Send this link to your guests. They can open the invitation, RSVP and add it to their calendar, no app or login needed.</ShareSub>
 
           <LinkRow>
             <LinkIcon width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -196,7 +206,7 @@ const ShareLink = ({ currentEvent }) => {
           <ActionsRow>
             <ActionBtn
               $variant="whatsapp"
-              href={`https://wa.me/?text=Check out my wishlist! ${encodeURIComponent(fullLink)}`}
+              href={`https://wa.me/?text=${shareText}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -205,14 +215,14 @@ const ShareLink = ({ currentEvent }) => {
             </ActionBtn>
             <ActionBtn
               $variant="email"
-              href={`mailto:?subject=My Wishlist&body=Check out my wishlist! ${encodeURIComponent(fullLink)}`}
+              href={`mailto:?subject=${encodeURIComponent(currentEvent.name ? `You're invited: ${currentEvent.name}` : "You're invited")}&body=${shareText}`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
               Email
             </ActionBtn>
             <ActionBtn
               $variant="sms"
-              href={`sms:?body=Check out my wishlist! ${encodeURIComponent(fullLink)}`}
+              href={`sms:?body=${shareText}`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               SMS

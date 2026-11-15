@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { useState } from 'react';
+import { formatDay } from '../utils/invitationDesign';
 
 const CoverImageContainer = styled.div`
   position: absolute;
@@ -66,6 +67,13 @@ const EventInfoOverlay = styled.div`
   left: 0;
   right: 0;
   padding: 24px 160px;
+
+  @media (max-width: 900px) {
+    padding: 20px 24px 64px;
+  }
+  @media (max-width: 640px) {
+    padding: 16px 16px 60px;
+  }
 `;
 
 const EventTitle = styled.h1`
@@ -74,6 +82,11 @@ const EventTitle = styled.h1`
   font-size: 36px;
   font-weight: 800;
   color: white;
+  overflow-wrap: break-word;
+
+  @media (max-width: 640px) {
+    font-size: 28px;
+  }
   text-shadow: 0 2px 8px rgba(0,0,0,0.4);
 `;
 
@@ -257,8 +270,8 @@ const CoverImage = ({
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    // Stored as UTC midnight for the chosen day
+    return formatDay(dateString);
   };
 
   const handleFileSelect = async (event) => {

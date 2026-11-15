@@ -69,7 +69,7 @@ function MyApp({ Component, pageProps }) {
     <>
       <Head>
         <title>Wishlistagogo</title>
-        <meta name="description" content="Make a wishlist, share it, and let friends and family chip in." />
+        <meta name="description" content="Make a beautiful wedding invitation for free, collect RSVPs, and add a gift registry if you like." />
         <meta name="theme-color" content="#FBF6EE" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

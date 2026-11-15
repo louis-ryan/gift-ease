@@ -126,7 +126,7 @@ const PlusIcon = styled.span`
 
 const NEW = '__new__';
 
-// The giftee's events as a styled dropdown. "Add new event" is always the last item.
+// The giftee's events as a styled dropdown. "New invitation" is always the last item.
 // Keyboard: Enter/Space/↓ opens, ↑/↓ move, Enter selects, Escape closes.
 const EventsListDropdown = ({
   user,
@@ -219,14 +219,14 @@ const EventsListDropdown = ({
         onClick={() => (open ? setOpen(false) : openPanel())}
         onKeyDown={onKeyDown}
       >
-        <TriggerText>{currentEvent?.name || 'Choose an event'}</TriggerText>
+        <TriggerText>{currentEvent?.name || 'Choose an invitation'}</TriggerText>
         <Chevron $open={open} width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         </Chevron>
       </Trigger>
 
       {open && (
-        <Panel id="event-list" role="listbox" aria-label="Your events">
+        <Panel id="event-list" role="listbox" aria-label="Your invitations">
           {list.map((event, i) => (
             <Option
               key={event._id}
@@ -255,7 +255,7 @@ const EventsListDropdown = ({
             onClick={() => choose(NEW)}
           >
             <PlusIcon aria-hidden="true">+</PlusIcon>
-            <OptionText>Add new event</OptionText>
+            <OptionText>New invitation</OptionText>
           </AddOption>
         </Panel>
       )}

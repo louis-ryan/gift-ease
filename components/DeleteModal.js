@@ -134,10 +134,10 @@ const DeleteModal = ({
     <ModalOverlay>
       <ModalContent>
         <ModalHeader>
-          <h3>Delete Event</h3>
+          <h3>Delete invitation</h3>
           <p>
-            This action cannot be undone. This will permanently delete
-            the event "{eventName}" and all associated wishes.
+            This can't be undone. It permanently deletes "{eventName}",
+            its guest replies and its gift registry. The link will stop working.
           </p>
         </ModalHeader>
 
@@ -149,7 +149,7 @@ const DeleteModal = ({
             type="text"
             value={deleteConfirmation}
             onChange={(e) => setDeleteConfirmation(e.target.value)}
-            placeholder="Enter event name to confirm"
+            placeholder="Type the title to confirm"
             disabled={isDeleting}
           />
         </ModalBody>
@@ -168,7 +168,7 @@ const DeleteModal = ({
               isDeleting
             }
           >
-            {isDeleting ? 'Deleting...' : 'Delete Event'}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </ConfirmDeleteButton>
         </ModalActions>
       </ModalContent>

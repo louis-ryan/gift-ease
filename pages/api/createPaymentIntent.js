@@ -9,6 +9,7 @@ import { convertCurrency } from '../../utils/exchangeRates';
 import { wishCurrency } from '../../utils/wishGoal';
 import { SUPPORTED_CURRENCIES, toMinorUnits } from '../../utils/currency';
 import { calculateFees, MIN_GIFT } from '../../utils/fees';
+import { registryEnabled } from '../../utils/invitation';
 import { cleanMessage, cleanPhotoUrls, cleanGifUrl, cleanContact } from '../../utils/giftMessage';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -71,6 +72,7 @@ export default async function handler(req, res) {
       if (!note) return res.status(404).json({ error: 'This wish no longer exists' });
       const event = await Event.findById(note.event).lean();
       if (!event) return res.status(404).json({ error: 'This wishlist no longer exists' });
+      if (!registryEnabled(event)) return res.status(400).json({ error: 'This gift registry is closed' });
       const account = await Account.findOne({ user: event.user }).lean();
       if (!account?.stripeAccountId) {
         return res.status(400).json({ error: "This wishlist can't receive payments yet" });

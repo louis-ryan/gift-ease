@@ -26,6 +26,9 @@ export default handleAuth({
       await handleLogin(req, res, {
         authorizationParams: {
           redirect_uri: `${process.env.AUTH0_BASE_URL}/api/auth/callback`,
+          // /api/auth/login?screen_hint=signup opens Auth0's sign-up screen
+          // (for "Create your free invitation" links on the marketing site)
+          ...(req.query.screen_hint === 'signup' ? { screen_hint: 'signup' } : {}),
         },
       });
       console.log('Login handled successfully');

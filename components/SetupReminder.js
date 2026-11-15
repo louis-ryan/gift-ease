@@ -81,13 +81,13 @@ const SetupReminder = () => (
         </svg>
       </IconWrap>
       <TextWrap>
-        <Title>Complete Your Account Setup</Title>
+        <Title>Set up payouts to open your registry</Title>
         <Description>
-          To start receiving payments for your wishes, you need to complete your Stripe account setup.
+          Guests won’t see your registry until you add the bank account gifts should be paid into. It takes a few minutes, through Stripe.
         </Description>
       </TextWrap>
       <Btn href="/account">
-        Complete Setup
+        Set up payouts
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
           <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
