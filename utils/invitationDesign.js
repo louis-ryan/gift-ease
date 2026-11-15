@@ -41,19 +41,30 @@ export const themeFor = (id) => THEMES[id] || THEMES.classic;
 export const FONTS_URL =
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Great+Vibes&family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500;600&display=swap';
 
+// What a page is: 'invitation' (an event, free, with an optional gift registry) or
+// 'registry' (just a gift registry, no in-person event). Events made before
+// invitations existed have no format: they were registries.
+export const formatOf = (event) => (event?.format === 'invitation' ? 'invitation' : 'registry');
+export const isRegistryOnly = (event) => formatOf(event) === 'registry';
+// Whether the page has a gift registry at all (always, for a registry-only page)
+export const hasRegistry = (event) => isRegistryOnly(event) || event?.registryEnabled === true;
+
+// `registryLine` is the default line on a registry-only page
 export const EVENT_TYPES = {
-  wedding: { label: 'Wedding', eyebrow: 'Together with their families', line: 'invite you to celebrate their wedding', title: 'Wedding' },
-  engagement: { label: 'Engagement party', eyebrow: 'Please join us to celebrate the engagement of', line: '', title: 'Engagement Party' },
-  party: { label: 'Party or celebration', eyebrow: "You're invited", line: 'Come and celebrate with us', title: 'Celebration' },
-  other: { label: 'Something else', eyebrow: "You're invited", line: '', title: '' },
+  wedding: { label: 'Wedding', eyebrow: 'Together with their families', line: 'invite you to celebrate their wedding', registryLine: 'are getting married', title: 'Wedding', registryTitle: 'Wedding Registry' },
+  engagement: { label: 'Engagement', eyebrow: 'Please join us to celebrate the engagement of', line: '', registryLine: 'are engaged', title: 'Engagement Party', registryTitle: 'Engagement Gifts' },
+  party: { label: 'Birthday or celebration', eyebrow: "You're invited", line: 'Come and celebrate with us', registryLine: '', title: 'Celebration', registryTitle: 'Gift List' },
+  other: { label: 'Something else', eyebrow: "You're invited", line: '', registryLine: '', title: '', registryTitle: 'Gift List' },
 };
 export const typeCopy = (t) => EVENT_TYPES[t] || EVENT_TYPES.wedding;
 
-// The heading on the invitation: "Sam & Alex", falling back to the event's title
+// The heading on the page: "Sam & Alex", falling back to the event's title
 export const displayNames = (event) => (event?.hostNames || '').trim() || event?.name || '';
+export const defaultLine = (event) =>
+  isRegistryOnly(event) ? typeCopy(event?.eventType).registryLine : typeCopy(event?.eventType).line;
 export const inviteLine = (event) => {
   const custom = (event?.inviteLine || '').trim();
-  return custom || typeCopy(event?.eventType).line;
+  return custom || defaultLine(event);
 };
 
 // Dates are stored as UTC midnight for the chosen day, so always format in UTC.

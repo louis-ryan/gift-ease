@@ -4,8 +4,9 @@ import Account from '../../../models/Account';
 import { getGifteeAccount } from '../../../utils/gifteeAccount';
 import { cleanInvitation, slugify } from '../../../utils/invitation';
 
-// POST { name, uri, date, eventType?, hostNames?, theme? } → a new invitation for the
-// logged-in giftee, made their current event. The [user] in the path is ignored: the
+// POST { format, name, uri, date?, eventType?, hostNames?, theme? } → a new invitation
+// (format 'invitation', needs a date) or registry-only page (format 'registry', date
+// optional) for the logged-in giftee, made their current event. The [user] in the path is ignored: the
 // owner always comes from the session.
 async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
@@ -14,7 +15,9 @@ async function handler(req, res) {
   if (!account) return res.status(401).json({ success: false, error: 'Please log in again' });
 
   const body = req.body || {};
+  const format = body.format === 'registry' ? 'registry' : 'invitation';
   const { update, error } = cleanInvitation({
+    format,
     name: body.name,
     date: body.date,
     eventType: body.eventType || 'wedding',
@@ -37,9 +40,9 @@ async function handler(req, res) {
       user: account.user,
       uri,
       current: true,
-      rsvpEnabled: true,
-      // The registry is an optional add-on, offered from the dashboard
-      registryEnabled: false,
+      rsvpEnabled: format === 'invitation',
+      // On an invitation the registry is an optional add-on, offered from the dashboard
+      registryEnabled: format === 'registry',
     });
     await Account.updateOne({ _id: account._id }, { currentEventStr: event._id });
     return res.status(200).json({ success: true, data: event, message: 'New Event posted' });

@@ -96,3 +96,21 @@ export default function RegistryPromo({ onAdd, busy }) {
     </Wrap>
   );
 }
+
+// The reverse, on a registry-only page: turn it into an invitation as well
+export function InvitationPromo({ onAdd }) {
+  return (
+    <Wrap>
+      <Icon aria-hidden="true">💌</Icon>
+      <Text>
+        <Eyebrow>Free</Eyebrow>
+        <Title>Having a celebration too?</Title>
+        <Body>
+          Turn this page into an invitation. Guests get the date, venue and an RSVP form at the top, and
+          your registry stays just below. Same link, nothing to pay.
+        </Body>
+      </Text>
+      <AddBtn type="button" onClick={onAdd}>Make it an invitation</AddBtn>
+    </Wrap>
+  );
+}

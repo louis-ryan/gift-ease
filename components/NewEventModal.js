@@ -16,16 +16,32 @@ const slugify = (v) =>
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
 
-// "Sam & Alex" + wedding → "Sam & Alex's Wedding"
-const titleFor = (names, type) => {
+// "Sam & Alex" + wedding → "Sam & Alex's Wedding" (or "… Wedding Registry")
+const titleFor = (names, type, format) => {
   const n = names.trim();
-  const suffix = typeCopy(type).title;
+  const copy = typeCopy(type);
+  const suffix = format === 'registry' ? copy.registryTitle : copy.title;
   if (!n) return '';
   return suffix ? `${n}${/s$/i.test(n) ? "'" : "'s"} ${suffix}` : n;
 };
 
-// Step one of a new invitation: what, whose, when and the link. Everything else is
-// filled in on /invitation, where this sends them next.
+const FORMAT_CHOICES = [
+  {
+    id: 'invitation',
+    icon: '💌',
+    title: 'An invitation',
+    body: 'For a wedding or celebration. Free, with RSVPs and add-to-calendar. You can add a gift registry too.',
+  },
+  {
+    id: 'registry',
+    icon: '🎁',
+    title: 'Just a gift registry',
+    body: 'No event to invite people to. Share a list of gifts or funds people can chip in to.',
+  },
+];
+
+// A new page: first what kind (invitation or registry only), then whose, when and
+// the link. Invitations continue on /invitation; registries on the dashboard.
 const NewEventModal = ({
   events,
   setEvents,
@@ -38,6 +54,7 @@ const NewEventModal = ({
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const uriEdited = useRef(false);
+  const [format, setFormat] = useState(null);
   const [formData, setFormData] = useState({
     eventType: 'wedding',
     hostNames: '',
@@ -46,7 +63,7 @@ const NewEventModal = ({
   });
 
   const handleModal = () => {
-    if (!events || events.length === 0) return; // their first invitation: nothing to go back to
+    if (!events || events.length === 0) return; // their first page: nothing to go back to
     setModalOpen(false);
   };
 
@@ -80,11 +97,16 @@ const NewEventModal = ({
     []
   );
 
+  const suggestUri = (data, fmt) => {
+    const copy = typeCopy(data.eventType);
+    const typeSlug = data.eventType === 'wedding' ? '' : slugify(fmt === 'registry' ? copy.registryTitle : copy.title);
+    return slugify([data.hostNames, typeSlug].filter(Boolean).join(' '));
+  };
+
   const update = (patch) => {
     const next = { ...formData, ...patch };
     if (('hostNames' in patch || 'eventType' in patch) && !uriEdited.current) {
-      const typeSlug = next.eventType === 'wedding' ? '' : slugify(typeCopy(next.eventType).title);
-      next.uri = slugify([next.hostNames, typeSlug].filter(Boolean).join(' '));
+      next.uri = suggestUri(next, format);
       setErrors((prev) => ({ ...prev, uri: undefined }));
       debouncedUriCheck(next.uri);
     }
@@ -97,12 +119,21 @@ const NewEventModal = ({
     setFormData(next);
   };
 
+  const chooseFormat = (fmt) => {
+    setFormat(fmt);
+    if (!uriEdited.current && formData.hostNames) {
+      const uri = suggestUri(formData, fmt);
+      setFormData((f) => ({ ...f, uri }));
+      debouncedUriCheck(uri);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     const created = await postNewEvent(
       user,
-      { ...formData, name: titleFor(formData.hostNames, formData.eventType), theme: 'classic' },
+      { ...formData, format, name: titleFor(formData.hostNames, formData.eventType, format), theme: 'classic' },
       setModalOpen,
       setErrors,
       setEvents,
@@ -110,11 +141,13 @@ const NewEventModal = ({
       setNotes
     );
     setSubmitting(false);
-    if (created) router.push('/invitation');
+    if (created) router.push(format === 'invitation' ? '/invitation' : '/');
   };
 
   const today = new Date().toISOString().split('T')[0];
   const first = !events || events.length === 0;
+  const couple = formData.eventType === 'wedding' || formData.eventType === 'engagement';
+  const registry = format === 'registry';
 
   return (
     <>
@@ -123,8 +156,16 @@ const NewEventModal = ({
         <div className="modal-container" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
             <div>
-              <h2 className="modal-title">{first ? 'Create your invitation' : 'New invitation'}</h2>
-              <p className="modal-sub">Free to make and send. You can add a gift registry later if you like.</p>
+              <h2 className="modal-title">
+                {!format ? 'What would you like to make?' : registry ? 'Your gift registry' : 'Your invitation'}
+              </h2>
+              <p className="modal-sub">
+                {!format
+                  ? 'You can change this later.'
+                  : registry
+                    ? 'Free to set up. A small fee comes out of each gift.'
+                    : 'Free to make and send. You can add a gift registry later if you like.'}
+              </p>
             </div>
             {!first && (
               <button className="modal-close-btn" onClick={handleModal} aria-label="Close">
@@ -133,11 +174,26 @@ const NewEventModal = ({
             )}
           </div>
 
+          {!format ? (
+            <div className="modal-form">
+              <div className="format-choices">
+                {FORMAT_CHOICES.map((c) => (
+                  <button key={c.id} type="button" className="format-choice" onClick={() => chooseFormat(c.id)}>
+                    <span className="format-icon" aria-hidden="true">{c.icon}</span>
+                    <span className="format-text">
+                      <span className="format-title">{c.title}</span>
+                      <span className="format-body">{c.body}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="modal-form">
             <div className="form-content">
               <div className="input-group">
-                <span className="input-label">What are you celebrating?</span>
-                <div className="type-chips" role="radiogroup" aria-label="Event type">
+                <span className="input-label">{registry ? "What's it for?" : 'What are you celebrating?'}</span>
+                <div className="type-chips" role="radiogroup" aria-label="Occasion">
                   {Object.entries(EVENT_TYPES).map(([id, t]) => (
                     <button
                       key={id}
@@ -155,7 +211,7 @@ const NewEventModal = ({
 
               <div className="input-group">
                 <label htmlFor="hostNames" className="input-label">
-                  {formData.eventType === 'wedding' || formData.eventType === 'engagement' ? 'Your names' : 'Whose celebration is it?'}
+                  {couple ? 'Your names' : registry ? 'Who is it for?' : 'Whose celebration is it?'}
                 </label>
                 <input
                   type="text"
@@ -163,7 +219,7 @@ const NewEventModal = ({
                   value={formData.hostNames}
                   onChange={(e) => update({ hostNames: e.target.value })}
                   className={`modal-input ${errors.name ? 'input-error' : ''}`}
-                  placeholder={formData.eventType === 'wedding' || formData.eventType === 'engagement' ? 'Sam & Alex' : 'Sam'}
+                  placeholder={couple ? 'Sam & Alex' : 'Sam'}
                   maxLength={80}
                   required
                   autoFocus
@@ -172,7 +228,9 @@ const NewEventModal = ({
               </div>
 
               <div className="input-group">
-                <label htmlFor="date" className="input-label">Date</label>
+                <label htmlFor="date" className="input-label">
+                  Date{registry && <span className="optional"> optional</span>}
+                </label>
                 <input
                   type="date"
                   id="date"
@@ -180,13 +238,17 @@ const NewEventModal = ({
                   min={today}
                   onChange={(e) => update({ date: e.target.value })}
                   className="modal-input"
-                  required
+                  required={!registry}
                 />
-                <div className="date-hint">Not sure yet? Pick your best guess, you can change it later.</div>
+                <div className="date-hint">
+                  {registry
+                    ? 'If there’s an occasion, guests will see the date.'
+                    : 'Not sure yet? Pick your best guess, you can change it later.'}
+                </div>
               </div>
 
               <div className="input-group">
-                <label htmlFor="uri" className="input-label">Your invitation link</label>
+                <label htmlFor="uri" className="input-label">{registry ? 'Your registry link' : 'Your invitation link'}</label>
                 <div className="url-input-container">
                   <span className="url-prefix">{SENDER_HOST}/for/</span>
                   <input
@@ -200,25 +262,24 @@ const NewEventModal = ({
                   />
                 </div>
                 {errors.uri && <div className="error-message">{errors.uri.message}</div>}
-                <div className="url-hint">This can't be changed once guests have it.</div>
+                <div className="url-hint">This can't be changed once people have it.</div>
               </div>
             </div>
 
             <div className="modal-actions">
-              {!first && (
-                <button type="button" onClick={handleModal} className="btn btn-secondary">
-                  Cancel
-                </button>
-              )}
+              <button type="button" onClick={() => setFormat(null)} className="btn btn-secondary">
+                Back
+              </button>
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={submitting || !formData.hostNames.trim() || !formData.uri || !formData.date || !!errors.uri}
+                disabled={submitting || !formData.hostNames.trim() || !formData.uri || (!registry && !formData.date) || !!errors.uri}
               >
-                {submitting ? 'Creating…' : 'Create invitation'}
+                {submitting ? 'Creating…' : registry ? 'Create registry' : 'Create invitation'}
               </button>
             </div>
           </form>
+          )}
         </div>
       </div>
 
@@ -290,6 +351,70 @@ const NewEventModal = ({
           font-size: 14px;
           color: var(--text-secondary);
           line-height: 1.5;
+        }
+
+        .format-choices {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding-bottom: 8px;
+        }
+
+        .format-choice {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          width: 100%;
+          padding: 18px;
+          text-align: left;
+          background: white;
+          border: 1.5px solid var(--border);
+          border-radius: 14px;
+          color: var(--text-primary);
+          text-transform: none;
+          font-weight: 400;
+          cursor: pointer;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .format-choice:hover {
+          filter: none;
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .format-icon {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: var(--surface);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 22px;
+          flex-shrink: 0;
+        }
+
+        .format-text {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .format-title {
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        .format-body {
+          font-size: 14px;
+          line-height: 1.5;
+          color: var(--text-secondary);
+        }
+
+        .optional {
+          font-weight: 400;
+          color: var(--text-secondary);
         }
 
         .type-chips {
@@ -435,7 +560,7 @@ const NewEventModal = ({
 
         .modal-actions {
           display: flex;
-          justify-content: flex-end;
+          justify-content: space-between;
           gap: 12px;
           margin-top: 32px;
         }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import styled from 'styled-components';
@@ -8,7 +9,7 @@ import Invitation from '../components/Invitation';
 import getOrCreateNewAccount from '../requests/getOrCreateNewAccount';
 import getEventsForThisUser from '../requests/getEventsForThisUser';
 import {
-  THEMES, THEME_ORDER, EVENT_TYPES, typeCopy, toDayInput,
+  THEMES, THEME_ORDER, EVENT_TYPES, toDayInput, formatOf, defaultLine,
 } from '../utils/invitationDesign';
 import { senderLink, SENDER_HOST } from '../utils/senderUrl';
 
@@ -380,6 +381,8 @@ const Loading = styled.div`
 
 // The editable fields, from a stored event
 const formFrom = (e) => ({
+  format: formatOf(e),
+  registryEnabled: e.registryEnabled === true,
   name: e.name || '',
   eventType: e.eventType || 'wedding',
   theme: e.theme || 'classic',
@@ -406,6 +409,7 @@ const MESSAGE_PLACEHOLDER = {
 
 export default function InvitationEditor(props) {
   const { user } = useUser();
+  const router = useRouter();
   const event = props.currentEvent || {};
   const [form, setForm] = useState(null);
   const [dirty, setDirty] = useState(false);
@@ -430,9 +434,16 @@ export default function InvitationEditor(props) {
   useEffect(() => {
     if (!event._id || loadedFor.current === event._id) return;
     loadedFor.current = event._id;
-    setForm(formFrom(event));
-    setDirty(false);
-  }, [event._id]);
+    const initial = formFrom(event);
+    // From the dashboard's "Make it an invitation" (a registry page keeps its registry)
+    if (router.query.as === 'invitation' && initial.format === 'registry') {
+      setForm({ ...initial, format: 'invitation', registryEnabled: true, rsvpEnabled: true });
+      setDirty(true);
+    } else {
+      setForm(initial);
+      setDirty(false);
+    }
+  }, [event._id, router.query.as]);
 
   // Warn before leaving with unsaved changes
   useEffect(() => {
@@ -507,11 +518,12 @@ export default function InvitationEditor(props) {
   }
 
   const couple = form.eventType === 'wedding' || form.eventType === 'engagement';
+  const registryOnly = form.format === 'registry';
   const justSaved = !dirty && savedAt && Date.now() - savedAt < 4000;
 
   return (
     <Page>
-      <Head><title>Edit invitation · Wishlistagogo</title></Head>
+      <Head><title>{registryOnly ? 'Edit registry page' : 'Edit invitation'} · Wishlistagogo</title></Head>
       <TopBar>
         <Logo />
         <TopActions>
@@ -525,6 +537,25 @@ export default function InvitationEditor(props) {
       <Body>
         <FormCol $hidden={mobileView !== 'edit'}>
           {error && <ErrorText role="alert">{error}</ErrorText>}
+
+          <Card>
+            <CardTitle>What is this page?</CardTitle>
+            <Chips role="radiogroup" aria-label="Page type">
+              <Chip type="button" role="radio" aria-checked={!registryOnly} $selected={!registryOnly}
+                onClick={() => set({ format: 'invitation', ...(registryOnly ? { registryEnabled: true, rsvpEnabled: true } : {}) })}>
+                An invitation
+              </Chip>
+              <Chip type="button" role="radio" aria-checked={registryOnly} $selected={registryOnly}
+                onClick={() => set({ format: 'registry' })}>
+                Just a gift registry
+              </Chip>
+            </Chips>
+            <Hint>
+              {registryOnly
+                ? 'No event: guests see your names, photo and message, then your gifts.'
+                : 'An event with RSVPs. You can add a gift registry below the invitation from your dashboard.'}
+            </Hint>
+          </Card>
 
           <Card>
             <CardTitle>Design</CardTitle>
@@ -567,12 +598,12 @@ export default function InvitationEditor(props) {
                   onChange={(e) => uploadCover(e.target.files?.[0])}
                 />
               </CoverRow>
-              <Hint>A portrait photo of the two of you works best.</Hint>
+              <Hint>{couple ? 'A portrait photo of the two of you works best.' : 'A portrait photo works best.'}</Hint>
             </Field>
           </Card>
 
           <Card>
-            <CardTitle>The invitation</CardTitle>
+            <CardTitle>{registryOnly ? 'The basics' : 'The invitation'}</CardTitle>
             <Field>
               <Label as="span">Occasion</Label>
               <Chips role="radiogroup" aria-label="Occasion">
@@ -588,28 +619,31 @@ export default function InvitationEditor(props) {
               <Input id="hostNames" value={form.hostNames} maxLength={100} placeholder={couple ? 'Sam & Alex' : 'Sam'} onChange={(e) => set({ hostNames: e.target.value })} />
             </Field>
             <Field>
-              <Label htmlFor="inviteLine">Invitation line</Label>
+              <Label htmlFor="inviteLine">{registryOnly ? 'Line under your names' : 'Invitation line'}</Label>
               <Input
                 id="inviteLine"
                 value={form.inviteLine}
                 maxLength={160}
-                placeholder={typeCopy(form.eventType).line || 'e.g. invite you to join them'}
+                placeholder={defaultLine(form) || (registryOnly ? 'e.g. are moving house' : 'e.g. invite you to join them')}
                 onChange={(e) => set({ inviteLine: e.target.value })}
               />
-              <Hint>Leave empty to use the line shown.</Hint>
+              <Hint>{defaultLine(form) ? 'Leave empty to use the line shown.' : 'Optional.'}</Hint>
             </Field>
             <Row>
               <Field>
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">{registryOnly ? 'Date (optional)' : 'Date'}</Label>
                 <Input id="date" type="date" value={form.date} onChange={(e) => set({ date: e.target.value })} />
               </Field>
-              <Field>
-                <Label htmlFor="startTime">Time</Label>
-                <Input id="startTime" type="time" value={form.startTime} onChange={(e) => set({ startTime: e.target.value })} />
-              </Field>
+              {!registryOnly && (
+                <Field>
+                  <Label htmlFor="startTime">Time</Label>
+                  <Input id="startTime" type="time" value={form.startTime} onChange={(e) => set({ startTime: e.target.value })} />
+                </Field>
+              )}
             </Row>
           </Card>
 
+          {!registryOnly && <>
           <Card>
             <CardTitle>Where</CardTitle>
             <Field>
@@ -623,18 +657,21 @@ export default function InvitationEditor(props) {
             </Field>
           </Card>
 
+          </>}
+
           <Card>
             <CardTitle>Your message</CardTitle>
             <TextArea
               aria-label="Your message"
               value={form.description}
               maxLength={1000}
-              placeholder={MESSAGE_PLACEHOLDER[form.eventType]}
+              placeholder={registryOnly ? "Thank you for thinking of us! We've put together a few ideas below." : MESSAGE_PLACEHOLDER[form.eventType]}
               onChange={(e) => set({ description: e.target.value })}
             />
             <Hint>{form.description.length}/1000</Hint>
           </Card>
 
+          {!registryOnly && <>
           <Card>
             <CardTitle>The day</CardTitle>
             <CardHint>Optional. Ceremony, drinks, dinner, dancing…</CardHint>
@@ -673,6 +710,8 @@ export default function InvitationEditor(props) {
             )}
           </Card>
 
+          </>}
+
           <Card>
             <CardTitle>Title and link</CardTitle>
             <Field>
@@ -697,7 +736,7 @@ export default function InvitationEditor(props) {
           <PreviewLabel>Preview</PreviewLabel>
           <div style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-card)' }}>
             <Invitation event={{ ...form, uri: event.uri }}>
-              {form.rsvpEnabled && <span className="preview-rsvp">RSVP</span>}
+              {!registryOnly && form.rsvpEnabled && <span className="preview-rsvp">RSVP</span>}
             </Invitation>
           </div>
         </PreviewCol>

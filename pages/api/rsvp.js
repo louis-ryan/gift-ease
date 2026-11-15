@@ -2,6 +2,7 @@ import { corsMiddleware, runMiddleware } from '../../utils/cors';
 import dbConnect from '../../utils/dbConnect';
 import Event from '../../models/Event';
 import Rsvp from '../../models/Rsvp';
+import { isRegistryOnly } from '../../utils/invitationDesign';
 
 // Public: a guest replies to an invitation from the sender app.
 // POST { uri, name, attending, guests, email?, dietary?, message? }
@@ -35,7 +36,7 @@ export default async function handler(req, res) {
     await dbConnect();
     const event = await Event.findOne({ uri: String(uri || '') }).lean();
     if (!event) return res.status(404).json({ error: 'This invitation no longer exists' });
-    if (event.rsvpEnabled === false) return res.status(400).json({ error: 'This invitation isn’t taking RSVPs' });
+    if (event.rsvpEnabled === false || isRegistryOnly(event)) return res.status(400).json({ error: 'This invitation isn’t taking RSVPs' });
     // Deadline is a whole day: replies are open until the end of it (UTC + a day of slack)
     if (event.rsvpDeadline && Date.now() > new Date(event.rsvpDeadline).getTime() + 48 * 60 * 60 * 1000) {
       return res.status(400).json({ error: 'RSVPs for this invitation have closed' });

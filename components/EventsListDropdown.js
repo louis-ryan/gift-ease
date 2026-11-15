@@ -126,7 +126,7 @@ const PlusIcon = styled.span`
 
 const NEW = '__new__';
 
-// The giftee's events as a styled dropdown. "New invitation" is always the last item.
+// The giftee's events as a styled dropdown. "New invitation or registry" is always the last item.
 // Keyboard: Enter/Space/↓ opens, ↑/↓ move, Enter selects, Escape closes.
 const EventsListDropdown = ({
   user,
@@ -255,7 +255,7 @@ const EventsListDropdown = ({
             onClick={() => choose(NEW)}
           >
             <PlusIcon aria-hidden="true">+</PlusIcon>
-            <OptionText>New invitation</OptionText>
+            <OptionText>New invitation or registry</OptionText>
           </AddOption>
         </Panel>
       )}

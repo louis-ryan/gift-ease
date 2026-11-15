@@ -154,12 +154,19 @@ const ActionBtn = styled.a`
   `}
 `;
 
-const ShareLink = ({ currentEvent }) => {
+const ShareLink = ({ currentEvent, registryOnly = false }) => {
   const [copied, setCopied] = useState(false);
   const fullLink = senderLink(currentEvent.uri);
   const link = `${SENDER_HOST}/for/${currentEvent.uri}`;
   // "You're invited to Sam & Alex's Wedding: <link>"
-  const shareText = encodeURIComponent(`You're invited${currentEvent.name ? ` to ${currentEvent.name}` : ''}! `) + encodeURIComponent(fullLink);
+  const shareText = encodeURIComponent(
+    registryOnly
+      ? `${currentEvent.name || 'My gift registry'}: `
+      : `You're invited${currentEvent.name ? ` to ${currentEvent.name}` : ''}! `
+  ) + encodeURIComponent(fullLink);
+  const subject = registryOnly
+    ? currentEvent.name || 'My gift registry'
+    : currentEvent.name ? `You're invited: ${currentEvent.name}` : "You're invited";
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(fullLink)}`;
 
   const copyToClipboard = async () => {
@@ -179,8 +186,12 @@ const ShareLink = ({ currentEvent }) => {
         </QRWrap>
 
         <ShareMain>
-          <ShareTitle>Send your invitation</ShareTitle>
-          <ShareSub>Send this link to your guests. They can open the invitation, RSVP and add it to their calendar, no app or login needed.</ShareSub>
+          <ShareTitle>{registryOnly ? 'Share your registry' : 'Send your invitation'}</ShareTitle>
+          <ShareSub>
+            {registryOnly
+              ? 'Send this link to friends and family. They can choose a gift and chip in, no app or login needed.'
+              : 'Send this link to your guests. They can open the invitation, RSVP and add it to their calendar, no app or login needed.'}
+          </ShareSub>
 
           <LinkRow>
             <LinkIcon width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -215,7 +226,7 @@ const ShareLink = ({ currentEvent }) => {
             </ActionBtn>
             <ActionBtn
               $variant="email"
-              href={`mailto:?subject=${encodeURIComponent(currentEvent.name ? `You're invited: ${currentEvent.name}` : "You're invited")}&body=${shareText}`}
+              href={`mailto:?subject=${encodeURIComponent(subject)}&body=${shareText}`}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="22,6 12,13 2,6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
               Email

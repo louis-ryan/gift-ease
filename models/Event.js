@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
-// An Event is an invitation (free), optionally with a gift registry of wishes (Notes).
+// An Event is a guest-facing page: either an invitation (free, optionally with a gift
+// registry of wishes/Notes) or just a gift registry with no in-person event (`format`).
 // The invitation fields are validated by utils/invitation.js before they get here.
 const ScheduleItemSchema = new mongoose.Schema(
   {
@@ -31,9 +32,10 @@ const EventSchema = new mongoose.Schema({
   // timeZone: 'UTC' so it shows the same day everywhere. Not-in-the-past is checked
   // when creating or changing it (utils/invitation.js), not here, so old events can
   // still be edited
+  // Optional for a registry-only page
   date: {
     type: Date,
-    required: true,
+    required: function () { return this.format === 'invitation'; },
   },
   // The invitation's message to guests
   description: {
@@ -42,6 +44,10 @@ const EventSchema = new mongoose.Schema({
   },
   current: Boolean,
   imageUrl: String,
+
+  // 'invitation' or 'registry'. Missing on events from before invitations existed:
+  // those were registries (formatOf() in utils/invitationDesign.js)
+  format: { type: String, enum: ['invitation', 'registry'] },
 
   // ── Invitation ──
   eventType: { type: String, enum: ['wedding', 'engagement', 'party', 'other'], default: 'wedding' },
@@ -56,9 +62,9 @@ const EventSchema = new mongoose.Schema({
   rsvpEnabled: { type: Boolean, default: true },
   rsvpDeadline: Date,
 
-  // ── Gift registry (optional add-on) ──
-  // Events from before invitations have no value here: they were registries, so
-  // treat undefined as on (see utils/invitation.js registryEnabled())
+  // ── Gift registry ──
+  // Only read for invitations (a registry-only page always has its registry); see
+  // hasRegistry() in utils/invitationDesign.js
   registryEnabled: Boolean,
   registryNote: { type: String, maxlength: 300 },
 

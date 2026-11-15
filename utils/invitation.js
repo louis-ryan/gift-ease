@@ -3,14 +3,16 @@
 // through; everything is plain text (rendered as text, never HTML).
 
 import { cleanPhotoUrls } from './giftMessage';
+import { hasRegistry, formatOf } from './invitationDesign';
 
 export const EVENT_TYPES = ['wedding', 'engagement', 'party', 'other'];
 // Must match the ids in utils/invitationDesign.js (both repos)
 export const THEME_IDS = ['classic', 'garden', 'blush', 'modern', 'autumn'];
 export const MAX_SCHEDULE_ITEMS = 8;
 
-// Events made before invitations existed have no registryEnabled: they were registries
-export const registryEnabled = (event) => event?.registryEnabled !== false;
+export const FORMATS = ['invitation', 'registry'];
+// Whether guests can give: a registry-only page, or an invitation with its registry on
+export const registryEnabled = (event) => hasRegistry(event);
 
 const text = (v, max) =>
   typeof v === 'string'
@@ -62,7 +64,19 @@ export function cleanInvitation(body, existing = null) {
     if (!THEME_IDS.includes(body.theme)) return { error: 'Unknown design' };
     update.theme = body.theme;
   }
-  if (has('date')) {
+  if (has('format')) {
+    if (!FORMATS.includes(body.format)) return { error: 'Unknown page type' };
+    update.format = body.format;
+  }
+  // The format this update leaves the page in
+  const format = update.format || formatOf(existing);
+  // A registry page becoming an invitation keeps its registry
+  if (update.format === 'invitation' && existing && formatOf(existing) === 'registry' && !has('registryEnabled')) {
+    update.registryEnabled = true;
+  }
+  if (has('date') && !body.date && format === 'registry') {
+    update.date = null; // a registry doesn't need a date
+  } else if (has('date')) {
     const d = parseDay(body.date);
     if (!d) return { error: 'Please choose a date' };
     const unchanged = existing?.date && new Date(existing.date).getTime() === d.getTime();
@@ -105,6 +119,10 @@ export function cleanInvitation(body, existing = null) {
       if (!url) return { error: 'Please upload the cover photo again' };
       update.imageUrl = url;
     }
+  }
+
+  if (format === 'invitation' && !(update.date || existing?.date)) {
+    return { error: 'An invitation needs a date' };
   }
 
   return { update };

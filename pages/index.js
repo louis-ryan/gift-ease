@@ -13,7 +13,8 @@ import Footer from '../components/Footer';
 import DeleteModal from '../components/DeleteModal';
 import SetupReminder from '../components/SetupReminder';
 import Invitation from '../components/Invitation';
-import RegistryPromo from '../components/RegistryPromo';
+import RegistryPromo, { InvitationPromo } from '../components/RegistryPromo';
+import { isRegistryOnly, hasRegistry } from '../utils/invitationDesign';
 import RsvpSummary from '../components/RsvpSummary';
 import { senderLink } from '../utils/senderUrl';
 
@@ -318,8 +319,10 @@ const Index = (props) => {
   const [registryNote, setRegistryNote] = useState('');
   const [noteSaved, setNoteSaved] = useState(true);
 
-  // Older events were registries before invitations existed, so undefined means on
-  const registryOn = props.currentEvent?.registryEnabled !== false;
+  // A registry-only page always shows its registry; an invitation only when it's turned on
+  const registryOnly = isRegistryOnly(props.currentEvent);
+  const registryOn = hasRegistry(props.currentEvent);
+  const pageWord = registryOnly ? 'page' : 'invitation';
 
   useEffect(() => {
     setRegistryNote(props.currentEvent?.registryNote || '');
@@ -414,7 +417,7 @@ const Index = (props) => {
           />
           <Content>
             {props.modalOpen && (
-              <LoadingCard>Let’s make your invitation…</LoadingCard>
+              <LoadingCard>Let’s get started…</LoadingCard>
             )}
           </Content>
         </Page>
@@ -461,11 +464,11 @@ const Index = (props) => {
       <Content>
         {/* Invitation */}
         <SectionHeader>
-          <SectionTitle>Your invitation</SectionTitle>
+          <SectionTitle>{registryOnly ? 'Your registry page' : 'Your invitation'}</SectionTitle>
         </SectionHeader>
 
         <Overview>
-          <PreviewFrame href="/invitation" aria-label="Edit your invitation">
+          <PreviewFrame href="/invitation" aria-label={`Edit your ${pageWord}`}>
             <Invitation event={props.currentEvent} compact />
           </PreviewFrame>
 
@@ -475,20 +478,20 @@ const Index = (props) => {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4 12.5-12.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Edit invitation
+                Edit {pageWord}
               </PrimaryLink>
               <SecondaryLink href={senderLink(props.currentEvent.uri)} target="_blank" rel="noopener noreferrer">
                 See it as a guest
               </SecondaryLink>
             </ButtonRow>
 
-            <ShareLink currentEvent={props.currentEvent} />
+            <ShareLink currentEvent={props.currentEvent} registryOnly={registryOnly} />
 
-            {props.currentEvent.rsvpEnabled !== false && <RsvpSummary eventId={props.currentEvent._id} />}
+            {!registryOnly && props.currentEvent.rsvpEnabled !== false && <RsvpSummary eventId={props.currentEvent._id} />}
           </OverviewSide>
         </Overview>
 
-        {/* Gift registry: an optional extra */}
+        {/* Gift registry: the whole point of a registry page, an optional extra on an invitation */}
         {!registryOn ? (
           <RegistryPromo busy={registryBusy} onAdd={() => setRegistry(true)} />
         ) : (
@@ -497,19 +500,23 @@ const Index = (props) => {
               <div>
                 <SectionTitle>Gift registry</SectionTitle>
                 <SectionMeta>
-                  {props.notes.length} {props.notes.length === 1 ? 'wish' : 'wishes'} · shown below your invitation
+                  {props.notes.length} {props.notes.length === 1 ? 'gift' : 'gifts'}
+                  {registryOnly ? '' : ' · shown below your invitation'}
                 </SectionMeta>
               </div>
-              <RegistryHeaderActions>
-                <QuietButton type="button" onClick={() => setRegistry(false)} disabled={registryBusy}>
-                  Hide registry
-                </QuietButton>
-              </RegistryHeaderActions>
+              {!registryOnly && (
+                <RegistryHeaderActions>
+                  <QuietButton type="button" onClick={() => setRegistry(false)} disabled={registryBusy}>
+                    Hide registry
+                  </QuietButton>
+                </RegistryHeaderActions>
+              )}
             </SectionHeader>
 
             {!props.accountSetupComplete && <SetupReminder />}
 
-            <RegistryNoteField>
+            {/* On a registry page the page's own message already sits above the gifts */}
+            {!registryOnly && <RegistryNoteField>
               <label htmlFor="registryNote">A note for guests, above your registry</label>
               <textarea
                 id="registryNote"
@@ -520,7 +527,7 @@ const Index = (props) => {
                 onBlur={saveRegistryNote}
               />
               <span>{noteSaved ? 'Optional. Saved automatically.' : 'Saving when you click away…'}</span>
-            </RegistryNoteField>
+            </RegistryNoteField>}
 
             <CardsGrid>
               {props.notes.map((note) => (
@@ -547,6 +554,8 @@ const Index = (props) => {
           </>
         )}
 
+        {registryOnly && <InvitationPromo onAdd={() => router.push('/invitation?as=invitation')} />}
+
         {/* Delete event */}
         <DeleteButton
           onClick={() => setShowDeleteModal(true)}
@@ -554,7 +563,7 @@ const Index = (props) => {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          Delete invitation
+          Delete {pageWord}
         </DeleteButton>
 
         <DeleteModal

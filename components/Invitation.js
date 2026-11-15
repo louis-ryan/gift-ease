@@ -1,9 +1,11 @@
 import Head from 'next/head';
 import {
-  themeFor, typeCopy, displayNames, inviteLine, formatDay, formatTime, mapsUrl, FONTS_URL,
+  themeFor, typeCopy, displayNames, inviteLine, formatDay, formatTime, mapsUrl, isRegistryOnly, FONTS_URL,
 } from '../utils/invitationDesign';
 
-// The invitation card guests see. KEEP IN SYNC: an identical copy lives in
+// The invitation card guests see. On a registry-only page (no in-person event) it's a
+// shorter header: photo, names, line, date and message, with no time, venue, schedule
+// or dress code. KEEP IN SYNC: an identical copy lives in
 // gift-easy-sender/components/Invitation.js (the giftee's editor previews with this one).
 // Everything is rendered as plain text, never HTML.
 //
@@ -11,13 +13,16 @@ import {
 // `compact` shrinks it for small previews.
 export default function Invitation({ event = {}, children, compact = false }) {
   const t = themeFor(event.theme);
-  const copy = typeCopy(event.eventType);
+  const registryOnly = isRegistryOnly(event);
+  const eyebrow = registryOnly ? 'Gift registry' : typeCopy(event.eventType).eyebrow;
   const names = displayNames(event);
   const line = inviteLine(event);
   const day = formatDay(event.date);
-  const time = formatTime(event.startTime);
-  const map = mapsUrl(event);
-  const schedule = (event.schedule || []).filter((s) => s && s.title);
+  const time = registryOnly ? '' : formatTime(event.startTime);
+  const map = registryOnly ? '' : mapsUrl(event);
+  const showVenue = !registryOnly && (event.venueName || event.venueAddress);
+  const schedule = registryOnly ? [] : (event.schedule || []).filter((s) => s && s.title);
+  const dressCode = registryOnly ? '' : event.dressCode;
   const paragraphs = (event.description || '').split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
 
   const vars = {
@@ -54,7 +59,7 @@ export default function Invitation({ event = {}, children, compact = false }) {
           </div>
         )}
 
-        {copy.eyebrow && <p className="inv-eyebrow">{copy.eyebrow}</p>}
+        {eyebrow && <p className="inv-eyebrow">{eyebrow}</p>}
         <h1 className="inv-names">{names || 'Your names'}</h1>
         {line && <p className="inv-line">{line}</p>}
 
@@ -63,7 +68,7 @@ export default function Invitation({ event = {}, children, compact = false }) {
         {day && <p className="inv-date">{day}</p>}
         {time && <p className="inv-time">{time}</p>}
 
-        {(event.venueName || event.venueAddress) && (
+        {showVenue && (
           <div className="inv-venue">
             {event.venueName && <p className="inv-venue-name">{event.venueName}</p>}
             {event.venueAddress && <p className="inv-venue-address">{event.venueAddress}</p>}
@@ -95,10 +100,10 @@ export default function Invitation({ event = {}, children, compact = false }) {
           </div>
         )}
 
-        {event.dressCode && (
+        {dressCode && (
           <div className="inv-section">
             <p className="inv-section-title">Dress code</p>
-            <p className="inv-detail">{event.dressCode}</p>
+            <p className="inv-detail">{dressCode}</p>
           </div>
         )}
 
